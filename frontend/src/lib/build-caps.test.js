@@ -5,7 +5,6 @@ import { setOfflineBuild, offlineBuild, networkBuilt, subscribeBuildCaps, OFFLIN
 import { isOn, moduleBuilt, presetOf, applyPreset } from './modules.js'
 import { youtubeId, youtubeSearchUrl, youtubeLinks } from './youtube.js'
 import { directory } from './integrations.js'
-import { coachAvailable } from './coach.js'
 import { findPlaces, addressAt } from './gym-places.js'
 
 afterEach(() => setOfflineBuild(false))
@@ -23,20 +22,20 @@ describe('openGym Offline', () => {
   })
 
   it('switches the network modules off without touching the saved choice', () => {
-    const S = { modules: { coach: true } }
-    expect(isOn(S, 'coach')).toBe(true)
+    const S = { modules: { integrations: true } }
+    expect(isOn(S, 'integrations')).toBe(true)
     setOfflineBuild(true)
-    for (const id of ['coach', 'integrations', 'community']) { expect(isOn(S, id)).toBe(false); expect(moduleBuilt(id)).toBe(false) }
+    for (const id of ['integrations', 'community']) { expect(isOn(S, id)).toBe(false); expect(moduleBuilt(id)).toBe(false) }
     expect(isOn(S, 'body')).toBe(true)
-    expect(S.modules.coach).toBe(true)
+    expect(S.modules.integrations).toBe(true)
     // "Everything" still reads as everything here
     const all = {}; applyPreset(all, 'all')
     expect(presetOf(all)).toBe('all')
     setOfflineBuild(false)
-    expect(isOn(S, 'coach')).toBe(true)
+    expect(isOn(S, 'integrations')).toBe(true)
   })
 
-  it('has no YouTube, no Coach, no gym search', async () => {
+  it('has no YouTube, no gym search', async () => {
     const ex = { n: 'Bench Press' }
     expect(youtubeSearchUrl(ex)).toMatch(/youtube\.com/)
     expect(youtubeId('https://youtu.be/dQw4w9WgXcQ')).toBe('dQw4w9WgXcQ')
@@ -44,7 +43,6 @@ describe('openGym Offline', () => {
     expect(youtubeSearchUrl(ex)).toBe(null)
     expect(youtubeId('https://youtu.be/dQw4w9WgXcQ')).toBe(null)
     expect(youtubeLinks('see https://youtu.be/dQw4w9WgXcQ')).toEqual([])
-    expect(coachAvailable({ coach: { enabled: true } }, { id: 'u' }, { mobile: true, coachMode: 'byok' })).toBe(false)
     expect(await findPlaces('gym zurich', { suggest: () => { throw new Error('asked the network') } })).toEqual([])
     expect(await addressAt({ lat: 47, lng: 8 })).toBe(null)
   })

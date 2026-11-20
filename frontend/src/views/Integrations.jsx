@@ -10,7 +10,6 @@ import { MOBILE } from '../lib/mobile.js'
 import { fmtAgo } from '../lib/format.js'
 import { copyText } from '../lib/clipboard.js'
 import { platformNow } from '../lib/platform-now.js'
-import { coachAvailable } from '../lib/coach.js'
 import { healthStatus, loadHealth, onHealthChange, disableHealth, disableRead } from '../lib/health-sync.js'
 import { directory, cardState, CARD, PILL, WORKS_WITH, WEBHOOK_EVENTS, webhookUrlProblem, normalizeWebhookUrl } from '../lib/integrations.js'
 import { importFromApp, importFromHevy, confirmSheet, menuSheet } from '../sheets.jsx'
@@ -28,7 +27,7 @@ import { getCalendar } from '../lib/api-tokens.js'
 /* Settings → Integrations (v1.4.4): one directory of what openGym can talk to, grouped, each card
    with what it is, whether it is on, and the one thing to do next. The cards are thin on purpose:
    Apple Health and Health Connect keep their switches on their own page, the imports and the CSV
-   export open the sheets Data & backup has always opened, the Coach its own setup. Only the
+   export open the sheets Data & backup has always opened. Only the
    webhooks are new, and they live on the server (api/integrations). lib/integrations.js decides
    which card shows where; this file only draws them. */
 
@@ -117,7 +116,6 @@ export default function IntegrationsPage({ android = false, ios = false }) {
   const nav = useNavigate()
   const user = useStore(s => s.user)
   const config = useStore(s => s.config)
-  const coachLocal = useStore(s => s.coachLocal)
   const toast = useUI(s => s.toast)
   const fileRef = useRef(null)
   const offered = config?.integrations?.providers || []
@@ -135,7 +133,6 @@ export default function IntegrationsPage({ android = false, ios = false }) {
     offline: offlineBuild(), webdav, tokens, calendar, nutrition,
     mobile: MOBILE, platform, user, demo: DEMO, admin: !!user?.admin, health, server: server.data, offered,
     mod: id => isOn(S, id),
-    coach: coachAvailable(config, user, { demo: DEMO }), coachMode: coachLocal?.mode === 'server' || coachLocal?.mode === 'byok' ? coachLocal.mode : null,
   }
   const dir = directory(ctx)
 
@@ -172,7 +169,6 @@ export default function IntegrationsPage({ android = false, ios = false }) {
       case 'calendar':
         if (status === 'server') return infoSheet(card, t('The calendar link is served by your own openGym server, so it needs one. Connect this device to it in Account.'))
         return calendarSheet(setCalendarState)
-      case 'coach': return nav(MOBILE ? '/coach/setup' : '/coach')
       case 'opennutrition': return nutritionSheet()
       case 'mcp':
         if (status === 'server') return infoSheet(card, t('The MCP server runs next to your own openGym server and reads your data there.'), MCP_DOCS)

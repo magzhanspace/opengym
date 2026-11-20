@@ -17,12 +17,12 @@
 // the score turns those two round. A stamped map (lib/sync-merge.js STAMPED_MAPS), so the phone and
 // the laptop each keep the days they answered, and a day answered twice keeps the later answer.
 //
-// Going lighter changes today's session only, through the same handlers the Coach's mid-workout
-// changes use (lib/coach-adapt.js): open work sets 10% lighter (rounded to the gym's plates, warm-ups
+// Going lighter changes today's session only, through the session change handlers
+// (lib/session-adapt.js): open work sets 10% lighter (rounded to the gym's plates, warm-ups
 // re-ramped) or one open work set fewer per exercise. The session is then kept out of progression
 // (lib/session-noprog.js), so an easy day neither moves the next targets up nor counts as a miss.
 // The header's "Don't count for progression" shows it and can turn it back on.
-import { applyAdapt } from './coach-adapt.js'
+import { applyAdapt } from './session-adapt.js'
 import { isWarmupRow, hasCompletedWork } from './workout-model.js'
 import { setSessionNoProg } from './session-noprog.js'
 import { isOn } from './modules.js'
@@ -115,7 +115,7 @@ export function sleepRatingOf(hours) {
 const openWork = entry => (entry?.sets || []).filter(s => !isWarmupRow(s) && !hasCompletedWork(s))
 
 /**
- * The changes "go lighter" makes to `active`, in the Coach's change format (lib/coach-adapt.js):
+ * The changes "go lighter" makes to `active`, in the session change format (lib/session-adapt.js):
  * 'load' takes LIGHTER_PCT off every open work set that has a weight; 'sets' drops one open work set
  * from every exercise that has two or more. Exercises with nothing to change are left alone.
  */

@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { api } from '../lib/api.js'
@@ -10,7 +10,6 @@ import { pathBefore } from '../lib/nav.js'
 import { confirmSheet } from '../sheets.jsx'
 import Icon from '../components/Icon.jsx'
 import { Button } from '../components/ui.jsx'
-import AdminCoach from './AdminCoach.jsx'
 import AdminCommunity from './AdminCommunity.jsx'
 import AdminOidc from '../components/AdminOidc.jsx'
 import '../admin.css'
@@ -159,7 +158,7 @@ function UserDetail({ id, viewerOwner, onChanged, close }) {
       <button className="btn" style={{ margin: '12px 0 4px' }}
         onClick={() => u.admin
           ? confirmSheet({ title: 'Remove ' + u.name + ' as admin?', message: 'They keep their account and data, but lose this page.', confirmText: 'Remove admin', danger: true, onConfirm: () => setRole(false) })
-          : confirmSheet({ title: 'Make ' + u.name + ' an admin?', message: 'They can see everyone on this instance, disable accounts, hand out invites and set up the Coach. Only you can add or remove admins.', confirmText: 'Make admin', onConfirm: () => setRole(true) })}>
+          : confirmSheet({ title: 'Make ' + u.name + ' an admin?', message: 'They can see everyone on this instance, disable accounts and hand out invites. Only you can add or remove admins.', confirmText: 'Make admin', onConfirm: () => setRole(true) })}>
         {u.admin ? 'Remove admin' : 'Make admin'}</button>
       <div className="adm-hint">{u.admin ? 'Admins run the instance with you. Remove the role to delete or disable their account.' : 'Admins help run the instance. You stay the owner.'}</div>
       {u.admin && <>
@@ -412,15 +411,6 @@ function AuditCard({ tick, owner }) {
 
 export default function Admin() {
   const nav = useNavigate()
-  // Opened from Settings → AI Coach (the hosted app's way to the Coach, which is the server's):
-  // straight to the Coach card rather than the top of the page.
-  const toCoach = useLocation().state?.section === 'coach'
-  const coachRef = useRef(null)
-  useEffect(() => {
-    if (!toCoach) return
-    const tm = setTimeout(() => coachRef.current?.scrollIntoView({ block: 'start' }), 50)
-    return () => clearTimeout(tm)
-  }, [toCoach])
   const user = useStore(s => s.user)
   const openSheet = useUI(s => s.openSheet)
   const [users, setUsers] = useState(null)
@@ -464,7 +454,7 @@ export default function Admin() {
       <button className="iconbtn" onClick={() => { loadUsers(); loadInvites(); setTick(n => n + 1) }} aria-label="refresh"><Icon name="reset" /></button>
     </div>
     <div className="adm-intro">
-      Everything about running this instance: who uses it, how they get in, the AI Coach, and what has happened on it. {dataView
+      Everything about running this instance: who uses it, how they get in, and what has happened on it. {dataView
         ? 'ADMIN_DATA_VIEW is on, so you can open people’s workouts and weigh-ins. Every look lands in the activity log and in their own sharing log, so be the admin you would want.'
         : 'You run this server. Training data belongs to the people who logged it, so here you see counts, not workouts. It is readable on disk, not in the app.'}
     </div>
@@ -493,10 +483,6 @@ export default function Admin() {
         <span className="adm-pill acc">{dur(Date.now() - u.live.startedAt)}</span>
       </div>)}
     </div>}
-
-    {/* The Coach setup. Renders nothing at all unless the instance offers the Coach, so an admin
-        page on a box that never enabled it is byte-for-byte the page it was before. */}
-    <div ref={coachRef} className="adm-coach-anchor"><AdminCoach /></div>
 
     <InvitesCard invites={invites} reload={loadInvites} inviteOnly={inviteOnly} />
 

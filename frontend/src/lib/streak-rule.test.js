@@ -150,7 +150,7 @@ describe('one number everywhere', () => {
     // lib/streak.js and the trainer list on the server both run.
     const walk = (d, out = []) => { for (const n of readdirSync(d)) { const p = join(d, n); if (statSync(p).isDirectory()) { if (!['node_modules', 'locales', 'fixtures'].includes(n)) walk(p, out) } else if (/\.(js|jsx|mjs)$/.test(n) && !/\.test\./.test(n)) out.push(p) } return out }
     const files = [...walk(src), ...walk(resolve(process.cwd(), '../api')), ...walk(resolve(process.cwd(), '../mcp/src'))]
-    const own = files.filter(f => !/(lib|coach[\\/]core)[\\/]streak(-rule)?\.js$/.test(f) && /freezes\s*(\+\+|--|[-+]=)/.test(readFileSync(f, 'utf8')))
+    const own = files.filter(f => !/(lib|shared)[\\/]streak(-rule)?\.js$/.test(f) && /freezes\s*(\+\+|--|[-+]=)/.test(readFileSync(f, 'utf8')))
     expect(own).toEqual([])
   })
 })

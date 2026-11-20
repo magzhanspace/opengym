@@ -3926,7 +3926,7 @@ export default {
   'Scheduled Coach reviews take a break while the AI Coach is off. Your setup and chats stay.': "Plánovaná hodnocení od Trenéra mají pauzu, dokud je AI trenér vypnutý. Tvoje nastavení i chaty zůstanou.",
   'Start from': 'Začít od',
   'Streaks, challenges, badges, recaps and your year in openGym.': "Týdny v řadě, výzvy, odznaky, přehledy a tvůj rok v openGym.",
-  'Streaks, the Coach, themes, the lot.': "Týdny v řadě, Trenér, motivy, prostě všechno.",
+  'Streaks, themes, the lot.': "Týdny v řadě, motivy, prostě všechno.",
   'Switch off': 'Vypnout',
   'Switch off what you don’t use. Nothing gets deleted: switch it back on and it’s all still there.': "Vypni, co nepoužíváš. Nic se nesmaže: až to znovu zapneš, všechno tam bude.",
   'Switch off {0}?': "Vypnout modul {0}?",

@@ -3921,7 +3921,7 @@ export default {
   "Scheduled Coach reviews take a break while the AI Coach is off. Your setup and chats stay.": "Planlagte coach-gennemgange holder pause, mens AI-coachen er slået fra. Din opsætning og dine chats bliver.",
   "Start from": "Start fra",
   "Streaks, challenges, badges, recaps and your year in openGym.": "Streaks, udfordringer, mærker, opsummeringer og dit år i openGym.",
-  "Streaks, the Coach, themes, the lot.": "Streaks, coachen, temaer, hele pakken.",
+  "Streaks, themes, the lot.": "Streaks, temaer, hele pakken.",
   "Switch off": "Slå fra",
   "Switch off what you don’t use. Nothing gets deleted: switch it back on and it’s all still there.": "Slå det fra, du ikke bruger. Intet slettes: slå det til igen, så er det hele der stadig.",
   "Switch off {0}?": "Slå {0} fra?",

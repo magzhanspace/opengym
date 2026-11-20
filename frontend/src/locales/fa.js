@@ -3926,7 +3926,7 @@ export default {
   'Scheduled Coach reviews take a break while the AI Coach is off. Your setup and chats stay.': 'وقتی مربی هوش مصنوعی خاموش است، بازبینی‌های زمان‌بندی‌شده مربی استراحت می‌کنند. تنظیمات و گفتگوهایتان می‌مانند.',
   'Start from': 'شروع از',
   'Streaks, challenges, badges, recaps and your year in openGym.': 'هفته‌های پیاپی، چالش‌ها، نشان‌ها، مرورها و سال شما در openGym.',
-  'Streaks, the Coach, themes, the lot.': 'هفته‌های پیاپی، مربی، پوسته‌ها، همه چیز.',
+  'Streaks, themes, the lot.': 'هفته‌های پیاپی، پوسته‌ها، همه چیز.',
   'Switch off': 'خاموش کردن',
   'Switch off what you don’t use. Nothing gets deleted: switch it back on and it’s all still there.': 'چیزهایی را که استفاده نمی‌کنید خاموش کنید. چیزی حذف نمی‌شود: دوباره روشنش کنید و همه چیز سر جایش است.',
   'Switch off {0}?': '{0} خاموش شود؟',

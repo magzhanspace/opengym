@@ -3914,7 +3914,7 @@ export default {
   "Scheduled Coach reviews take a break while the AI Coach is off. Your setup and chats stay.": "Evaluasi rutin Coach dijeda selama AI Coach dinonaktifkan. Pengaturan dan obrolanmu tetap tersimpan.",
   "Start from": "Mulai dari",
   "Streaks, challenges, badges, recaps and your year in openGym.": "Rentetan latihan, tantangan, lencana, rekap, dan kilas balik tahunanmu di openGym.",
-  "Streaks, the Coach, themes, the lot.": "Rentetan latihan, Coach, tema, semuanya lengkap.",
+  "Streaks, themes, the lot.": "Rentetan latihan, tema, semuanya lengkap.",
   "Switch off": "Nonaktifkan",
   "Switch off what you don’t use. Nothing gets deleted: switch it back on and it’s all still there.": "Nonaktifkan modul yang tidak kamu gunakan. Tidak ada data yang dihapus: aktifkan kembali dan semuanya tetap ada di sana.",
   "Switch off {0}?": "Nonaktifkan {0}?",

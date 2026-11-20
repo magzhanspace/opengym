@@ -3962,7 +3962,7 @@ export default {
   "Scheduled Coach reviews take a break while the AI Coach is off. Your setup and chats stay.": "AI 코치가 꺼져 있는 동안 예약된 코치 리뷰는 쉬어요. 설정과 채팅은 그대로예요.",
   "Start from": "시작점",
   "Streaks, challenges, badges, recaps and your year in openGym.": "연속 기록, 챌린지, 배지, 요약, 그리고 openGym에서 보낸 한 해.",
-  "Streaks, the Coach, themes, the lot.": "연속 기록, 코치, 테마, 전부 다.",
+  "Streaks, themes, the lot.": "연속 기록, 테마, 전부 다.",
   "Switch off": "끄기",
   "Switch off what you don’t use. Nothing gets deleted: switch it back on and it’s all still there.": "안 쓰는 건 꺼 두세요. 아무것도 삭제되지 않아요. 다시 켜면 전부 그대로 있어요.",
   "Switch off {0}?": "{0}을(를) 끌까요?",

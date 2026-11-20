@@ -1,8 +1,6 @@
-// Applying "Ask the Coach" mid-workout (the `adapt` job, api/shared/validate.js validateAdapt).
-//
-// The Coach answers with up to six changes to the unfinished part of the session running on this
-// device; the lifter ticks the ones they want and they are applied here, to `S.active`, in one
-// store update, the way the manual controls change a session (swap, add, remove, move, rest).
+// Changes to the session running on this device (the "go lighter" daily form, lib/daily-form.js),
+// applied here to `S.active` in one store update, the way the manual controls change a session
+// (swap, add, remove, move, rest).
 // One handler per change type and no default case: a type this file does not know does nothing.
 //
 // Two rules hold for every handler:
@@ -187,20 +185,4 @@ export function applyAdapt(s, p, acceptedIds) {
   const at = was ? s.active.entries.indexOf(was) : -1
   s.active.cur = at >= 0 ? at : Math.max(0, Math.min(wasIdx, s.active.entries.length - 1))
   return { applied }
-}
-
-/** The log line an applied (or dismissed) workout proposal leaves in the Coach's history. */
-export function adaptLogEntry(p, acceptedIds, { dismissed = false } = {}) {
-  const accepted = new Set(acceptedIds || [])
-  return {
-    kind: 'adapt', at: Date.now(), proposalId: p.id, summary: String(p.summary || '').slice(0, 600),
-    ...(p.focus ? { focus: { exId: p.focus.exId, reason: p.focus.reason } } : {}),
-    ...(dismissed ? { dismissed: true } : {}),
-    // Each change as it was shown (its numbers too), so the history can show it again.
-    decisions: (p.changes || []).map(c => ({
-      id: c.id, type: c.type, why: String(c.why || '').slice(0, 300), exId: c.exId || null, to: c.to || null,
-      ...Object.fromEntries(['sets', 'before', 'reps', 'sec', 'pct', 'rest', 'place'].filter(k => c[k] != null).map(k => [k, c[k]])),
-      status: accepted.has(c.id) ? 'accepted' : 'rejected',
-    })),
-  }
 }

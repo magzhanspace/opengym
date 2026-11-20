@@ -4009,7 +4009,7 @@ export default {
   "Scheduled Coach reviews take a break while the AI Coach is off. Your setup and chats stay.": "Schemalagda coachgenomgångar tar paus medan AI-coachen är av. Dina inställningar och chattar finns kvar.",
   "Start from": "Utgå från",
   "Streaks, challenges, badges, recaps and your year in openGym.": "Streaks, utmaningar, märken, sammanfattningar och ditt år i openGym.",
-  "Streaks, the Coach, themes, the lot.": "Streaks, coachen, teman, hela paketet.",
+  "Streaks, themes, the lot.": "Streaks, teman, hela paketet.",
   "Switch off": "Stäng av",
   "Switch off what you don’t use. Nothing gets deleted: switch it back on and it’s all still there.": "Stäng av det du inte använder. Inget raderas: slå på det igen så finns allt kvar.",
   "Switch off {0}?": "Stänga av {0}?",

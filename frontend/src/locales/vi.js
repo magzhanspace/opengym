@@ -3926,7 +3926,7 @@ export default {
   'Scheduled Coach reviews take a break while the AI Coach is off. Your setup and chats stay.': 'Các lần đánh giá định kỳ của Coach tạm nghỉ khi AI Coach tắt. Thiết lập và các cuộc trò chuyện vẫn giữ.',
   'Start from': 'Bắt đầu từ',
   'Streaks, challenges, badges, recaps and your year in openGym.': 'Chuỗi, thử thách, huy hiệu, tổng kết và một năm của bạn với openGym.',
-  'Streaks, the Coach, themes, the lot.': 'Chuỗi, Coach, giao diện, tất tần tật.',
+  'Streaks, themes, the lot.': 'Chuỗi, giao diện, tất tần tật.',
   'Switch off': 'Tắt',
   'Switch off what you don’t use. Nothing gets deleted: switch it back on and it’s all still there.': 'Tắt những gì bạn không dùng. Không có gì bị xóa: bật lại là mọi thứ vẫn còn đó.',
   'Switch off {0}?': 'Tắt {0}?',

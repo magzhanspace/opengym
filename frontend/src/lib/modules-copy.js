@@ -14,7 +14,6 @@ export const moduleCopy = () => ({
   body: [t('Body'), t('Weigh-ins, measurements, progress photos and your weight goal.')],
   health: [t('Health'), t('Apple Health or Health Connect, heart rate and recovery tips.')],
   motivation: [t('Motivation'), t('Streaks, challenges, badges, recaps and your year in openGym.')],
-  coach: [t('AI Coach'), t('Reviews your training and suggests changes. You still say yes or no.')],
   integrations: [t('Integrations'), t('Webhooks for Home Assistant and friends, and the MCP server.')],
   community: [t('Community'), t('Exercises, plans and sounds people on your server shared, and a way to share yours.')],
   seasonal: [t('Seasonal themes'), t('Halloween and friends, little extras for the time of year. All optional.')],
@@ -29,5 +28,5 @@ export const groupCopy = () => ({
 export const presetCopy = () => ({
   training: [t('Just training'), t('Log, plan, progress. Nothing else on the screen.')],
   body: [t('Training and body'), t('Plus weigh-ins, measurements, photos and your health apps.')],
-  all: [t('Everything'), t('Streaks, the Coach, themes, the lot.')],
+  all: [t('Everything'), t('Streaks, themes, the lot.')],
 })

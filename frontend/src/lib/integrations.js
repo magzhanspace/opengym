@@ -67,11 +67,6 @@ export const CARDS = [
     syncs: ['A signed JSON message when a workout is finished, a record falls or you weigh in.', 'Sent by your server, from whichever device you logged on.'],
   },
   {
-    id: 'coach', cat: 'ai', name: 'AI Coach', translate: true, icon: 'sparkles', tint: 'var(--green)',
-    desc: 'Plans and reviews from the model you pick.',
-    syncs: ['Reads your plan and the last weeks of training when you ask.', 'Set up on its own page.'],
-  },
-  {
     id: 'mcp', cat: 'ai', name: 'MCP server', translate: true, icon: 'plug', tint: 'var(--purple)',
     desc: 'Let Claude Desktop, Cursor and friends read your training log.',
     syncs: ['Runs next to your server, or over HTTPS with a token from Settings.', 'Sees and changes only what the token was given.'],
@@ -115,7 +110,7 @@ const healthTrouble = h => !!(h && ((h.on && h.error === 'permission') || (healt
  * ctx: { mobile, platform ('ios' | 'android' | null), user, demo, admin,
  *        health: { status, on, readHr, readWeight, error, readError } | null  (this phone's store)
  *        server: { providers: [id], connections: [..] } | null  (GET /api/integrations)
- *        offered: [provider ids] (config.integrations.providers), coach: bool, coachMode,
+ *        offered: [provider ids] (config.integrations.providers),
  *        webdav: this device's WebDAV backup settings (lib/webdav.js loadConfig) | null,
  *        tokens: whether the server has scoped tokens (the calendar feed is one), calendar: GET /api/calendar | null,
  *        nutrition: this device's openNutrition link (lib/sister-nutrition.js loadLink) | null }
@@ -174,9 +169,6 @@ export function cardState(id, ctx) {
       if (ctx.demo || !ctx.user) return { status: 'server', action: null }
       if (!ctx.tokens) return null
       return ctx.calendar?.on ? { status: 'connected', action: 'manage' } : { status: 'off', action: 'connect' }
-    case 'coach':
-      if (ctx.mobile) return { status: ctx.coachMode ? 'connected' : 'off', action: ctx.coachMode ? 'manage' : 'connect' }
-      return ctx.coach ? { status: 'connected', action: 'open' } : null
     case 'mcp':
       if (ctx.demo || !ctx.user) return { status: 'server', action: null }
       return { status: null, action: 'open' }
@@ -193,7 +185,7 @@ export function cardState(id, ctx) {
 }
 
 // The module (lib/modules.js) a card belongs to: with it off, the card is not in the directory.
-export const CARD_MODULE = { 'apple-health': 'health', 'health-connect': 'health', webhook: 'integrations', mcp: 'integrations', calendar: 'integrations', strava: 'integrations', coach: 'coach', opennutrition: 'integrations' }
+export const CARD_MODULE = { 'apple-health': 'health', 'health-connect': 'health', webhook: 'integrations', mcp: 'integrations', calendar: 'integrations', strava: 'integrations', opennutrition: 'integrations' }
 
 /** The directory for this device: categories with their visible cards, empty ones left out.
  *  `ctx.mod(id)` says whether a module is on (absent: all on). */

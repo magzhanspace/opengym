@@ -4041,7 +4041,7 @@ export default {
   "Scheduled Coach reviews take a break while the AI Coach is off. Your setup and chats stay.": "AI কোচ বন্ধ থাকলে শিডিউল করা রিভিউ বন্ধ থাকে। আপনার সেটআপ আর চ্যাট থেকে যায়।",
   "Start from": "যেখান থেকে শুরু",
   "Streaks, challenges, badges, recaps and your year in openGym.": "স্ট্রিক, চ্যালেঞ্জ, ব্যাজ, সারসংক্ষেপ আর openGym-এ আপনার বছর।",
-  "Streaks, the Coach, themes, the lot.": "স্ট্রিক, কোচ, থিম, সবকিছু।",
+  "Streaks, themes, the lot.": "স্ট্রিক, থিম, সবকিছু।",
   "Switch off": "বন্ধ করুন",
   "Switch off what you don’t use. Nothing gets deleted: switch it back on and it’s all still there.": "যা ব্যবহার করেন না, বন্ধ করে দিন। কিছুই মুছে যায় না: আবার চালু করলেই সব আগের মতো পাবেন।",
   "Switch off {0}?": "{0} বন্ধ করবেন?",

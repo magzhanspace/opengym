@@ -3,7 +3,7 @@
 // A preset row on top (Just training, Training and body, Everything, or Custom once the switches
 // below make a mix of their own), then one row per module in three groups, each with its switch.
 // Off hides; it never deletes. A module that is connected to something (the phone's health app,
-// a watch, webhooks, scheduled Coach reviews) says what pauses and asks once before it goes off.
+// a watch, webhooks) says what pauses and asks once before it goes off.
 import { useEffect, useState } from 'react'
 import { useStore } from '../store/useStore.js'
 import { t } from '../lib/i18n.js'
@@ -24,7 +24,6 @@ function useConnections() {
   const S = useStore(s => s.S)
   const user = useStore(s => s.user)
   const config = useStore(s => s.config)
-  const coachMode = useStore(s => s.coachLocal?.mode)
   const [found, setFound] = useState({})
   useEffect(() => {
     let gone = false
@@ -47,8 +46,7 @@ function useConnections() {
     }
     return () => { gone = true }
   }, [user, config]) // eslint-disable-line react-hooks/exhaustive-deps
-  const cadence = S.coach?.cadence
-  return { ...found, coach: !!coachMode || (!!S.coach?.consent?.agreedAt && !!cadence && cadence !== 'off') }
+  return found
 }
 
 /** The sentence per module that is connected, for the modules about to go off. */
@@ -58,7 +56,6 @@ export function connectionNotes(ids, conn) {
     if (id === 'health' && conn.health) out.push(t('{0} stops syncing while Health is off. Nothing is disconnected, and it catches up once Health is back.', conn.health))
     if (id === 'watch' && conn.watch) out.push(t('Your watch stops getting workouts while Watch is off. It stays paired.'))
     if (id === 'integrations' && conn.webhooks) out.push(t('Your webhooks stop sending while Integrations is off. They stay set up.'))
-    if (id === 'coach' && conn.coach) out.push(t('Scheduled Coach reviews take a break while the AI Coach is off. Your setup and chats stay.'))
   }
   return out
 }
@@ -98,7 +95,7 @@ export default function ModulesPage() {
   ]
   // Community only where the server has a library (LIBRARY=on): elsewhere it would switch nothing.
   const libOn = useStore(st => libraryOn(st.config, st.user))
-  // openGym Offline has no Coach, Integrations or Community (lib/build-caps.js): not offered at all.
+  // openGym Offline has no Integrations or Community (lib/build-caps.js): not offered at all.
   const shown = MODULES.filter(m => moduleBuilt(m.id) && (m.id !== 'community' || libOn))
   return <div className="modules">
     <p className="sect-f modules-intro">{t('Switch off what you don’t use. Nothing gets deleted: switch it back on and it’s all still there.')}</p>

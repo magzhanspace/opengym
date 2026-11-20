@@ -55,12 +55,7 @@ import { rpeAs } from '../lib/programmes.js'
 import { buildPlannedEntry, buildSessionEntry, plannedConfigOf, builtOutOfProgression } from '../lib/session-start.js'
 import { routineChangesFromEntry, updateRoutineFromEntry, routineSlotIndex, ownWarmupsChange, keepOwnWarmups, replaceSlotExercise } from '../lib/routines.js'
 import { ownRowsLine } from '../lib/warmup-ramp.js'
-import { useCoachGate } from '../lib/use-coach-gate.js'
-// Opened in the same tick as the menu closes, like every other sheet from that menu: a sheet that
-// opened a moment later (after a dynamic import) took the menu's history entry with it on close.
-import { workoutCoachSheet } from '../components/WorkoutCoachSheet.jsx'
 import { splitLabel } from '../lib/gym-split.js'
-import { hasConsent } from '../lib/coach.js'
 import { sessionNoProg, setSessionNoProg, setEntryNoProg, joinSessionNoProg } from '../lib/session-noprog.js'
 import { glyphOf } from '../lib/glyphs.js'
 import { markAllSetsDone, sessionHistory } from '../lib/backfill.js'
@@ -188,7 +183,7 @@ function LadderNext ({ entry, next }) {
   </div>
 }
 
-function ExerciseBlock({ entryIdx, compact, listed, dense, editing, onToggle, onToggleSide, onField, onAddSet, onRemoveSet, onAddWarmup, onKeepWarmups, onAskCoach, onRemoveSetAt, onCopySetAt, onStartTimed, onPairPrev, onPairNext, onSetRowRef, onProgressionSettings, onRest, onNoProg, routineUpdate, onSwap, onSwapBackup, onMoveUp, onMoveDown, canMoveUp, canMoveDown, onRemoveExercise, busy }) {
+function ExerciseBlock({ entryIdx, compact, listed, dense, editing, onToggle, onToggleSide, onField, onAddSet, onRemoveSet, onAddWarmup, onKeepWarmups, onRemoveSetAt, onCopySetAt, onStartTimed, onPairPrev, onPairNext, onSetRowRef, onProgressionSettings, onRest, onNoProg, routineUpdate, onSwap, onSwapBackup, onMoveUp, onMoveDown, canMoveUp, canMoveDown, onRemoveExercise, busy }) {
   // The block reads the state as its exercise sees it (lib/ex-unit.js): in the exercise's own
   // weight unit when it has one (#657), so its rows, steppers, plates, owned weights, "last time"
   // and records all speak that unit. Every change goes through inEntryUnit or the parent's
@@ -610,8 +605,6 @@ function ExerciseBlock({ entryIdx, compact, listed, dense, editing, onToggle, on
         onKeepWarmups && { icon: 'sunrise', label: t('Keep these warm-ups'), sub: t('Saved in the routine, scaled to your work weight'), onClick: onKeepWarmups },
         onRest && { icon: 'timer', label: t('Rest timer'), sub: restSub, onClick: onRest },
         { icon: 'history', label: t('History'), sub: last ? t('Last time') + ' ' + fmtDate(last.d) : undefined, onClick: () => exerciseHistorySheet(entry.id) },
-        // The Coach on this exercise, for the rest of this workout (components/WorkoutCoachSheet.jsx).
-        onAskCoach && { icon: 'sparkles', label: t('Ask the Coach'), sub: t('It hurts, it’s taken, no time, feeling great'), onClick: onAskCoach },
       ] },
       { more: [
         { title: t('Exercise'), items: [
@@ -1264,8 +1257,6 @@ function ActiveWorkout() {
   const nav = useNavigate()
   const S = useStore(s => s.S)
   const update = useStore(s => s.update)
-  // Whether "Ask the Coach" is on the exercise menu (lib/use-coach-gate.js).
-  const coachGate = useCoachGate()
   // Only what this screen shows of the two timers: the whole UI store here re-rendered every card
   // of the workout once a second while a rest or a hold counted down (`left` changes each tick).
   const liveRest = useUI(s => s.startRest)
@@ -1766,10 +1757,7 @@ function ActiveWorkout() {
   // a superset member acts on that member, not on whatever the marker happens to point at.
   const swapExercise = idx => {
     if (focusMode) focusPointerEpoch.current++
-    // The Coach, for a machine that's taken (#1003): the same door as the ⋯ menu's Ask the Coach.
-    const coachOk = coachGate.ok && hasConsent(S) && !editing && (A.entries[idx]?.sets || []).some(x => !isWarmupRow(x) && !x.done)
-    if (coachOk) swapActiveWorkoutExercise(idx, { askCoach: () => workoutCoachSheet(idx, 'busy') })
-    else swapActiveWorkoutExercise(idx)
+    swapActiveWorkoutExercise(idx)
   }
   const blockProps = idx => ({
     editing,
@@ -1792,9 +1780,6 @@ function ActiveWorkout() {
     onRemoveSet: () => removeSet(idx),
     onAddWarmup: () => addWarmup(idx),
     onKeepWarmups: keepWarmupsFor(idx),
-    // Only with the Coach set up and agreed to, live (not a past workout), and something left to do.
-    onAskCoach: coachGate.ok && hasConsent(S) && !editing && (A.entries[idx]?.sets || []).some(x => !isWarmupRow(x) && !x.done)
-      ? () => workoutCoachSheet(idx) : null,
     onRemoveSetAt: i => removeSetAt(idx, i),
     onCopySetAt: i => copyActiveSet(idx, i),
     onStartTimed: (i, onFocusProgress) => startTimed(idx, i, onFocusProgress),

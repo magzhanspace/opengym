@@ -11,7 +11,6 @@ import { barTypeWeight } from './bar.js'
 import { mergeStates, stampChange } from './sync-merge.js'
 import { buildCompletedWorkout } from './finish-workout.js'
 import { buildSnapshot } from './watch-sync.js'
-import * as coachPayload from '../../../api/coach/core/payload.js'
 
 const BENCH = EXDB.find(e => e.eq === 'barbell' && /bench press/.test(e.n)).id
 const CURL = EXDB.find(e => e.eq === 'dumbbell' && /curl/.test(e.n)).id
@@ -115,16 +114,13 @@ describe('switching gyms', () => {
     expect(gym(S, 'big').dumbbells.kg.weights).toEqual([5, 10, 15, 20])
   })
 
-  it('owning no dumbbells is per gym, and so is what the Coach is told', () => {
+  it('owning no dumbbells is per gym', () => {
     const S = migrated()
     S.dumbbells = { ...S.dumbbells, none: { on: true, _ts: 7000 } }
     syncGymInventory(S, migrated(), 7001)
     expect(ownsNoDumbbells(S)).toBe(true)
-    const at = () => coachPayload.build(clone(S), { handle: 'u', kind: 'create' })
-    expect(at().noDumbbells).toBe(true)
     switchGym(S, 'big', 8000)
     expect(ownsNoDumbbells(S)).toBe(false)
-    expect(at().noDumbbells).toBeUndefined()
   })
 
   it('copies one list from another gym', () => {

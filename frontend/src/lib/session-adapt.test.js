@@ -1,11 +1,8 @@
-// "Ask the Coach" mid-workout: the changes the Coach proposes for the unfinished part of the
-// session, applied to S.active (lib/coach-adapt.js), and what a review may now do to a plan
-// (warm-ups, programmes) applied and undone with the ordinary engine (lib/coach.js).
+// Changes to the unfinished part of the session running on this device, applied to S.active
+// (lib/session-adapt.js; the "go lighter" daily form uses it).
 import { describe, it, expect } from 'vitest'
-import { applyAdapt, markAdaptStale, resolveEntry, adaptFor, adaptLogEntry } from './coach-adapt.js'
-import { applyChangeSet, markStale, revertLast, changeMeaning, changeValues, changeTitle } from './coach.js'
+import { applyAdapt, markAdaptStale, resolveEntry, adaptFor } from './session-adapt.js'
 import { isWarmupRow } from './workout-model.js'
-import { programmeById, programmesOf } from './programmes.js'
 
 const BENCH = '0025', CURL = '0294', SQUAT = '0043', DBPRESS = '0289', ROW = '0027'
 const row = (w, r, done = false, extra = {}) => ({ w, r, done, ...extra })
@@ -20,12 +17,11 @@ const session = () => ({
       { id: SQUAT, rid: 'push', target: { sets: 3, reps: 5, weight: 100 }, sets: [row(100, 5), row(100, 5), row(100, 5)] },
     ],
   },
-  coach: { consent: { agreedAt: 1, version: 2 }, log: [], snapshots: [] },
 })
 const proposal = changes => ({ id: 'p1', kind: 'adapt', activeId: 'act-1', summary: 'For today.', changes: changes.map((c, i) => ({ id: 'a' + i, why: 'because', ...c })) })
 const ids = p => p.changes.map(c => c.id)
 
-describe('applying the Coach’s changes to the workout in progress', () => {
+describe('applying changes to the workout in progress', () => {
   it('belongs to the session it was asked in, and only that one', () => {
     const S = session()
     expect(adaptFor(S, proposal([]))).toBe(true)
@@ -117,77 +113,5 @@ describe('applying the Coach’s changes to the workout in progress', () => {
     applyAdapt(S, p, ['a1'])
     expect(S.active.entries[1].sets.map(r => r.r)).toEqual([10, 10, 10])
     expect(S.active.entries.map(e => e.id)).toEqual([BENCH, CURL])
-  })
-
-  it('leaves a history line with each change as it was shown', () => {
-    const p = proposal([{ type: 'sets', entry: 1, exId: CURL, sets: 2, before: 3 }, { type: 'skip', entry: 2, exId: SQUAT }])
-    const log = adaptLogEntry({ ...p, focus: { exId: CURL, reason: 'short', entry: 1 } }, ['a0'])
-    expect(log.kind).toBe('adapt')
-    expect(log.focus).toEqual({ exId: CURL, reason: 'short' })
-    expect(log.decisions.map(d => [d.type, d.status, d.sets ?? null])).toEqual([['sets', 'accepted', 2], ['skip', 'rejected', null]])
-  })
-})
-
-describe('a review that sets warm-ups or writes a programme', () => {
-  const S0 = () => ({ ...session(), active: null, week: { 1: ['push'] } })
-  const review = changes => ({ id: 'r1', kind: 'review', summary: 's', changes: changes.map((c, i) => ({ id: 'c' + i, why: 'w', ...c })) })
-
-  it('warm-ups: auto, own rows or none, the older count gone, undone by a revert', () => {
-    const S = S0()
-    S.routines[0].ex[1].warmupSets = 2
-    const p = markStale(review([
-      { type: 'warmup', target: { routineId: 'push', exId: CURL }, before: null, after: { mode: 'own', rows: [{ wp: 50, r: 10 }] } },
-      { type: 'warmup', target: { routineId: 'push', exId: SQUAT }, before: null, after: { mode: 'auto' } },
-    ]), S)
-    applyChangeSet(S, p, ['c0', 'c1'])
-    expect(S.routines[0].ex[1]).toMatchObject({ warmup: 'own', warmupRows: [{ wp: 50, r: 10 }] })
-    expect(S.routines[0].ex[1].warmupSets).toBeUndefined()
-    expect(S.routines[0].ex[2].warmup).toBe('auto')
-    expect(changeValues(p.changes[0], S)).toEqual({ before: 'Default', after: '50% × 10' })
-    expect(changeMeaning(p.changes[1])).toMatch(/ramps up/)
-    revertLast(S)
-    expect(S.routines[0].ex[1].warmupSets).toBe(2)
-    expect(S.routines[0].ex[2].warmup).toBeUndefined()
-  })
-
-  it('a warm-up change goes stale once the slot was changed by hand', () => {
-    const S = S0()
-    S.routines[0].ex[0].warmup = 'none'
-    const p = markStale(review([{ type: 'warmup', target: { routineId: 'push', exId: BENCH }, before: 'auto', after: { mode: 'own', rows: [{ wb: true, r: 10 }] } }]), S)
-    expect(p.changes[0].status).toBe('stale')
-  })
-
-  it('a new programme over the schedule you have, not started; a revert takes it away', () => {
-    const S = S0()
-    const p = markStale(review([{ type: 'programme', target: {}, before: null, after: { name: 'Bench 3 weeks', weeks: [{ t: { [BENCH]: { pct: 75 } } }, { t: { [BENCH]: { pct: 80 } } }, { deload: true }] } }]), S)
-    expect(p.changes[0].status).not.toBe('stale')
-    expect(changeTitle(p.changes[0], S)).toBe('New programme “Bench 3 weeks”')
-    applyChangeSet(S, p, ['c0'])
-    const [prog] = programmesOf(S)
-    expect(prog.name).toBe('Bench 3 weeks')
-    expect(prog.weeks).toHaveLength(3)
-    expect(prog.days).toEqual({ 1: ['push'] })
-    expect(S.programme).toBeUndefined()
-    expect(changeMeaning(p.changes[0])).toMatch(/Week 1: 75%.*Week 3: deload/)
-    revertLast(S)
-    expect(programmesOf(S)).toEqual([])
-  })
-
-  it('a revised programme keeps its id and schedule; the revert brings its weeks back', () => {
-    const S = S0()
-    S.programmes = { p1: { id: 'p1', name: 'Old', at: 1, weeks: [{ t: { [BENCH]: { pct: 70 } } }], days: { 1: ['push'] } } }
-    const p = markStale(review([{ type: 'programme', target: { programmeId: 'p1' }, before: { name: 'Old', weeks: 1 }, after: { name: 'Old', weeks: [{ t: { [BENCH]: { pct: 72.5 } } }, { deload: true }] } }]), S)
-    applyChangeSet(S, p, ['c0'])
-    expect(programmeById(S, 'p1').weeks).toEqual([{ t: { [BENCH]: { pct: 72.5 } } }, { deload: true }])
-    revertLast(S)
-    expect(programmeById(S, 'p1').weeks).toEqual([{ t: { [BENCH]: { pct: 70 } } }])
-    // Gone meanwhile: the revision is stale rather than writing a new programme under an old id.
-    delete S.programmes.p1
-    expect(markStale(p, S).changes[0].status).toBe('stale')
-  })
-
-  it('a progression change says what it means at the gym', () => {
-    expect(changeMeaning({ type: 'exercise-prog', after: 'double' })).toMatch(/^Double progression: Work up through a rep range/)
-    expect(changeMeaning({ type: 'sets', after: 4 })).toBeNull()
   })
 })

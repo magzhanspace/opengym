@@ -11,7 +11,7 @@ const mocks = vi.hoisted(() => ({
   user: null, config: null, MOBILE: false, health: null, sheets: [], navs: [], toast: null, calls: [], answers: {}, confirm: null, menu: null,
 }))
 vi.mock('../store/useStore.js', () => {
-  const snap = () => ({ S: {}, user: mocks.user, config: mocks.config, coachLocal: null })
+  const snap = () => ({ S: {}, user: mocks.user, config: mocks.config })
   const useStore = selector => (selector ? selector(snap()) : snap())
   useStore.getState = snap
   return { useStore }

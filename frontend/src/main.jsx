@@ -6,10 +6,10 @@ import { useStore } from './store/useStore.js'
 import { startMediaSync } from './lib/media-sync.js'
 import { startNativeKeyboard } from './lib/native-keyboard.js'
 import { registerDailyFormSource } from './lib/daily-form.js'
-// The Coach's and the admin dashboard's styles stay in the main stylesheet, in the place they
-// always had (before index.css), although their screens are now loaded on demand (App.jsx).
+// The admin dashboard's and the connector screens' styles stay in the main stylesheet, in the
+// place they always had (before index.css), although their screens are loaded on demand (App.jsx).
 import './admin.css'
-import './coach.css'
+import './connect.css'
 import './index.css'
 import { hideBoot, handOverFromLaunchScreen } from './lib/boot.js'
 import { guardFocusZoom } from './lib/viewport-zoom.js'

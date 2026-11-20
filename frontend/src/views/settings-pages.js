@@ -23,7 +23,6 @@ export const PAGES = {
   units: { title: 'Units & language', icon: 'ruler', tint: 'var(--teal)' },
   equipment: { title: 'Equipment', icon: 'kettlebell', tint: 'var(--indigo)' },
   look: { title: 'Look & Home', icon: 'palette', tint: 'var(--purple)' },
-  coach: { title: 'AI Coach', icon: 'sparkles', tint: 'var(--green)', mod: 'coach' },
   // The phones' watch pages under one row (#1105); the web has Zepp only, so its row stays on the root.
   watches: { title: 'Watches', icon: 'watch', tint: 'var(--grey)', mod: 'watch', kw: 'watch watches apple garmin zepp amazfit wrist pair' },
   watch: { title: 'Apple Watch', icon: 'watch', tint: 'var(--grey)', mod: 'watch', parent: 'watches' },
@@ -67,7 +66,7 @@ export const PAGE_IDS = Object.keys(PAGES)
 export const ROOT_GROUPS = [
   { title: 'Training', ids: ['workout', 'alerts', 'plan', 'reminders'] },
   { title: 'Set once', ids: ['units', 'equipment', 'look', 'modules'] },
-  { title: 'Connections', ids: ['watches', 'zepp', 'integrations', 'coach'] },
+  { title: 'Connections', ids: ['watches', 'zepp', 'integrations'] },
   { ids: ['data', 'about'] },
 ]
 
@@ -85,7 +84,6 @@ export function pageVisible(page, ctx) {
   // A page of a module that is off (ctx.mod answers isOn for this profile; absent: all on).
   if (PAGES[page]?.mod && ctx.mod && !ctx.mod(PAGES[page].mod)) return false
   if (page === 'reminders') return !!(ctx.user || ctx.mobile)
-  if (page === 'coach') return !!ctx.mobile && !ctx.offline
   // The phone app's network log: there only (a browser has its own developer tools for that).
   if (page === 'network') return !!ctx.mobile
   // openGym Offline (lib/build-caps.js) has no network: nothing that needs a server or a connection.
@@ -137,7 +135,6 @@ const MODULE_KW = {
   body: 'body weight weigh-in weigh in scale measurements photos progress goal',
   health: 'health apple health healthkit health connect heart rate recovery sync',
   motivation: 'motivation streak challenges badges trophies recap wrapped year share gamification',
-  coach: 'ai coach llm assistant review suggestions',
   integrations: 'integrations webhook webhooks home assistant n8n mcp automation',
   seasonal: 'seasonal season halloween theme decoration',
 }
@@ -319,7 +316,6 @@ export const SEARCH = [
   { page: 'integrations', title: 'MCP server', net: true, icon: 'plug', tint: 'var(--purple)', mod: 'integrations', kw: 'mcp claude desktop cursor llm agent ai model context protocol api' },
   { page: 'integrations', title: 'WebDAV backup', net: true, icon: 'cloud', tint: 'var(--blue)', kw: 'webdav nextcloud owncloud cloud backup daily automatic', when: c => !c.demo },
   { page: 'integrations', title: 'Calendar feed', net: true, icon: 'calendar', tint: 'var(--red)', mod: 'integrations', kw: 'calendar ics ical google outlook apple planned sessions feed subscribe', when: c => c.demo || !c.user || c.apiTokens },
-  { page: 'integrations', title: 'AI Coach', net: true, icon: 'sparkles', tint: 'var(--green)', mod: 'coach', kw: 'ai coach model llm plan review', when: c => c.mobile },
   { page: 'integrations', mod: 'health', title: 'Garmin', icon: 'watch', tint: 'var(--grey)', kw: 'garmin fenix forerunner venu watch heart rate' },
   { page: 'integrations', mod: 'health', title: 'COROS', icon: 'watch', tint: 'var(--grey)', kw: 'coros watch heart rate' },
   { page: 'integrations', mod: 'health', title: 'Polar', icon: 'watch', tint: 'var(--grey)', kw: 'polar watch heart rate strap' },

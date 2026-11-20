@@ -3962,7 +3962,7 @@ export default {
   "Scheduled Coach reviews take a break while the AI Coach is off. Your setup and chats stay.": "Las revisiones programadas del Entrenador se toman un descanso mientras el Entrenador IA está desactivado. Tu configuración y tus chats se quedan.",
   "Start from": "Empezar con",
   "Streaks, challenges, badges, recaps and your year in openGym.": "Rachas, retos, insignias, resúmenes y tu año en openGym.",
-  "Streaks, the Coach, themes, the lot.": "Rachas, el Entrenador, temas, el lote completo.",
+  "Streaks, themes, the lot.": "Rachas, temas, el lote completo.",
   "Switch off": "Desactivar",
   "Switch off what you don’t use. Nothing gets deleted: switch it back on and it’s all still there.": "Desactiva lo que no uses. No se borra nada: actívalo de nuevo y todo sigue ahí.",
   "Switch off {0}?": "¿Desactivar {0}?",

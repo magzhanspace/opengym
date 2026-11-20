@@ -10,7 +10,7 @@ import { resolve } from 'node:path'
 const strip = f => readFileSync(f, 'utf8').replace(/\/\*[\s\S]*?\*\//g, '')
 const sheets = () => {
   const src = resolve(process.cwd(), 'src')
-  const out = [resolve(src, 'index.css'), resolve(src, 'coach.css')]
+  const out = [resolve(src, 'index.css'), resolve(src, 'connect.css')]
   for (const d of ['views', 'components']) for (const f of readdirSync(resolve(src, d))) if (f.endsWith('.css')) out.push(resolve(src, d, f))
   return out
 }

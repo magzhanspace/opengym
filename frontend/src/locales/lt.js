@@ -3951,7 +3951,7 @@ export default {
   "Scheduled Coach reviews take a break while the AI Coach is off. Your setup and chats stay.": "Suplanuoti Trenerio peržiūrėjimai sustabdomi, kai išjungtas AI treneris. Jūsų nustatymai ir pokalbiai išlieka.",
   "Start from": "Pradėti nuo",
   "Streaks, challenges, badges, recaps and your year in openGym.": "Serijos, iššūkiai, apdovanojimai, apžvalgos ir jūsų „openGym“ metai.",
-  "Streaks, the Coach, themes, the lot.": "Serijos, Treneris, temos, viskas.",
+  "Streaks, themes, the lot.": "Serijos, temos, viskas.",
   "Switch off": "Išjungti",
   "Switch off what you don’t use. Nothing gets deleted: switch it back on and it’s all still there.": "Išjunkite tai, ko nenaudojate. Nieko neištrinama: įjunkite atgal ir viskas išliks.",
   "Switch off {0}?": "Išjungti {0}?",

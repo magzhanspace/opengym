@@ -3959,7 +3959,7 @@ export default {
   "Scheduled Coach reviews take a break while the AI Coach is off. Your setup and chats stay.": "Заплановані розбори від тренера беруть паузу, поки ШІ-тренер вимкнений. Налаштування й чати залишаються.",
   "Start from": "Почати з",
   "Streaks, challenges, badges, recaps and your year in openGym.": "Серії, челенджі, значки, підсумки й твій рік в openGym.",
-  "Streaks, the Coach, themes, the lot.": "Серії, тренер, теми, усе разом.",
+  "Streaks, themes, the lot.": "Серії, теми, усе разом.",
   "Switch off": "Вимкнути",
   "Switch off what you don’t use. Nothing gets deleted: switch it back on and it’s all still there.": "Вимкни те, чим не користуєшся. Нічого не видаляється: увімкни знову, і все на місці.",
   "Switch off {0}?": "Вимкнути {0}?",

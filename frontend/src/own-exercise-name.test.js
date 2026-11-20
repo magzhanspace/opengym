@@ -62,6 +62,5 @@ describe('own exercise names are shown as typed', () => {
     // the views that hard-coded it take the class per exercise now
     expect(read('./views/FocusView.jsx')).toMatch(/<h2 className=\{exerciseNameClass\(ex\)\}>/)
     expect(read('./views/Workout.jsx')).not.toMatch(/textTransform: 'capitalize'/)
-    expect(read('./coach.css')).toMatch(/\.pcard-ex-n\.nocap,\.ins-row-n\.nocap\{text-transform:none\}/)
   })
 })

@@ -10,9 +10,9 @@
 //     which had a switch of its own before (S.checkIn): until Modules decides, that one does.
 //   - Off hides the module's surfaces (cards, Stats parts, Settings pages and rows, search hits,
 //     notifications, widget fields) and pauses what it would send (health sync, the watch, the
-//     webhooks, scheduled Coach reviews). It never deletes anything: switched back on, it is all
+//     webhooks). It never deletes anything: switched back on, it is all
 //     there, and the paused syncs catch up.
-//   - The Coach and the MCP server read the data whatever the modules say: hiding is about the
+//   - The MCP server reads the data whatever the modules say: hiding is about the
 //     screen, the data is the same (docs/MODULES.md).
 //   - S.modules syncs per key (lib/sync-merge.js PER_KEY and api/sync-stamps.js), so switching
 //     Body off on the phone and Seasonal off on the laptop keeps both.
@@ -40,8 +40,6 @@ export const MODULES = [
     desc: 'Apple Health or Health Connect, heart rate and recovery tips.' },
   { id: 'motivation', group: 'extras', icon: 'flame', tint: 'var(--orange)', title: 'Motivation',
     desc: 'Streaks, challenges, badges, recaps and your year in openGym.' },
-  { id: 'coach', group: 'extras', icon: 'sparkles', tint: 'var(--green)', title: 'AI Coach',
-    desc: 'Reviews your training and suggests changes. You still say yes or no.' },
   { id: 'integrations', group: 'extras', icon: 'webhook', tint: 'var(--indigo)', title: 'Integrations',
     desc: 'Webhooks for Home Assistant and friends, and the MCP server.' },
   { id: 'community', group: 'extras', icon: 'globe', tint: 'var(--blue)', title: 'Community',
@@ -63,13 +61,13 @@ const TRAINING = ['effort', 'plates', 'watch']
 export const PRESETS = [
   { id: 'training', title: 'Just training', desc: 'Log, plan, progress. Nothing else on the screen.', on: TRAINING },
   { id: 'body', title: 'Training and body', desc: 'Plus weigh-ins, measurements, photos and your health apps.', on: [...TRAINING, 'strength', 'body', 'health'] },
-  { id: 'all', title: 'Everything', desc: 'Streaks, the Coach, themes, the lot.', on: MODULE_IDS },
+  { id: 'all', title: 'Everything', desc: 'Streaks, themes, the lot.', on: MODULE_IDS },
 ]
 export const PRESET = Object.fromEntries(PRESETS.map(p => [p.id, p]))
 
 const isMap = v => !!v && typeof v === 'object' && !Array.isArray(v)
 
-// Modules this build cannot have at all (lib/build-caps.js: the Coach, Integrations and Community
+// Modules this build cannot have at all (lib/build-caps.js: Integrations and Community
 // in openGym Offline, which has no network). Off whatever S.modules says, and not offered on the
 // Modules page; the choice itself is kept, so the same profile on a normal build is unchanged.
 let unavailable = new Set()

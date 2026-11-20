@@ -3962,7 +3962,7 @@ export default {
   "Scheduled Coach reviews take a break while the AI Coach is off. Your setup and chats stay.": "Planlı Koç değerlendirmeleri, Yapay Zekâ Koçu kapalıyken ara verir. Ayarların ve sohbetlerin kalır.",
   "Start from": "Başlangıç noktası",
   "Streaks, challenges, badges, recaps and your year in openGym.": "Seriler, görevler, rozetler, özetler ve openGym’deki yılın.",
-  "Streaks, the Coach, themes, the lot.": "Seriler, Koç, temalar, ne varsa.",
+  "Streaks, themes, the lot.": "Seriler, temalar, ne varsa.",
   "Switch off": "Kapat",
   "Switch off what you don’t use. Nothing gets deleted: switch it back on and it’s all still there.": "Kullanmadığını kapat. Hiçbir şey silinmez: tekrar aç, her şey yerinde.",
   "Switch off {0}?": "{0} kapatılsın mı?",

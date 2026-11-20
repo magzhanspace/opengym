@@ -3962,7 +3962,7 @@ export default {
   "Scheduled Coach reviews take a break while the AI Coach is off. Your setup and chats stay.": "AI 教练关闭期间，定期的教练回顾会暂停。你的设置和聊天都会保留。",
   "Start from": "起点",
   "Streaks, challenges, badges, recaps and your year in openGym.": "连续记录、挑战、徽章、回顾，以及你在 openGym 的这一年。",
-  "Streaks, the Coach, themes, the lot.": "连续记录、教练、主题，统统都要。",
+  "Streaks, themes, the lot.": "连续记录、主题，统统都要。",
   "Switch off": "关闭",
   "Switch off what you don’t use. Nothing gets deleted: switch it back on and it’s all still there.": "用不上的就关掉。不会删除任何东西：重新打开，一切都还在。",
   "Switch off {0}?": "关闭{0}？",

@@ -13,7 +13,7 @@ globalThis.IS_REACT_ACT_ENVIRONMENT = true
 const mocks = vi.hoisted(() => {
   const state = { S: null, confirms: [] }
   state.snapshot = () => ({
-    S: state.S, user: null, config: null, coachLocal: null,
+    S: state.S, user: null, config: null,
     update: mut => { const next = structuredClone(state.S); mut(next); state.S = next },
   })
   return state

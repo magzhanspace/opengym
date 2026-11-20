@@ -16,7 +16,7 @@ const rules = css => {
   while ((m = re.exec(flat))) out.push({ sel: m[1].trim(), body: m[2] })
   return out
 }
-const FILES = ['./index.css', './coach.css', './admin.css']
+const FILES = ['./index.css', './admin.css']
 const all = FILES.flatMap(f => rules(readFileSync(here(f), 'utf8')).map(r => ({ ...r, file: f })))
 const shared = all.find(r => /overflow-y:\s*hidden/.test(r.body) && /touch-action:\s*pan-x pan-y/.test(r.body))
 const sharedSel = shared ? shared.sel.split(',').map(s => s.trim()) : []
@@ -34,7 +34,7 @@ describe('sideways strips', () => {
     const strips = all.filter(r => /overflow-x:\s*(auto|scroll)/.test(r.body) && !/overflow-y:\s*(auto|scroll)/.test(r.body))
       .flatMap(r => r.sel.split(',').map(s => s.trim()))
       .filter(s => !s.startsWith('@') && !NOT_A_STRIP.has(s))
-    expect(strips.length).toBeGreaterThan(8)
+    expect(strips.length).toBeGreaterThanOrEqual(8)
     const missing = strips.filter(s => !sharedSel.includes(s))
     expect(missing).toEqual([])
   })

@@ -66,7 +66,7 @@ describe('Reduce Transparency (#708)', () => {
   // Every blurred surface in a sheet has to be listed in that sheet's own
   // prefers-reduced-transparency block, with the blur off. A new frosted bar that forgets it
   // stays see-through for the people who asked for less of exactly that.
-  it.each(['index.css', 'coach.css'])('%s: no surface keeps its blur', (file) => {
+  it.each(['index.css'])('%s: no surface keeps its blur', (file) => {
     const css = read(file)
     const reduce = block(css, /@media\s*\(prefers-reduced-transparency:\s*reduce\)/)
     const off = [...reduce.matchAll(/([^{}]+)\{[^}]*(?:^|;)\s*backdrop-filter:none/g)]

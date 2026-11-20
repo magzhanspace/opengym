@@ -25,8 +25,6 @@ import { linkTokenFromSearch, stripLinkFromUrl } from '../lib/device-link.js'
 import { loadRemote, chooseLocal, forgetRemote, connect, connectWithProvider, normalizeServerUrl, renewToken } from '../lib/remote.js'
 import { takeOidcReturn } from '../lib/oidc.js'
 import { loadCfAccess } from '../lib/cf-access.js'
-import { loadCoachDevice, saveCoachDevice, coachDeviceSettings } from '../lib/coach-device.js'
-import { initCoachSchedule } from '../lib/coach-schedule.js'
 import { RTL_LANGS } from '../lib/i18n-core.js'
 import { DEFAULT_TEMPLATE_ID } from '../lib/structuralBalanceTemplates.js'
 
@@ -616,8 +614,6 @@ export const useStore = create((set, get) => {
   }
 
   initReminderSync(() => get().S)
-  // A phone with its own Coach key runs its automatic reviews itself, while the app is open.
-  initCoachSchedule(() => get())
   // What it reads back from the health hub (heart rate, weigh-ins) goes in as any change does.
   initHealthSync(() => get().S, fn => get().update(fn))
 
@@ -1124,10 +1120,6 @@ export const useStore = create((set, get) => {
     // between would open in local mode on the signed-out account's data, since that boot takes
     // the file whenever storage holds nothing.
     const wiped = MOBILE ? nativePersist(true) : null
-    // The phone Coach's waiting proposal (lib/coach-device.js) is a plan made from the signed-out
-    // account's log: the next person must not be offered it. How the Coach runs (and its key,
-    // the device owner's choice) stays. After the state file, which must not wait for it.
-    const coachGone = MOBILE ? Promise.resolve(wiped).then(() => saveCoachDevice({ pending: null })).catch(() => {}) : null
     // The account's photos and videos go with its copy (a shared device keeps nothing of it),
     // except the ones a stash still refers to — whatever was pending is in a stash by now
     // (signOut refuses otherwise) and comes back with it. A file picked from here on is kept.
@@ -1143,7 +1135,7 @@ export const useStore = create((set, get) => {
         .then(all => mediaStore.retainOnly(new Set(Object.values(all).flatMap(e => [...keptHashes(e?.state)])), { keepPutAfter: since }))
         .catch(() => {})
     }
-    return MOBILE ? Promise.all([wiped, coachGone]).then(([w]) => w) : wiped
+    return wiped
   }
 
   /* The changes a forced sign-out or disconnect keeps, so that no change is ever lost silently.
@@ -1509,10 +1501,7 @@ export const useStore = create((set, get) => {
     ready: false,
     // The connection as the screens show it — see statusOf above for every field.
     sync: sync0,
-    /* Instance capabilities from GET /api/config. `config.coach` is present only when the owner
-       has both enabled the Coach and connected a provider — every Coach entry point in the app
-       hangs off it via coachAvailable(), so an unconfigured instance renders exactly what it
-       always did, and a configured one is the only place any of it appears. */
+    /* Instance capabilities from GET /api/config. */
     config: null,
     needsMobileOnboarding: false,   // mobile build only — set true by boot() on a genuine first launch
     // Mobile build only: the first-start permission steps (views/PermissionSteps.jsx) are due.
@@ -1547,12 +1536,6 @@ export const useStore = create((set, get) => {
     // A one-time device-link code this page was opened with (?link=, #95), until it is redeemed.
     // Never persisted: the code is good for minutes and belongs to this one visit.
     linkCode: null,
-    // Mobile build only: how the Coach runs on this phone — { mode: 'off'|'server'|'byok',
-    // provider, model, baseUrl } from lib/coach-device.js. Never the key, never a proposal.
-    coachLocal: null,
-    async setCoachLocal(patch) {
-      set({ coachLocal: coachDeviceSettings(await saveCoachDevice(patch)) })
-    },
 
     // Mutate a draft of S via producer fn, then persist + schedule sync. Every routine the change
     // touched carries the time of it, for a conflict to keep the version edited last.
@@ -1764,8 +1747,8 @@ export const useStore = create((set, get) => {
       if (get().config) return get().config
       return get().refreshConfig()
     },
-    // Always asks. The cached copy is right for one boot, but an admin can switch the Coach on
-    // while a paired phone sits on the setup screen — that screen wants today's answer.
+    // Always asks. The cached copy is right for one boot, but an admin can change the server's
+    // settings while a paired phone is open, and some screens want today's answer.
     // Two callers that ask at once get one request: signing in re-asks (setUser) and the pairing
     // flow awaits a refresh of its own immediately after, and there is one answer to have.
     async refreshConfig() {
@@ -1840,13 +1823,10 @@ export const useStore = create((set, get) => {
         if (!adopt && !other && owner !== u.id) persist(get().S, false, false)
         // The file follows at once, as the new account's: until then it holds the previous one's.
         if (other && MOBILE) nativePersist(true)
-        // The server answers /api/config with a `coach` key only to a session — the block, or
-        // null on an instance that has no Coach. So a copy with no key at all is one fetched
-        // before this sign-in (boot's, or the login screen asking for invite_only), and every
-        // Coach entry point would stay hidden until the next reload. Ask again, unawaited:
-        // nothing on this path waits for the answer. A copy that has the key was made for a
-        // session and is already the right answer, Coach or no Coach.
-        if (get().config && !('coach' in get().config)) get().refreshConfig()
+        // Some of /api/config is only for a session (tokens, integrations, the library). A copy
+        // fetched before this sign-in (boot's, or the login screen asking for invite_only) says
+        // signed_in false; ask again, unawaited: nothing on this path waits for the answer.
+        if (get().config && get().config.signed_in !== true) get().refreshConfig()
       } else { rejoined = false; adoptHold = false; localStorage.removeItem('gym_user') }
       set({ user: u })
       // Another account, or none: what is in flight was for the previous one (GHSA-656w-p99j-x8hf).
@@ -2088,7 +2068,7 @@ export const useStore = create((set, get) => {
       if (keeping) { await keeping; keeping = null }
       setPairedBase(normalizeServerUrl(url))
       setSync({ server: pairedBase })
-      await get().refreshConfig()   // what this server offers (the Coach, guest mode) — see boot()
+      await get().refreshConfig()   // what this server offers (guest mode and the rest) — see boot()
       await get().adoptProfile(ask)
       await nativePersist(true)   // the file holds this account's copy before anything else can happen
       // Paired from the first-launch screen: the permission steps come next. From Settings later
@@ -2171,7 +2151,6 @@ export const useStore = create((set, get) => {
         const remote = await loadRemote()
         // Before the first request: a server behind Cloudflare Access answers nothing without it.
         await loadCfAccess({ pairedBase: remote?.mode === 'remote' ? remote.base : '' })
-        set({ coachLocal: coachDeviceSettings(await loadCoachDevice()) })
         if (remote?.mode === 'remote') {
           setRemoteAuth(remote.base, remote.token)
           setPairedBase(remote.base || null)
@@ -2184,9 +2163,7 @@ export const useStore = create((set, get) => {
             // that is used at all.
             if (typeof me.token === 'string' && me.token) await renewToken(remote, me.token)
             get().setUser(me.user)
-            // The paired server's /api/config, the same one the web boot reads: without it the
-            // phone never learned whether the server offers the Coach and told everyone "your
-            // server has no Coach enabled" — with the admin looking at a green test.
+            // The paired server's /api/config, the same one the web boot reads.
             await get().loadConfig()
             // Closed with the pairing's question still open: asked again, and nothing is pulled
             // or pushed until it is answered — this copy may still be the one from before pairing.

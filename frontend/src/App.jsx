@@ -76,7 +76,7 @@ import { tintCss } from './lib/streak-icons.js'
 import Plan from './views/Plan.jsx'
 import Workout from './views/Workout.jsx'
 
-// Screens most sessions never open (the Coach, the admin dashboard, photos, measurements, the
+// Screens most sessions never open (the admin dashboard, photos, measurements, the
 // balance check) are their own chunks rather than part of the code every start parses: ~200 KB
 // of the main bundle. They are fetched once the app is idle after the start (the service worker
 // and the phone build hold them locally anyway), so by the time one is opened it renders at once,
@@ -92,11 +92,8 @@ function lazyView(load) {
   }
 }
 const Admin = lazyView(() => import('./views/Admin.jsx'))
-const CoachChat = lazyView(() => import('./views/CoachChat.jsx'))
 const Connect = lazyView(() => import('./views/Connect.jsx'))
 const Measurements = lazyView(() => import('./views/Measurements.jsx'))
-const CoachIntake = lazyView(() => import('./views/CoachIntake.jsx'))
-const CoachSetup = lazyView(() => import('./views/CoachSetup.jsx'))
 const Assistants = lazyView(() => import('./views/Assistants.jsx'))
 const StructuralBalance = lazyView(() => import('./views/StructuralBalance.jsx'))
 const Tools = lazyView(() => import('./views/Tools.jsx'))
@@ -172,24 +169,6 @@ function Shell() {
   useDailyWebdav(ready && !DEMO && !offlineBuild())
   // A circuit's clock that was running before a reload carries on from where it is now.
   useEffect(() => { if (!ready) return; wireCircuit(); restoreCircuit() }, [ready])
-  // Back from "Sign in with OpenRouter" on the admin card (lib/openrouter-signin.js): the code in
-  // the address is traded for the key, which becomes the instance's OpenRouter key. Admin only,
-  // English like the rest of the admin card.
-  useEffect(() => {
-    if (!user?.admin || MOBILE) return
-    import('./lib/openrouter-signin.js').then(async m => {
-      if (!m.isWebReturn()) return
-      const { api } = await import('./lib/api.js')
-      const r = await m.finishWebSignIn({
-        save: async key => {
-          await api('/api/admin/coach/connect', { method: 'POST', body: JSON.stringify({ provider: 'openrouter', type: 'apikey', token: key, account: 'OpenRouter sign-in' }) })
-          await api('/api/admin/coach/config', { method: 'POST', body: JSON.stringify({ provider: 'openrouter' }) })
-        }
-      }).catch(e => ({ ok: false, error: e.message }))
-      useUI.getState().toast(r.ok ? 'Signed in with OpenRouter. The Coach uses it now.' : 'OpenRouter sign-in failed: ' + r.error)
-      navigate('/admin', { replace: true })
-    }).catch(() => {})
-  }, [user?.admin])
   const isGuest = useStore(s => s.isGuest())
   const needsMobileOnboarding = useStore(s => s.needsMobileOnboarding)
   const permSteps = useStore(s => s.permSteps)
@@ -367,7 +346,7 @@ function Shell() {
   }, [inWorkout])
   // The chat owns the bottom of the screen as well: its composer sits where the tabs would be.
   // The first-launch card has no tabs either: they changed the route behind it.
-  const noTabs = inWorkout || loc.pathname === '/coach' || needsMobileOnboarding || permSteps
+  const noTabs = inWorkout || needsMobileOnboarding || permSteps
 
   const authed = user || isGuest
   // The first setup is through (sign-in or "Use on this device", and the phone's permission
@@ -421,13 +400,6 @@ function Shell() {
       <Route path="/assistants" element={<Assistants />} />
       <Route path="/settings" element={<SettingsRoute />} />
       <Route path="/settings/:page" element={<SettingsRoute />} />
-      {/* The Coach screens gate themselves on the instance config; the routes exist whenever the
-          AI Coach module is on, so a deep link from a notification lands somewhere sane rather
-          than on the catch-all. With the module off, Home is the sane place. */}
-      {isOn(S, 'coach') && <Route path="/coach" element={<CoachChat />} />}
-      {isOn(S, 'coach') && <Route path="/coach/intake" element={<CoachIntake />} />}
-      {isOn(S, 'coach') && <Route path="/coach/proposal" element={<Navigate to="/coach" replace />} />}
-      {isOn(S, 'coach') && <Route path="/coach/setup" element={<CoachSetup />} />}
       {/* Until boot has asked /api/me, the cached user may be from before an admin grant (or there is
           none yet): a reload on /admin waits for the answer instead of bouncing to Home. */}
       <Route path="/admin" element={user?.admin ? <Admin /> : ready ? <Navigate to="/home" replace /> : null} />

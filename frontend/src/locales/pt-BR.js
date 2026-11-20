@@ -3316,7 +3316,7 @@ export const PT_BR_OVERRIDES = {
   "Reviews your training and suggests changes. You still say yes or no.": "Analisa seu treino e sugere mudanças. Quem diz sim ou não continua sendo você.",
   "Scheduled Coach reviews take a break while the AI Coach is off. Your setup and chats stay.": "As revisões agendadas do Treinador dão uma pausa enquanto o Treinador IA está desligado. Sua configuração e suas conversas ficam.",
   "Streaks, challenges, badges, recaps and your year in openGym.": "Sequências, desafios, emblemas, resumos e seu ano no openGym.",
-  "Streaks, the Coach, themes, the lot.": "Sequências, o Treinador, temas, tudo o que tem direito.",
+  "Streaks, themes, the lot.": "Sequências, temas, tudo o que tem direito.",
   "Switch off what you don’t use. Nothing gets deleted: switch it back on and it’s all still there.": "Desligue o que você não usa. Nada é apagado: ligue de novo e está tudo lá.",
   "The plates to load under every set, and warm-ups that build themselves.": "As anilhas para colocar em cada série e aquecimentos que se montam sozinhos.",
   "Weigh-ins, measurements, progress photos and your weight goal.": "Pesagens, medidas, fotos de progresso e sua meta de peso.",

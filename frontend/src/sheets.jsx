@@ -2003,7 +2003,7 @@ function usageMap(st) {
 }
 // The swap pickers' own scope (#473): exercises sharing the swapped exercise's target muscle.
 const SAME = '≈'
-function ExercisePicker({ onPick, title, close, like, actionIcon, backups, askCoach }) {
+function ExercisePicker({ onPick, title, close, like, actionIcon, backups }) {
   const st = useStore(s => s.S)
   const isSwap = !!like || title === t('Swap exercise') || title === t('Replace exercise') || title === 'Swap exercise' || title === 'Replace exercise'
   const quickIcon = actionIcon || (isSwap ? 'swap' : 'plus')
@@ -2149,9 +2149,6 @@ function ExercisePicker({ onPick, title, close, like, actionIcon, backups, askCo
       <button className={'chip nocap' + (!eqOn ? ' on' : '')} onClick={() => { setEq(''); setShown(50) }}>{t('Any equipment')}</button>
       {eqOpts.map(x => <button key={x} className={'chip' + (eqOn === x ? ' on' : '')} onClick={() => { setEq(x); setShown(50) }}>{t(x)}</button>)}
     </div>}
-    {/* The Coach's pick, when one is set up (#1003): it knows the workout, the gym and the
-        history, and answers in the workout's own sheet (components/WorkoutCoachSheet.jsx). */}
-    {askCoach && !q.trim() && <Button icon="sparkles" className="picker-coach" onClick={() => { close(); askCoach() }}>{t('Ask the Coach for a swap')}</Button>}
     {/* The slot's planned substitutes, first, while nothing is typed: the plan already knows. */}
     {backupList.length > 0 && !q.trim() && <>
       <h4 className="sec">{t('Your backups')}</h4>
@@ -2190,11 +2187,10 @@ function ExercisePicker({ onPick, title, close, like, actionIcon, backups, askCo
 // train the same muscle, same equipment first (#473), with suggested substitutes on top and a gym
 // choice that filters only this list (#674).
 // `backups`: the slot's planned substitutes (lib/routine-backups.js), listed first in a swap.
-export const exercisePicker = (onPick, { title, like, actionIcon, backups, askCoach } = {}) => ui().openSheet(close => <ExercisePicker onPick={onPick} title={title} like={like} actionIcon={actionIcon} backups={backups} askCoach={askCoach} close={close} />)
+export const exercisePicker = (onPick, { title, like, actionIcon, backups } = {}) => ui().openSheet(close => <ExercisePicker onPick={onPick} title={title} like={like} actionIcon={actionIcon} backups={backups} close={close} />)
 
 /** Start a safe swap for one exact active-workout occurrence. */
-// `opts.askCoach`: offered at the top of the picker when the Coach can answer (#1003).
-export function swapActiveWorkoutExercise(index, { askCoach } = {}) {
+export function swapActiveWorkoutExercise(index) {
   const active = S().active
   if (!active?.entries?.[index]) return
 
@@ -2209,7 +2205,7 @@ export function swapActiveWorkoutExercise(index, { askCoach } = {}) {
       ? backupSlotConfig({ ...plannedConfigOf(cur), id: cur.id }, ex.id, S(), cur.rid, id => !!EXIDX[id])
       : null
   }
-  const picker = exercisePicker((ex, quick) => quick ? swapTo(ex, asBackup(ex) || pickedExerciseConfig(ex.id, undefined, S())) : exConfigSheet(ex, null, cfg => swapTo(ex, cfg), null, null, asBackup(ex), null, t('Use in this workout'), { freestyle: (S().routines || []).some(r => r.id === active.entries[index].rid) ? false : 'add' }), { title: t('Swap exercise'), like: active.entries[index].id, backups: active.entries[index].target?.subs, askCoach })
+  const picker = exercisePicker((ex, quick) => quick ? swapTo(ex, asBackup(ex) || pickedExerciseConfig(ex.id, undefined, S())) : exConfigSheet(ex, null, cfg => swapTo(ex, cfg), null, null, asBackup(ex), null, t('Use in this workout'), { freestyle: (S().routines || []).some(r => r.id === active.entries[index].rid) ? false : 'add' }), { title: t('Swap exercise'), like: active.entries[index].id, backups: active.entries[index].target?.subs })
   function swapTo(ex, cfg) {
     // The picker is a chooser here, not a stack you keep adding from: one swap, then back to
     // the workout. (The add flow deliberately leaves it open.)
@@ -2560,7 +2556,7 @@ function BackupsSheet({ ex, slot, routine, subs: initial, configs: initialConfig
         <button type="button" className="iconbtn" aria-label={t('Remove “{0}”', exerciseNameText(b))} onClick={() => set(latest.current.subs.filter(x => x !== b.id))}><Icon name="xmark" /></button>
       </div>)}
     </div>}
-    {/* A few to add in one tap (#1003): no Coach needed, from what this gym has. */}
+    {/* A few to add in one tap (#1003), from what this gym has. */}
     {suggestions.length > 0 && <>
       <h4 className="sec">{t('Suggested')}</h4>
       <div className="sect-b" style={{ marginBottom: 12 }}>

@@ -4017,7 +4017,7 @@ export default {
   "Scheduled Coach reviews take a break while the AI Coach is off. Your setup and chats stay.": "مراجعات المدرب المجدولة تأخذ استراحة ما دام مدرب الذكاء الاصطناعي متوقفًا. إعداداتك ومحادثاتك تبقى.",
   "Start from": "ابدأ من",
   "Streaks, challenges, badges, recaps and your year in openGym.": "السلاسل والتحديات والشارات والملخصات وسنتك في openGym.",
-  "Streaks, the Coach, themes, the lot.": "السلاسل والمدرب والسمات، كل شيء.",
+  "Streaks, themes, the lot.": "السلاسل والسمات، كل شيء.",
   "Switch off": "إيقاف",
   "Switch off what you don’t use. Nothing gets deleted: switch it back on and it’s all still there.": "أوقف ما لا تستخدمه. لا يُحذف شيء: أعد تشغيله وستجد كل شيء في مكانه.",
   "Switch off {0}?": "إيقاف {0}؟",

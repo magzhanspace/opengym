@@ -8,9 +8,7 @@ const phone = { mobile: true, android: true, mod: () => true, user: null }
 const offline = { ...phone, offline: true }
 
 describe('Settings in openGym Offline', () => {
-  it('has no Coach, Zepp or token pages, and keeps the network log', () => {
-    expect(pageVisible('coach', phone)).toBe(true)
-    expect(pageVisible('coach', offline)).toBe(false)
+  it('has no Zepp or token pages, and keeps the network log', () => {
     expect(pageVisible('zepp', offline)).toBe(false)
     expect(pageVisible('api-tokens', { ...offline, user: { id: 'u' }, apiTokens: true })).toBe(false)
     expect(pageVisible('network', offline)).toBe(true)
@@ -27,6 +25,5 @@ describe('Settings in openGym Offline', () => {
     expect(titles('hevy', phone)).toContain('Import from Hevy')
     expect(titles('check for updates', offline)).toEqual([])
     expect(titles('network log', offline)).toContain('Network log')
-    expect(titles('ai coach', offline)).not.toContain('AI Coach')
   })
 })

@@ -65,8 +65,6 @@ import { checkForUpdate, downloadAndInstall, fetchChecksum, forgetDownloadedUpda
 import { APK_VARIANT, VARIANT_NAMES } from '../lib/apk-variant.js'
 import { BUILTIN_PX } from '../lib/anim-quality.js'
 import { getChannel, gymReminderBuilt } from '../lib/channel.js'
-import { forgetCoach } from '../lib/coach-api.js'
-import { coachAvailable } from '../lib/coach.js'
 import { REST_MAX, REST_PAUSE_MIN, REST_PAUSE_MAX, fmtRest, fmtDuration } from '../lib/duration.js'
 import { starterPlanSheet, confirmSheet, importFromApp, importFromHevy, equipmentProfileSheet, plateInventorySheet, dumbbellInventorySheet, barDefaultsSheet, menuSheet } from '../sheets.jsx'
 import Icon from '../components/Icon.jsx'
@@ -132,8 +130,8 @@ import DisplayRows from '../components/DisplayRows.jsx'
 // results back, while Settings opened afresh from anywhere (the gear, a tab) starts at the root.
 let lastQuery = { q: '', key: null }
 
-// The route: /settings and /settings/<page>. An unknown page, or one this device does not have
-// (the Coach page off the phone app), goes back to the root.
+// The route: /settings and /settings/<page>. An unknown page, or one this device does not have,
+// goes back to the root.
 export function SettingsRoute() {
   const { page } = useParams()
   const loc = useLocation()
@@ -146,7 +144,6 @@ export function SettingsRoute() {
   const apiTokens = useStore(s => !!s.config?.api_tokens)
   const ctx = { user: useStore(s => s.user), mobile: MOBILE, offline: offlineBuild(), demo: DEMO, trainers, apiTokens, ios: MOBILE && platformNow() !== 'android', android: MOBILE && platformNow() !== 'ios', mod: id => isOn({ modules, checkIn }, id) }
   if (page && (!PAGES[page] || !pageVisible(PAGES[page].parent || page, ctx) || !pageVisible(page, ctx))) return <Navigate to="/settings" replace />
-  if (page === 'coach') return <Navigate to="/coach/setup" replace />
   return <Settings key={page || 'root'} page={page || null} find={loc.state?.find || null} via={loc.state?.via || null} entryKey={loc.key} />
 }
 
@@ -172,7 +169,6 @@ export default function Settings({ page = null, find = null, via = null, entryKe
   const S = useStore(s => s.S)
   const user = useStore(s => s.user)
   const sync = useStore(s => s.sync)
-  const coachLocal = useStore(s => s.coachLocal)
   // Name-and-password sign-in, where the instance offers it (#118).
   const config = useStore(s => s.config)
   const pwOn = passwordOn(config)
@@ -449,11 +445,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
     onConfirm: () => leave('everywhere', t('Signed out on all devices')),
   })
   // Signed in, the empty state is pushed to the profile like any other change, so the wipe
-  // reaches the server and every device that syncs with it — the dialog has to say so. The Coach
-  // keeps its data outside S in two homes that can both be in use on one phone: a file per
-  // profile on the server, and — when it runs with the phone's own key — a file on the device.
-  // Each is cleared on its own; forgetCoach() alone would pick one by mode. A failed call must
-  // not stop the reset.
+  // reaches the server and every device that syncs with it — the dialog has to say so.
   const resetEverything = () => confirmSheet({
     title: t('Reset everything?'),
     message: user
@@ -461,8 +453,6 @@ export default function Settings({ page = null, find = null, via = null, entryKe
       : t('Deletes your plan, workouts, body weight, photos and videos on this device. This cannot be undone.'),
     confirmText: t('Delete everything'), danger: true,
     onConfirm: () => {
-      if (user) api('/api/coach/forget', { method: 'POST', body: '{}' }).catch(() => {})
-      if (coachLocal?.mode === 'byok') forgetCoach().catch(() => {})
       resetAll()
       nav('/home'); toast(t('All data reset'))
       clearMediaAfterReset(!!user).catch(() => {})
@@ -505,7 +495,6 @@ export default function Settings({ page = null, find = null, via = null, entryKe
     equipment: () => (S.equipFilterOn && activeProfile ? activeProfile.name : activeEquipment(S)?.name || t('Everything')),
     look: () => themeLabel + ' · ' + accentLabel(S),
     modules: () => { const p = presetOf(S); return p === 'custom' ? t('Custom') : presetCopy()[p][0] },
-    coach: () => (coachLocal?.mode === 'server' ? t('Your server') : coachLocal?.mode === 'byok' ? t('Your API key') : t('Off')),
     data: () => '',
     integrations: () => '',
     about: () => 'v' + __APP_VERSION__,
@@ -515,10 +504,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
     zepp: () => '',
   }
 
-  const open = id => {
-    if (id === 'coach') { nav('/coach/setup'); return }
-    nav('/settings/' + id)
-  }
+  const open = id => nav('/settings/' + id)
   // Back the way you came when there is a way (the browser's back, Android's back, this button
   // all do the same); a page opened from a link with nothing behind it goes up to its parent.
   const back = () => {
@@ -1452,7 +1438,6 @@ export default function Settings({ page = null, find = null, via = null, entryKe
   /* ---------------- the root ---------------- */
   return <SettingsRoot ctx={ctx} preview={preview} open={open} user={user} sync={sync} entryKey={entryKey}
     home={() => nav('/home')} go={(hit) => {
-      if (hit.page === 'coach') { nav('/coach/setup'); return }
       if (hit.route) { nav(hit.route); return }
       nav('/settings/' + hit.page, hit.isPage ? undefined : { state: hit.via ? { find: hit.title, via: hit.via } : { find: hit.title } })
     }} />
@@ -1476,10 +1461,6 @@ function SettingsRoot({ ctx, preview, open, user, sync, home, go, entryKey }) {
   // The face: one's own picture (components/Avatar.jsx), else the name's first letter, else the icon.
   const faceName = user && !DEMO ? (String(user.name || '').trim() || '?') : null
   const nav = useNavigate()
-  // Only while the server offers the Coach (the flag every Coach screen reads): on a box without
-  // it the admin dashboard has no Coach card to land on.
-  const config = useStore(s => s.config)
-  const adminCoach = !MOBILE && !DEMO && !!user?.admin && coachAvailable(config, user) && (!ctx.mod || ctx.mod('coach'))
   return <div className="narrow">
     <div className="sp-nav">
       <button className="sp-back" data-back="/home" onClick={home} aria-label={t('Home')}><Icon name="chevronLeft" /><span>{t('Home')}</span></button>
@@ -1507,11 +1488,6 @@ function SettingsRoot({ ctx, preview, open, user, sync, home, go, entryKey }) {
         <Section key={g.ids[0]} title={g.title && t(g.title)}>
           {g.ids.map(id => <Row key={id} icon={PAGES[id].icon} iconTint={PAGES[id].tint} title={t(PAGES[id].title)}
             value={preview[id]?.() || null} accessory="chevron" onClick={() => open(id)} className="sp-root-row" tour={'settings-' + id} />)}
-          {/* The phone app sets up its own Coach on the Coach page in Connections; in a hosted app the
-              Coach is the server's, set up by an admin on the admin dashboard. Its admins get the
-              same row, in the same place, straight to that card; nobody else has anything to set. */}
-          {g.title === 'Connections' && adminCoach && <Row icon={PAGES.coach.icon} iconTint={PAGES.coach.tint} title={t(PAGES.coach.title)}
-            value={t('Admin')} accessory="chevron" onClick={() => nav('/admin', { state: { section: 'coach' } })} className="sp-root-row" />}
           {/* Claude, ChatGPT or Gemini on the plan people already pay for, with openGym as their
               connector (views/Assistants.jsx). Everywhere but the offline build and the demo. */}
           {g.title === 'Connections' && !DEMO && !ctx.offline && <Row icon="chat" iconTint="var(--acc)" title={t('Use your subscription')}

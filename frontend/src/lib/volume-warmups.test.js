@@ -5,7 +5,6 @@ import { describe, expect, it } from 'vitest'
 import { workoutVolume, sessionVolume, lifetimeVolume, countsWarmups } from './history.js'
 import { totalsOf, reportData } from './report.js'
 import { exerciseHistory } from './exercise-history.js'
-import { insightsFor, sessionInsights } from './coach-insights.js'
 import { workoutCardModel } from './workout-card.js'
 import { workoutText } from './workout-text.js'
 
@@ -73,13 +72,6 @@ describe('every reader follows it', () => {
     expect(on.sessions[0].volume).toBe(1000)
     expect(on.best).toBe(off.best)
     expect(on.sessions[0].sets).toEqual(off.sessions[0].sets)
-  })
-
-  it('the coach quotes the number the app shows', () => {
-    expect(insightsFor(profile(false)).volume).toBe(1200)
-    expect(insightsFor(profile(true)).volume).toBe(2000)
-    const S = profile(true)
-    expect(sessionInsights(S, S.workouts[1]).now.volume).toBe(1000)
   })
 
   it('the share card and Copy as text', () => {

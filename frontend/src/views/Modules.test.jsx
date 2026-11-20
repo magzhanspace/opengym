@@ -10,9 +10,9 @@ import { MODULES, isOn, presetOf } from '../lib/modules.js'
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
 const mocks = vi.hoisted(() => {
-  const state = { S: null, user: null, config: null, coachLocal: null, confirms: [], sheets: [] }
+  const state = { S: null, user: null, config: null, webhooks: [], confirms: [], sheets: [] }
   state.snapshot = () => ({
-    S: state.S, user: state.user, config: state.config, coachLocal: state.coachLocal,
+    S: state.S, user: state.user, config: state.config,
     update: mut => { const next = structuredClone(state.S); mut(next); state.S = next },
   })
   return state
@@ -23,7 +23,7 @@ vi.mock('../store/useStore.js', () => {
   return { useStore }
 })
 vi.mock('../sheets.jsx', () => ({ confirmSheet: opts => mocks.confirms.push(opts) }))
-vi.mock('../lib/api.js', () => ({ api: vi.fn(() => Promise.resolve({ connections: [] })) }))
+vi.mock('../lib/api.js', () => ({ api: vi.fn(() => Promise.resolve({ connections: mocks.webhooks })) }))
 vi.mock('../lib/mobile.js', () => ({ MOBILE: false }))
 
 import ModulesPage, { connectionNotes } from './Modules.jsx'
@@ -34,7 +34,7 @@ beforeEach(() => {
   mocks.S = { unit: 'kg', workouts: [] }
   mocks.user = null
   mocks.config = null
-  mocks.coachLocal = null
+  mocks.webhooks = []
   mocks.confirms = []
   mocks.sheets = []
   bindUI({ getState: () => ({ openSheet: render => { mocks.sheets.push(render); return { close: vi.fn() } } }) })
@@ -75,7 +75,7 @@ describe('the Modules page', () => {
     mount()
     expect(sw('Seasonal themes').getAttribute('aria-checked')).toBe('false')
     expect(row('Start from').querySelector('.lrow-v').textContent).toBe('Custom')
-    expect(host.textContent).toContain('11 of 12 modules on.')
+    expect(host.textContent).toContain('10 of 11 modules on.')
     act(() => sw('Seasonal themes').click())
     expect(isOn(mocks.S, 'seasonal')).toBe(true)
   })
@@ -95,25 +95,29 @@ describe('the Modules page', () => {
     expect(isOn(mocks.S, 'effort')).toBe(true)
   })
 
-  it('asks once before switching off a module that is connected, and pauses on yes', () => {
-    mocks.coachLocal = { mode: 'byok' }
+  it('asks once before switching off a module that is connected, and pauses on yes', async () => {
+    mocks.user = { id: 'u' }
+    mocks.config = { integrations: { providers: ['webhook'] } }
+    mocks.webhooks = [{ provider: 'webhook' }]
     mount()
-    act(() => sw('AI Coach').click())
+    await act(async () => {})
+    act(() => sw('Integrations').click())
     expect(mocks.S.modules).toBeUndefined()
     expect(mocks.confirms).toHaveLength(1)
-    expect(mocks.confirms[0].title).toBe('Switch off AI Coach?')
+    expect(mocks.confirms[0].title).toBe('Switch off Integrations?')
     act(() => mocks.confirms[0].onConfirm())
-    expect(isOn(mocks.S, 'coach')).toBe(false)
+    expect(isOn(mocks.S, 'integrations')).toBe(false)
     // back on needs no question
     mount()
-    act(() => sw('AI Coach').click())
-    expect(isOn(mocks.S, 'coach')).toBe(true)
+    await act(async () => {})
+    act(() => sw('Integrations').click())
+    expect(isOn(mocks.S, 'integrations')).toBe(true)
     expect(mocks.confirms).toHaveLength(1)
   })
 
   it('names what pauses for each connected module, and nothing for the rest', () => {
-    const notes = connectionNotes(['health', 'watch', 'integrations', 'coach', 'body'], { health: 'Health Connect', watch: true, webhooks: 2, coach: true })
-    expect(notes).toHaveLength(4)
+    const notes = connectionNotes(['health', 'watch', 'integrations', 'body'], { health: 'Health Connect', watch: true, webhooks: 2 })
+    expect(notes).toHaveLength(3)
     expect(notes[0]).toBe('Health Connect stops syncing while Health is off. Nothing is disconnected, and it catches up once Health is back.')
     expect(connectionNotes(['health', 'watch'], {})).toEqual([])
     for (const n of notes) expect(n).not.toMatch(/—/)
@@ -126,7 +130,7 @@ describe('Settings follows the modules', () => {
 
   it('a module that is off takes its pages away', () => {
     const phone = { ...web, user: { id: 'u' }, mobile: true, ios: true }
-    for (const [page, mod] of [['coach', 'coach'], ['watch', 'watch'], ['zepp', 'watch'], ['apple-health', 'health'], ['themes', 'seasonal']]) {
+    for (const [page, mod] of [['watch', 'watch'], ['zepp', 'watch'], ['apple-health', 'health'], ['themes', 'seasonal']]) {
       expect(pageVisible(page, phone), page).toBe(true)
       expect(pageVisible(page, { ...phone, mod: id => id !== mod }), page).toBe(false)
     }

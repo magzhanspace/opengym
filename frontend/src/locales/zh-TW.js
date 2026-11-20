@@ -3955,7 +3955,7 @@ export default {
   "Scheduled Coach reviews take a break while the AI Coach is off. Your setup and chats stay.": "AI 教練關閉期間，排定的教練回顧會暫停。你的設定和聊天都會保留。",
   "Start from": "起點",
   "Streaks, challenges, badges, recaps and your year in openGym.": "連續紀錄、挑戰、徽章、回顧，以及你在 openGym 的這一年。",
-  "Streaks, the Coach, themes, the lot.": "連續紀錄、教練、主題，通通都要。",
+  "Streaks, themes, the lot.": "連續紀錄、主題，通通都要。",
   "Switch off": "關閉",
   "Switch off what you don’t use. Nothing gets deleted: switch it back on and it’s all still there.": "用不到的就關掉。不會刪除任何東西：重新開啟，一切都還在。",
   "Switch off {0}?": "關閉{0}？",

@@ -31,7 +31,6 @@ vi.mock('../store/useUI.js', () => {
 })
 vi.mock('react-router-dom', () => ({ useNavigate: () => () => {}, useLocation: () => ({ state: null }) }))
 vi.mock('../sheets.jsx', () => ({ confirmSheet: vi.fn() }))
-vi.mock('./AdminCoach.jsx', () => ({ default: () => null }))
 
 const mounted = []
 function render(el) {

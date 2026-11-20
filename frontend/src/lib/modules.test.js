@@ -52,7 +52,7 @@ describe('modules', () => {
     applyPreset(s, 'training')
     expect(isOn(s, 'effort')).toBe(true)
     expect(isOn(s, 'plates')).toBe(true)
-    for (const id of ['body', 'health', 'motivation', 'coach', 'seasonal', 'checkin']) expect(isOn(s, id)).toBe(false)
+    for (const id of ['body', 'health', 'motivation', 'seasonal', 'checkin']) expect(isOn(s, id)).toBe(false)
   })
 
   it('one switch away from a preset is Custom, and keeps the other keys', () => {
@@ -67,7 +67,7 @@ describe('modules', () => {
   })
 
   it('names what a change switches off', () => {
-    expect(turnedOff({}, presetModules('training')).sort()).toEqual(['body', 'checkin', 'coach', 'community', 'health', 'integrations', 'motivation', 'seasonal', 'strength', 'videos'])
-    expect(turnedOff({ modules: { body: false } }, { body: false, coach: false })).toEqual(['coach'])
+    expect(turnedOff({}, presetModules('training')).sort()).toEqual(['body', 'checkin', 'community', 'health', 'integrations', 'motivation', 'seasonal', 'strength', 'videos'])
+    expect(turnedOff({ modules: { body: false } }, { body: false, seasonal: false })).toEqual(['seasonal'])
   })
 })

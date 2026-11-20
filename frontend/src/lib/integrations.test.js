@@ -11,7 +11,6 @@ describe('the directory', () => {
     expect(cardState('health-connect', web)).toEqual({ status: 'device', action: null })
     expect(cardState('webhook', web)).toEqual({ status: 'server', action: null })
     expect(cardState('mcp', web)).toEqual({ status: 'server', action: null })
-    expect(ids(web)).not.toContain('coach')   // the server's Coach, not offered here
     expect(directory(web).map(c => c.id)).toEqual(['health', 'training', 'backup', 'automation', 'ai', 'sister'])
   })
 
@@ -39,10 +38,8 @@ describe('the directory', () => {
     const ios = { ...web, mobile: true, platform: 'ios', health: { status: 'available', on: true } }
     expect(cardState('health-connect', ios)).toBeNull()
     expect(cardState('apple-health', ios).status).toBe('connected')
-    // A phone kept local: webhooks need a server, the Coach is the phone's own.
+    // A phone kept local: webhooks need a server.
     expect(cardState('webhook', ios).status).toBe('server')
-    expect(cardState('coach', { ...ios, coachMode: 'byok' })).toEqual({ status: 'connected', action: 'manage' })
-    expect(cardState('coach', ios)).toEqual({ status: 'off', action: 'connect' })
   })
 
   it('webhooks: hidden where the server does not offer them, except to its admin', () => {

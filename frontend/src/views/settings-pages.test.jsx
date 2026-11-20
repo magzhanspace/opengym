@@ -13,7 +13,7 @@ globalThis.IS_REACT_ACT_ENVIRONMENT = true
 const mocks = vi.hoisted(() => {
   const state = { S: null, user: null, sync: null, config: null, MOBILE: false, push: false, sheets: [], navs: [], toast: null }
   state.snapshot = () => ({
-    S: state.S, user: state.user, coachLocal: null, sync: state.sync, config: state.config,
+    S: state.S, user: state.user, sync: state.sync, config: state.config,
     update: mut => { const next = structuredClone(state.S); mut(next); state.S = next },
     replaceState: vi.fn(), setUser: vi.fn(), pullState: vi.fn(), pushState: vi.fn(), setUnit: vi.fn(),
     resetEverything: vi.fn(), resetDemo: vi.fn(), importBackup: vi.fn(), importConflict: vi.fn(),
@@ -100,7 +100,7 @@ describe('the root', () => {
     mount()
     expect(host.querySelector('.sp-acct .lrow-t').textContent).toBe('Guest')
     expect(host.querySelector('.sp-acct .lrow-s').textContent).toBe('Your data lives on this device. Sign in to sync.')
-    // a guest in a browser has no reminders (no push server) and no Coach page (the server's Coach)
+    // a guest in a browser has no reminders (no push server)
     // #1105: what you change each week, then what you set once, then connections (option C)
     expect(titles()).toEqual(['Guest', 'Workout', 'Timer alerts', 'Plan & schedule', 'Units & language', 'Equipment', 'Look & Home', 'Modules', 'Integrations', 'Use your subscription', 'Data & backup', 'About & updates'])
     expect([...host.querySelectorAll('.sect-t')].map(h => h.textContent)).toEqual(['Training', 'Set once', 'Connections'])
@@ -141,18 +141,16 @@ describe('the root', () => {
     expect(rowTitled('Workout').querySelector('.lrow-v').textContent).toBe('No rest timer · Cards')
   })
 
-  it('signed in, Reminders is there and the card names the account; on the phone app the Coach too', () => {
+  it('signed in, Reminders is there and the card names the account', () => {
     mocks.user = { id: 'u1', name: 'Dana' }
     mount()
     expect(titles()).toContain('Reminders')
-    expect(titles()).not.toContain('AI Coach')
     expect(host.querySelector('.sp-acct .lrow-t').textContent).toBe('Dana')
     expect(host.querySelector('.sp-avatar').textContent).toBe('D')
     mocks.user = null
     mocks.MOBILE = true
     mount()
     expect(titles()).toContain('Reminders')
-    expect(titles()).toContain('AI Coach')
     expect(host.querySelector('.sp-acct .lrow-t').textContent).toBe('This phone')
   })
 
@@ -187,39 +185,12 @@ describe('the root', () => {
     expect(titles()).not.toContain('Watches')
   })
 
-  it('a row opens its page; the Coach row opens the phone Coach setup; the card opens Account', () => {
+  it('a row opens its page; the card opens Account', () => {
     mocks.MOBILE = true
     mount()
     act(() => rowTitled('Timer alerts').click())
-    act(() => rowTitled('AI Coach').click())
     act(() => host.querySelector('.sp-acct').click())
-    expect(mocks.navs).toEqual([['/settings/alerts'], ['/coach/setup'], ['/settings/account']])
-  })
-
-  it('in a hosted app, an admin gets the Coach row too, straight to the Coach card of the admin dashboard', () => {
-    mocks.config = { coach: { enabled: true } }
-    mocks.user = { id: 'u1', name: 'Dana' }
-    mount()
-    expect(titles()).not.toContain('AI Coach')
-    mocks.user = { id: 'u1', name: 'Dana', admin: true }
-    mount()
-    expect(rowTitled('AI Coach').textContent).toContain('Admin')
-    // in Connections, just before the assistants' row (no longer bolted onto Look & Home)
-    expect(rowTitled('AI Coach').nextElementSibling).toBe(rowTitled('Use your subscription'))
-    act(() => rowTitled('AI Coach').click())
-    expect(mocks.navs).toEqual([['/admin', { state: { section: 'coach' } }]])
-  })
-
-  it('only while the server offers the Coach, so the row never leads to an admin page without it (#683)', () => {
-    mocks.user = { id: 'u1', name: 'Dana', admin: true }
-    mount()
-    expect(titles()).not.toContain('AI Coach')
-    mocks.config = { coach: null }
-    mount()
-    expect(titles()).not.toContain('AI Coach')
-    mocks.config = { coach: { enabled: true } }
-    mount()
-    expect(titles()).toContain('AI Coach')
+    expect(mocks.navs).toEqual([['/settings/alerts'], ['/settings/account']])
   })
 
   it('searches every setting and a hit goes to its page with the row to flash', () => {
@@ -282,7 +253,6 @@ describe('the search lands on a row', () => {
     const byPage = {}
     for (const e of SEARCH) if (pageVisible(PAGES[e.page].parent || e.page, ctx) && (!e.when || e.when(ctx))) (byPage[e.page] ||= []).push(e.title)
     for (const [page, want] of Object.entries(byPage)) {
-      if (page === 'coach') continue
       mount(page)
       await settle()
       const have = [...titles(), ...[...host.querySelectorAll('.btn')].map(b => b.textContent.trim())]
@@ -313,8 +283,8 @@ describe('the search lands on a row', () => {
     const missing = []
     const shown = p => pageVisible(p, ctx) && (!PAGES[p].parent || shown(PAGES[p].parent))
     for (const page of PAGE_IDS) {
-      // coach: a redirect. live-custom: per exercise type checklists, found through the page itself.
-      if (page === 'coach' || page === 'live-custom' || !shown(page)) continue
+      // live-custom: per exercise type checklists, found through the page itself.
+      if (page === 'live-custom' || !shown(page)) continue
       const known = new Set([...SEARCH.filter(e => e.page === page).map(e => e.title), ...PAGE_IDS.map(id => PAGES[id].title)])
       mount(page)
       await settle()
@@ -613,10 +583,6 @@ describe('searchSettings', () => {
     expect(searchSettings('nudge', { ...guestWeb, user: { id: 'u' }, pushOK: true }, tr)).toEqual([])   // the reminder is off
     expect(searchSettings('nudge', { ...guestWeb, user: { id: 'u' }, pushOK: true, reminderOn: true }, tr).map(h => h.title)).toEqual(['Nudge me when I skip a planned workout'])
     expect(searchSettings('nudge', { ...guestWeb, mobile: true, reminderOn: true }, tr).map(h => h.title)).toEqual(['Nudge me when I skip a planned workout'])
-    // the AI Coach module's own row on Settings → Modules is the one AI Coach hit a web guest gets
-    // (the voice style "Calm coach" is a hit of its own)
-    expect(searchSettings('coach', guestWeb, tr).filter(h => h.page !== 'modules' && h.page !== 'voice')).toEqual([])
-    expect(searchSettings('coach', { ...guestWeb, mobile: true }, tr)[0].page).toBe('coach')
     expect(searchSettings('vibrate silent', { ...guestWeb, mobile: true, android: true }, tr).map(h => h.title)).toEqual(['Vibrate on silent too'])
     expect(searchSettings('   ', guestWeb, tr)).toEqual([])
   })

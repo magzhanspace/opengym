@@ -3965,7 +3965,7 @@ export default {
   "Scheduled Coach reviews take a break while the AI Coach is off. Your setup and chats stay.": "Az ütemezett edzői értékelések szünetelnek, amíg az MI-edző ki van kapcsolva. A beállításaid és a csevegéseid megmaradnak.",
   "Start from": "Kiindulás",
   "Streaks, challenges, badges, recaps and your year in openGym.": "Sorozatok, kihívások, jelvények, összefoglalók és az éved az openGymben.",
-  "Streaks, the Coach, themes, the lot.": "Sorozatok, az edző, témák, az egész csomag.",
+  "Streaks, themes, the lot.": "Sorozatok, témák, az egész csomag.",
   "Switch off": "Kikapcsolás",
   "Switch off what you don’t use. Nothing gets deleted: switch it back on and it’s all still there.": "Kapcsold ki, amit nem használsz. Semmi sem törlődik: kapcsold vissza, és minden megvan.",
   "Switch off {0}?": "Kikapcsolod: {0}?",

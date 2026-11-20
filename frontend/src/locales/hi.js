@@ -3962,7 +3962,7 @@ export default {
   "Scheduled Coach reviews take a break while the AI Coach is off. Your setup and chats stay.": "AI कोच बंद रहने तक तय कोच रिव्यू छुट्टी पर रहते हैं। आपका सेटअप और चैट बने रहते हैं।",
   "Start from": "यहाँ से शुरू करें",
   "Streaks, challenges, badges, recaps and your year in openGym.": "स्ट्रीक, चैलेंज, बैज, सार और openGym में आपका साल।",
-  "Streaks, the Coach, themes, the lot.": "स्ट्रीक, कोच, थीम, सब कुछ।",
+  "Streaks, themes, the lot.": "स्ट्रीक, थीम, सब कुछ।",
   "Switch off": "बंद करें",
   "Switch off what you don’t use. Nothing gets deleted: switch it back on and it’s all still there.": "जो इस्तेमाल नहीं करते, उसे बंद कर दें। कुछ भी डिलीट नहीं होता: फिर से चालू करें और सब वहीं मिलेगा।",
   "Switch off {0}?": "{0} बंद करें?",

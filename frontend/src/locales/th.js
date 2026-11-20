@@ -3973,7 +3973,7 @@ export default {
   "Scheduled Coach reviews take a break while the AI Coach is off. Your setup and chats stay.": "รีวิวโค้ชตามกำหนดจะพักไว้ระหว่างที่โค้ช AI ปิดอยู่ การตั้งค่าและแชตยังอยู่ครบ",
   "Start from": "เริ่มจาก",
   "Streaks, challenges, badges, recaps and your year in openGym.": "สถิติต่อเนื่อง ชาเลนจ์ เหรียญ สรุป และปีของคุณใน openGym",
-  "Streaks, the Coach, themes, the lot.": "สถิติต่อเนื่อง โค้ช ธีม ครบทุกอย่าง",
+  "Streaks, themes, the lot.": "สถิติต่อเนื่อง ธีม ครบทุกอย่าง",
   "Switch off": "ปิด",
   "Switch off what you don’t use. Nothing gets deleted: switch it back on and it’s all still there.": "ปิดสิ่งที่คุณไม่ใช้ ไม่มีอะไรถูกลบ เปิดกลับมาเมื่อไรก็ยังอยู่ครบ",
   "Switch off {0}?": "ปิด {0} ไหม?",
