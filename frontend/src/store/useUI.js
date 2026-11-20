@@ -12,7 +12,6 @@ import { useStore } from './useStore.js'
 import { REST_MAX } from '../lib/duration.js'
 import { accentValue } from '../lib/accent.js'
 import { COUNT_IN_SEC, chainCues, heldSec, phaseLeft, resumedEnd, shouldWait } from '../lib/auto-holds.js'
-import { cues, bindCueState } from '../lib/spoken-cues.js'
 import { restNextLine, restOverTitle } from '../lib/rest-next.js'
 
 // Timed holds that run themselves (lib/auto-holds.js): the workout screen hands in what comes
@@ -192,7 +191,7 @@ const runWork = (set, get) => {
       if (done) done(wk.total - left, { chimed: seenLive && !wk.alerted, endedAt: Math.min(Date.now(), wk.endsAt - Math.min(0, left) * 1000) })
       return
     }
-    if (left <= 3) { beep(snd, 660, 0.1); if (seenLive) cues.count(left) }
+    if (left <= 3) { beep(snd, 660, 0.1) }
     set({ work: { ...wk, left } })
   }
   // Each tick aims at the next whole second before the end, from where the clock is now: a late
@@ -270,7 +269,6 @@ const runRest = (set, get) => {
         // phone ring this end once when both think they saw it (#1007).
         endTone(snd, endSound, tm.endsAt)
         alertBuzz([200, 100, 200]); get().flashTimer()
-        cues.restOver()
       }
       // The toast stays even when the rest ran out while the app was hidden: a guest, or anyone
       // without push permission, gets no notification, and a countdown that silently vanishes
@@ -285,7 +283,6 @@ const runRest = (set, get) => {
       return
     }
     if (left <= 3) beep(snd, 660, 0.1)
-    if (seenLive) cues.restLeft(left, tm.total)
     set({ timer: { ...tm, left } })
   }
   timerInt = setInterval(timerTick, 1000)
@@ -397,8 +394,6 @@ export const useUI = create((set, get) => ({
     set({ timer: { left: sec, total: sec, endsAt, forIdx, ...(forSet != null ? { forSet } : {}), ...(kind === 'switch' ? { kind } : {}), ...(kind !== 'switch' && REST_KINDS.includes(rest) ? { rk: rest } : {}), ...(next ? { autoNext: next.label } : {}) } })
     bookRestEnd(endsAt, sec, kind)
     runRest(set, get)
-    // Spoken cues: the next set, said as the rest begins (lib/spoken-cues.js).
-    if (kind !== 'switch') cues.restStarted(forIdx)
   },
   // Holding the rest where it is — a longer break than planned, a machine to wait for, a phone
   // call (#193). Paused time does not count: the countdown stops, and so does everything that
@@ -761,12 +756,12 @@ const runCountIn = (set, get) => {
     if (left > 0) {
       // The moment this number came up; a tick that is late by more than a moment says nothing.
       const live = visible && now - (ci.endsAt - left * 1000) < 1500
-      if (live) { beep(snd, 660, 0.12); vibrate(60); cues.count(left) }
+      if (live) { beep(snd, 660, 0.12); vibrate(60) }
       set({ countIn: { ...ci, left }, autoSay: live ? String(left) : get().autoSay })
       return
     }
     const live = visible && now - ci.endsAt < 1500
-    if (live) { beep(snd, 990, 0.3); vibrate(250); cues.go() }
+    if (live) { beep(snd, 990, 0.3); vibrate(250) }
     stopCountInTicking()
     set({ countIn: null, autoSay: live ? t('Go!') : '' })
     try { autoHooks?.startHold?.(ci.owner, ci.endsAt) } catch { /* the play button still works */ }
@@ -896,4 +891,3 @@ bindNativeRest(ev => {
 })
 
 // Spoken cues read the profile (on or off, the rate, the running workout) from the store.
-bindCueState(() => useStore.getState?.()?.S)

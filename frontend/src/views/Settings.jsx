@@ -36,12 +36,8 @@ import { CheckinReminderRow } from '../components/CheckinReminder.jsx'
 import { scheduleModeOf, chooseFixedWeek, chooseRotation } from '../lib/rotation.js'
 import { queueOf } from '../lib/queue.js'
 import { weekTargetOf } from '../lib/week-left.js'
-import { speak, speechSupported, voiceOpts } from '../lib/speech.js'
-import { STYLE_COPY, cueStyleOf } from '../lib/voice-styles.js'
-import VoiceSettings from '../components/VoiceSettings.jsx'
 import { bandsSheet } from '../components/Bands.jsx'
 import { bandsOf } from '../lib/bands.js'
-import { sampleCue } from '../lib/spoken-cues.js'
 import { muscleTargetsSheet } from '../components/WeeklySets.jsx'
 import { aboutYouSheet } from '../components/StrengthLevel.jsx'
 import { api, webauthnOK, passkeyRegister, passkeyError, IS_ANDROID } from '../lib/api.js'
@@ -468,7 +464,6 @@ export default function Settings({ page = null, find = null, via = null, entryKe
     apiTokens: !!config?.api_tokens,
     library: libraryOn(config, user),
     rotation: scheduleModeOf(S) === 'rotation' && !externalQ,
-    spokenCues: S.spokenCues === true,
     // Settings → Modules: which feature areas are on (pageVisible and the search ask it).
     mod: id => isOn(S, id),
   }
@@ -578,7 +573,6 @@ export default function Settings({ page = null, find = null, via = null, entryKe
     zepp: () => <ZeppSettingsPage />,
     gym: () => <GymReminderPage />,
     network: () => <NetworkLogPage />,
-    voice: () => <VoiceSettings />,
     live: () => <LiveWidgetSettings />,
     'live-custom': () => <LiveWidgetCustomise />,
     'gym-find': () => <GymFindPage />,
@@ -866,20 +860,6 @@ export default function Settings({ page = null, find = null, via = null, entryKe
           <Row icon="sun" iconTint="var(--yellow)" title={t('Flash the screen')}>
             <Switch checked={!!S.timerFlash} onChange={v => update(s => { s.timerFlash = v })} />
           </Row>
-        </Section>
-        {/* Spoken cues (lib/spoken-cues.js): the next set as a rest starts, "10 seconds", "Rest is
-            over" and the count of a hold, in the app's language. The phone's own voice in the
-            apps (music ducks and comes back), the browser's elsewhere. Off by default. */}
-        {/* No group title: it only repeated the switch's own "Spoken cues" (1.4.5 features pass). */}
-        <Section footer={speechSupported() ? t('Only while the app is on screen. Music turns down for a moment, it never stops.') : t('This browser can’t speak. Try another one.')}>
-          <Row icon="chat" iconTint="var(--teal)" title={t('Spoken cues')} className={speechSupported() ? '' : 'dis'}
-            subtitle={t('Says your next set, “10 seconds” and “Rest is over”, and counts holds down.')}>
-            <Switch aria-label={t('Spoken cues')} checked={S.spokenCues === true} disabled={!speechSupported()}
-              onChange={v => { update(s => { s.spokenCues = v }); if (v) speak(sampleCue(S.unit), voiceOpts(S)) }} />
-          </Row>
-          {/* Settings → Timer alerts → Voice (components/VoiceSettings.jsx, v1.4.5): the voice,
-              speed and pitch, a style, and lines and clips of your own per moment. */}
-          {S.spokenCues === true && <Row icon="chat" iconTint="var(--teal)" title={t('Voice')} value={t(STYLE_COPY[cueStyleOf(S)][0])} accessory="chevron" onClick={() => nav('/settings/voice')} />}
         </Section>
       </>
     },

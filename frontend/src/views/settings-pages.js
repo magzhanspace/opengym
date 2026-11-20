@@ -41,8 +41,6 @@ export const PAGES = {
   // The live workout widget (components/LiveWidgetSettings.jsx, lib/live-glance.js, v1.4.5).
   live: { title: 'Live widget', icon: 'layout', tint: 'var(--green)', parent: 'workout', kw: 'live widget activity live activities lock screen dynamic island notification live update buttons customise customize personalise personalize rir weight reps heart rate calories next exercise rest off not showing try' },
   'live-custom': { title: 'Per exercise type', icon: 'slider', tint: 'var(--grey)', parent: 'live', kw: 'live widget per exercise type strength bands holds cardio carries details buttons' },
-  // How the spoken cues sound (components/VoiceSettings.jsx, v1.4.5).
-  voice: { title: 'Voice', icon: 'chat', tint: 'var(--teal)', parent: 'alerts', kw: 'voice voices speak speech tts spoken cues style hype drill sergeant calm deadpan lines clip record recording microphone pitch speed speaker person accent male female' },
   // Trainers and gyms (TRAINERS=on on the server, docs/TRAINERS.md): who sees what of your training.
   // Settings → Integrations → API tokens (docs/API_TOKENS.md): scoped tokens for MCP and scripts.
   'api-tokens': { title: 'API tokens', icon: 'key', tint: 'var(--purple)', parent: 'integrations', mod: 'integrations', kw: 'api token tokens key mcp claude chatgpt cursor assistant planner script access revoke' },
@@ -197,22 +195,7 @@ export const SEARCH = [
   { page: 'alerts', title: 'Vibrate', icon: 'vibrate', tint: 'var(--indigo)', kw: 'vibrate vibration haptic haptics buzz' },
   { page: 'alerts', title: 'Vibrate on silent too', icon: 'vibrate', tint: 'var(--indigo)', kw: 'alarm silent vibrate android', when: c => c.mobile && c.android && c.canVibrate && c.vibrate },
   { page: 'alerts', title: 'Flash the screen', icon: 'sun', tint: 'var(--yellow)', kw: 'flash light blink screen' },
-  { page: 'alerts', title: 'Spoken cues', icon: 'chat', tint: 'var(--teal)', kw: 'voice speak speech talk tts announce next set countdown read aloud audio' },
-  { page: 'alerts', title: 'Voice', icon: 'chat', tint: 'var(--teal)', kw: 'voice voices speech style lines clips', when: c => c.spokenCues },
   // Timer alerts → Voice
-  { page: 'voice', title: 'Speed', icon: 'gauge', tint: 'var(--teal)', kw: 'voice speed speech rate slow fast speaking rate' },
-  { page: 'voice', title: 'Pitch', icon: 'speaker', tint: 'var(--teal)', kw: 'voice pitch high low deep' },
-  { page: 'voice', title: 'Hype man', icon: 'chat', tint: 'var(--teal)', kw: 'style personality calm drill sergeant deadpan your own lines motivation shout' },
-  { page: 'voice', title: 'Just the facts', icon: 'chat', tint: 'var(--teal)', kw: 'style plain short facts only' },
-  { page: 'voice', title: 'Calm coach', icon: 'chat', tint: 'var(--teal)', kw: 'style calm gentle coach' },
-  { page: 'voice', title: 'Drill sergeant', icon: 'chat', tint: 'var(--teal)', kw: 'style drill sergeant shout tough' },
-  { page: 'voice', title: 'Deadpan', icon: 'chat', tint: 'var(--teal)', kw: 'style deadpan dry funny humour humor' },
-  { page: 'voice', title: 'Your own lines', icon: 'chat', tint: 'var(--teal)', kw: 'style own lines custom write words' },
-  { page: 'voice', title: 'When the rest is over', icon: 'bell', tint: 'var(--orange)', kw: 'moment lines clip record recording microphone own voice friend' },
-  { page: 'voice', title: 'When a rest starts', icon: 'bell', tint: 'var(--orange)', kw: 'moment rest start lines clip recording own voice' },
-  { page: 'voice', title: '10 seconds left', icon: 'bell', tint: 'var(--orange)', kw: 'moment countdown ten seconds left rest lines clip recording' },
-  { page: 'voice', title: 'Before the last set', icon: 'bell', tint: 'var(--orange)', kw: 'moment last set final lines clip recording' },
-  { page: 'voice', title: 'New record', icon: 'bell', tint: 'var(--orange)', kw: 'moment record pr personal best lines clip recording' },
   // Reminders
   { page: 'reminders', title: PUSH, icon: 'bell', tint: 'var(--red)', kw: 'push notification alerts', when: c => !c.mobile && !!c.user && c.pushOK },
   { page: 'reminders', title: 'Workout day reminder', icon: 'calendar', tint: 'var(--orange)', kw: 'reminder notification remind', when: remind, via: PUSH },

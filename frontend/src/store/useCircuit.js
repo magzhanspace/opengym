@@ -20,7 +20,6 @@ import { modeOf, supersetUnits } from '../lib/history.js'
 import { EXIDX } from '../lib/exercises.js'
 import { exerciseNameText } from '../lib/format.js'
 import { beep, chime, vibrate, unlock } from '../lib/sound.js'
-import { speak, voiceOpts } from '../lib/speech.js'
 import { MOBILE } from '../lib/mobile.js'
 import { armRestAlert, disarmRestAlert } from '../lib/rest-alert.js'
 import { accentValue } from '../lib/accent.js'
@@ -55,12 +54,6 @@ export function circuitUnitAt(active, idx) {
   return { unit, sg: active.entries[unit[0]]?.sg || null, cfg, roundRest: supersetMeta(active.entries, unit, { onTarget: true }).rest }
 }
 
-function say(text, opts) {
-  const st = S()
-  if (!text || st?.spokenCues !== true) return
-  speak(text, { ...voiceOpts(st), ...(opts || {}) })
-}
-
 // The session, written as the stations finish.
 function writeEvents(run, events) {
   const work = events.filter(e => e.type === 'work')
@@ -87,11 +80,10 @@ function feedback(run, events, now) {
   for (const e of events) {
     if (now - (e.at ?? e.to ?? now) > FRESH_MS) continue
     if (e.type === 'step') {
-      const nm = nameOf(run.stations[e.step.m]?.id)
-      if (e.step.k === 'work') { beep(snd, 1320, 0.32); vibrate([60, 40, 60]); say(cueWords.work(nm, e.step), { queue: false }) }
-      else if (e.step.k === 'rest') { beep(snd, 660, 0.25); vibrate(40); say(cueWords.rest(nm, e.step), { queue: false }) }
+      if (e.step.k === 'work') { beep(snd, 1320, 0.32); vibrate([60, 40, 60]) }
+      else if (e.step.k === 'rest') { beep(snd, 660, 0.25); vibrate(40) }
     } else if (e.type === 'end') {
-      chime(snd, 'chime'); vibrate([120, 60, 120, 60, 200]); say(cueWords.end(), { queue: false })
+      chime(snd, 'chime'); vibrate([120, 60, 120, 60, 200])
     } else if (e.type === 'split') {
       vibrate(25)
     }
@@ -142,7 +134,6 @@ export const useCircuit = create((set, get) => ({
     save(run)
     bookLock(run)
     get().loop()
-    say(t('Get ready'))
   },
 
   apply({ run, events }, now = Date.now()) {
@@ -173,7 +164,6 @@ export const useCircuit = create((set, get) => ({
     if (end != null && left != null && left <= 3 && left >= 1 && visible() && lastBeep !== `${end}:${left}`) {
       lastBeep = `${end}:${left}`
       beep(sound(), 880, 0.12)
-      if (runStep(run)?.sec >= 10 || run.capEndsAt) say(String(left), { queue: false })
     }
     const r = tickRun(run, now)
     if (r.events.length) get().apply(r, now)

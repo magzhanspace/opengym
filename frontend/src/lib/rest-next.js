@@ -1,13 +1,32 @@
 // The set a rest is for, in one line for the notification at its end (QOL Q6): "Bench press,
 // 80 kg × 8", "Plank, 45 s", "Treadmill, 20 min". The same next set the spoken cues and the
-// watches name (lib/spoken-cues.js nextSetAfter), in the unit the exercise is shown in.
-import { nextSetAfter } from './spoken-cues.js'
+// watches name (nextSetAfter below), in the unit the exercise is shown in.
 import { isWarmupRow, isSideSet } from './workout-model.js'
-import { modeOf } from './history.js'
+import { modeOf, supersetUnits } from './history.js'
 import { fmtNum, exerciseNameText } from './format.js'
 import { t, tn } from './i18n-core.js'
 import { EXIDX } from './exercises.js'
 import { viewEntry, exUnitOf } from './ex-unit.js'
+
+const notDone = s => !!s && !(isSideSet(s) ? s.sides.L.done && s.sides.R.done : s.done)
+
+/** The first set still open after the rest of entry `forIdx`: its superset partner first, then on. */
+export function nextSetAfter(active, forIdx) {
+  const entries = active?.entries || []
+  if (!entries.length) return null
+  const firstOpen = idx => { const i = (entries[idx]?.sets || []).findIndex(notDone); return i >= 0 ? { idx, i } : null }
+  const at = Number.isInteger(forIdx) && forIdx >= 0 && forIdx < entries.length ? forIdx : (active.cur || 0)
+  const unit = supersetUnits(entries).find(u => u.includes(at)) || [at]
+  if (unit.length > 1) {
+    const k = unit.indexOf(at)
+    for (let j = 1; j <= unit.length; j++) { const hit = firstOpen(unit[(k + j) % unit.length]); if (hit) return hit }
+  } else {
+    const hit = firstOpen(at)
+    if (hit) return hit
+  }
+  for (let j = 1; j < entries.length; j++) { const hit = firstOpen((at + j) % entries.length); if (hit) return hit }
+  return null
+}
 
 /** The next set after a rest started by entry `forIdx`, as a line, or '' when nothing is left. */
 export function restNextLine(S, forIdx) {

@@ -53,14 +53,6 @@ function useNow(running) {
   return running ? now : Date.now()
 }
 
-function VoiceToggle() {
-  const on = useStore(s => s.S.spokenCues === true)
-  return <button type="button" className="iconbtn cp-voice" aria-pressed={on} aria-label={t('Spoken cues')} title={t('Spoken cues')}
-    onClick={() => useStore.getState().update(s => { s.spokenCues = !on })}>
-    <Icon name="speaker" />{!on && <span className="cp-voice-off" aria-hidden="true" />}
-  </button>
-}
-
 function Ready({ S, close }) {
   const pending = useCircuit(s => s.pending)
   const A = S.active
@@ -74,7 +66,6 @@ function Ready({ S, close }) {
     <div className="cp-top">
       <button type="button" className="iconbtn" aria-label={t('Close')} onClick={close}><Icon name="xmark" /></button>
       <span className="cp-top-t">{circuitLine(g.cfg)}</span>
-      <VoiceToggle />
     </div>
     <h2 className="cp-ready-h">{t('Ready when you are')}</h2>
     {len != null && <p className="cp-ready-s">{t('{0} on the clock, get ready included', fmtClock(len + 10))}</p>}
@@ -187,7 +178,6 @@ function Running({ S, run, close }) {
     <div className="cp-top">
       <button type="button" className="iconbtn" aria-label={t('Close')} onClick={close}><Icon name="chevronDown" /></button>
       <span className="cp-top-t">{roundLabel(run.cfg, step.k === 'work' ? step : focus.k === 'work' ? focus : step, run.stations.length)}</span>
-      <VoiceToggle />
     </div>
     <div className="cp-clock" role="timer" aria-live="off">
       <Ring frac={frac} phase={phase} />
