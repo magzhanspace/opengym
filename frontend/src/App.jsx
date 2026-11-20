@@ -9,7 +9,6 @@ import { useUI } from './store/useUI.js'
 import { bindUI } from './components/ui.jsx'
 import { setWeightDecimals } from './lib/format.js'
 import { accentValue, applyAccent } from './lib/accent.js'
-import { seasonAccent } from './lib/seasonal.js'
 import { setLang, useLang, baseLang, t } from './lib/i18n.js'
 import { effectiveLang } from './lib/default-lang.js'
 import { setPlayOnSilent, setVibrate, setAlarmBuzzer, setNativeBuzzer } from './lib/sound.js'
@@ -62,7 +61,6 @@ import Toast from './components/Toast.jsx'
 import SyncBanner from './components/SyncBanner.jsx'
 import RestTimer from './components/RestTimer.jsx'
 import TimerFlash from './components/TimerFlash.jsx'
-import { SeasonalLayer } from './components/Seasonal.jsx'
 import { WrappedLayer } from './components/WrappedEntry.jsx'
 import { openDeviceLinkRedeem } from './components/Passkeys.jsx'
 import { useAnimPacksBoot, useAnimOffer } from './components/Animations.jsx'
@@ -187,10 +185,8 @@ function Shell() {
     navigate('/workout', { replace: true })
     exitWorkoutEdit(() => navigate(destination, { replace: true }))
   }, [loc.pathname, loc.search, S.active?.editingWorkoutId, navigate])
-  // A preset key, or the user's own colour as '#rrggbb' (lib/accent.js), already checked. A
-  // seasonal theme's colours stand in for it while that theme shows, and only when chosen
-  // (Settings → Look & Home → Seasonal themes); the saved accent itself is never touched.
-  const accent = seasonAccent(S) || accentValue(S)
+  // A preset key, or the user's own colour as '#rrggbb' (lib/accent.js), already checked.
+  const accent = accentValue(S)
   useEffect(() => { applyPrefs(S.theme, accent) }, [S.theme, accent])
   // Settings → Icons: openGym's own or the emoji (components/Glyph.jsx, index.css .glyph).
   useEffect(() => { document.documentElement.dataset.icons = S.icons === 'emoji' ? 'emoji' : 'opengym' }, [S.icons])
@@ -430,9 +426,6 @@ function Shell() {
       <Toast />
       <TimerFlash />
       {tour && authed && <Suspense fallback={null}><Tour /></Suspense>}
-      {/* Seasonal decoration (lib/seasonal.js): nothing, and nothing loaded, out of season. Never
-          over a running workout or the first-launch screens. */}
-      {authed && !needsMobileOnboarding && !permSteps && <SeasonalLayer hidden={inWorkout || loc.pathname === '/workout'} />}
       {/* Your year in openGym (components/WrappedEntry.jsx): nothing loaded until it is opened. */}
       {authed && isOn(S, 'motivation') && <WrappedLayer ready={setupDone} />}
     </>

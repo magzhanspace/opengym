@@ -70,14 +70,14 @@ describe('the Modules page', () => {
 
   it('a switch writes that one module, and the preset turns Custom', () => {
     mount()
-    act(() => sw('Seasonal themes').click())
-    expect(mocks.S.modules).toEqual({ seasonal: false })
+    act(() => sw('Motivation').click())
+    expect(mocks.S.modules).toEqual({ motivation: false })
     mount()
-    expect(sw('Seasonal themes').getAttribute('aria-checked')).toBe('false')
+    expect(sw('Motivation').getAttribute('aria-checked')).toBe('false')
     expect(row('Start from').querySelector('.lrow-v').textContent).toBe('Custom')
-    expect(host.textContent).toContain('9 of 10 modules on.')
-    act(() => sw('Seasonal themes').click())
-    expect(isOn(mocks.S, 'seasonal')).toBe(true)
+    expect(host.textContent).toContain('8 of 9 modules on.')
+    act(() => sw('Motivation').click())
+    expect(isOn(mocks.S, 'motivation')).toBe(true)
   })
 
   it('the preset row picks a preset for every module at once', () => {
@@ -130,7 +130,7 @@ describe('Settings follows the modules', () => {
 
   it('a module that is off takes its pages away', () => {
     const phone = { ...web, user: { id: 'u' }, mobile: true, ios: true }
-    for (const [page, mod] of [['watch', 'watch'], ['zepp', 'watch'], ['apple-health', 'health'], ['themes', 'seasonal']]) {
+    for (const [page, mod] of [['watch', 'watch'], ['zepp', 'watch'], ['apple-health', 'health']]) {
       expect(pageVisible(page, phone), page).toBe(true)
       expect(pageVisible(page, { ...phone, mod: id => id !== mod }), page).toBe(false)
     }
@@ -141,7 +141,7 @@ describe('Settings follows the modules', () => {
     const has = (q, ctx, title) => searchSettings(q, ctx).some(h => h.title === title && h.page !== 'modules')
     for (const [q, title, mod] of [
       ['rir', 'Effort per set', 'effort'], ['weigh', 'Weigh in before workouts', 'body'], ['recap', 'Week and month recap', 'motivation'],
-      ['challenges', 'Monthly challenges', 'motivation'], ['halloween', 'Halloween', 'seasonal'], ['recovery', 'Recovery tips', 'health'],
+      ['challenges', 'Monthly challenges', 'motivation'], ['recovery', 'Recovery tips', 'health'],
       ['webhook', 'Webhooks', 'integrations'], ['about you', 'About you', 'strength'],
       ['warm-up', 'Automatic warm-ups', 'plates'],
     ]) {

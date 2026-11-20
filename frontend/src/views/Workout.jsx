@@ -70,7 +70,6 @@ import { MUSCLE_NAME } from '../lib/muscles.js'
 import FocusView from './FocusView.jsx'
 import { startOrPreview } from '../components/StartSheets.jsx'
 import { isPaused, canPause, pauseWorkout, resumeWorkout } from '../lib/workout-pause.js'
-import { SeasonDeco } from '../components/Seasonal.jsx'
 import { entryDbLoad, bellsIn, ownedWeightsFor, stepOwned } from '../lib/dumbbells.js'
 import { sessionGymView, gymsOf, activeGym, gymLabel, switchGym, reRoundOpenSets } from '../lib/gym-inventory.js'
 import { gymNoteFor } from '../lib/journal.js'
@@ -2697,8 +2696,6 @@ function ActiveWorkout() {
         set counter, discard/finish, progress) stays pinned — the one thing you want in view
         while you are somewhere in the middle of a long stack. Cards mode never scrolls far. */}
     <div className={'whdr' + (listMode ? ' stick' : '')} ref={hdrRef}>
-    {/* In season, a corner web under the header's own buttons (components/Seasonal.jsx). */}
-    <SeasonDeco spot="workout-hdr" workout />
     {/* ⌄ leaves the screen and keeps the session running (the tab bar's Resume brings it back);
         in the editor of a saved workout it is the ✕ that closes the editor. Finish is a labelled pill
         rather than a check that looked like a set tick: it opens the Finish sheet (Finish and save,

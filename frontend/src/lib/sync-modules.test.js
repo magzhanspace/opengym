@@ -8,15 +8,15 @@ import { isOn } from './modules.js'
 const clone = v => JSON.parse(JSON.stringify(v))
 
 describe('modules sync per module', () => {
-  it('Body off on the phone and Seasonal off on the laptop both hold', () => {
+  it('Body off on the phone and Motivation off on the laptop both hold', () => {
     const base = { _ts: 100, unit: 'kg', workouts: [], routines: [], modules: {} }
     const phone = clone(base); phone.modules = { body: false }; phone._ts = 200
     stampEdits(base, phone, 200)
-    const laptop = clone(base); laptop.modules = { seasonal: false }; laptop._ts = 300
+    const laptop = clone(base); laptop.modules = { motivation: false }; laptop._ts = 300
     stampEdits(base, laptop, 300)
     for (const out of [mergeStates(phone, laptop), mergeStates(laptop, phone)]) {
       expect(isOn(out, 'body')).toBe(false)
-      expect(isOn(out, 'seasonal')).toBe(false)
+      expect(isOn(out, 'motivation')).toBe(false)
       expect(isOn(out, 'coach')).toBe(true)
     }
   })

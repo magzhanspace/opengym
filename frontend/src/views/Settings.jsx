@@ -104,9 +104,6 @@ import { reportSheet } from '../components/ReportSheet.jsx'
 import { csvExportSheet } from '../components/CsvExportSheet.jsx'
 import GymReminderPage, { GymEditPage, GymFindPage } from './GymReminder.jsx'
 import { readGymConfig } from '../lib/gym-reminder.js'
-import { THEMES, shownThemes, inSeason, seasonChoice, activeSeason } from '../lib/seasonal.js'
-import { adventOf, adventOpenable } from '../lib/advent.js'
-import { openSeasonal } from '../components/Seasonal.jsx'
 import { dailyModeOf, settleAll } from '../lib/weigh-ins.js'
 import { voiceShortcutsSheet, voiceRowTitle } from '../components/VoiceShortcuts.jsx'
 import { readOrientation, setOrientation } from '../lib/orientation.js'
@@ -1122,11 +1119,6 @@ export default function Settings({ page = null, find = null, via = null, entryKe
           />
         </Row>
       </Section>
-      {/* Halloween and whatever comes after it (lib/seasonal.js), on a page of their own. */}
-      {on('seasonal') && <Section>
-        <Row icon="pumpkin" iconTint="var(--orange)" title={t('Seasonal themes')} subtitle={t('Little extras for the time of year.')}
-          value={activeSeasonTitle(S)} accessory="chevron" onClick={() => open('themes')} />
-      </Section>}
       <Section title={t('On Home')}>
         {/* The gym check-in's own switch moved to Settings → Modules (1.4.4, lib/modules.js). */}
         {/* Siri & Shortcuts / Assistant (components/VoiceShortcuts.jsx): the phone app only. */}
@@ -1167,50 +1159,6 @@ export default function Settings({ page = null, find = null, via = null, entryKe
           <Switch checked={S.connStatus !== false} onChange={v => update(s => { s.connStatus = v; if (v) s.connLocal = true })} />
         </Row>}
       </Section>
-    </>,
-
-    // One section per seasonal theme (lib/seasonal.js). Auto shows it in its weeks; On keeps it
-    // all year, Off never. Synced like the rest of Look; once-a-day surprises stay per device.
-    themes: () => <>
-      {/* Only the themes that exist now: Christmas is there in December only (lib/seasonal.js
-          `hidden`), and since it only exists in its own weeks it is simply on or off. */}
-      {shownThemes().map(th => {
-        const choice = seasonChoice(S, th.id)
-        const set = (k, v) => update(s => { s.seasonal = { ...(s.seasonal || {}), [k]: v } })
-        const note = choice === 'off' ? t('Off, even in season. Fair enough.')
-          : th.hidden ? t(th.during)
-          : choice === 'on' ? t('On all year round. Bold choice.')
-          : inSeason(th) ? t(th.during) : t(th.back)
-        return <Section key={th.id} footer={note}>
-          <Row icon={th.icon} iconTint={th.tint} title={t(th.title)}>
-            {th.hidden
-              ? <Switch aria-label={t(th.title)} checked={choice !== 'off'} onChange={v => set(th.id, v ? 'auto' : 'off')} />
-              : <Segmented className="seg-inline"
-                options={[{ value: 'auto', label: t('Auto') }, { value: 'on', label: t('On') }, { value: 'off', label: t('Off') }]}
-                value={choice} onChange={v => set(th.id, v)} />}
-          </Row>
-          {th.colors && <Row icon="palette" iconTint="var(--purple)" title={t(th.colorsTitle)} subtitle={t(th.colorsNote)}>
-            <Switch aria-label={t(th.colorsTitle)} checked={S.seasonal?.[th.id + 'Colors'] === true}
-              onChange={v => set(th.id + 'Colors', v)} />
-          </Row>}
-          {/* On by default while the theme shows; nothing there is ever in the way of a set. */}
-          {th.workoutTitle && <Row icon="play" iconTint="var(--green)" title={t(th.workoutTitle)} subtitle={t(th.workoutNote)}>
-            <Switch aria-label={t(th.workoutTitle)} checked={S.seasonal?.[th.id + 'Workout'] !== false}
-              onChange={v => set(th.id + 'Workout', v)} />
-          </Row>}
-        </Section>
-      })}
-      {/* Christmas: the advent calendar, for all of December (lib/advent.js), from the theme's chunk. */}
-      {activeSeason(S) === 'christmas' && adventOpenable() && <Section>
-        <Row icon="tree" iconTint="var(--green)" title={t('Advent calendar')}
-          subtitle={t('{0} of 24 doors open', adventOf(S).opened.length)} accessory="chevron"
-          onClick={() => openSeasonal('christmas', 'advent')} />
-      </Section>}
-      {/* While a theme with its own icon shows, a way to it in Look & Home (it is there all year). */}
-      {MOBILE && platformNow() && seasonWithIcon(S) && <Section>
-        <Row icon={seasonWithIcon(S).icon} iconTint={seasonWithIcon(S).tint} title={t(seasonWithIcon(S).appIconTitle)} accessory="chevron"
-          onClick={() => nav('/settings/look', { state: { find: 'App icon' } })} />
-      </Section>}
     </>,
 
     data: () => <>
@@ -1805,19 +1753,6 @@ function PushCard({ S, update, toast }) {
 // the Library, exercise picker, and flags routine entries that need something outside it
 // (see lib/equipment.js). Purely local/synced state — no server changes needed.
 // What the chosen accent is called: a preset's colour name, or the user's own.
-// The theme showing right now, by name, for the row that opens them.
-function activeSeasonTitle(S) {
-  const id = activeSeason(S)
-  const th = id && THEMES.find(x => x.id === id)
-  return th ? t(th.title) : null
-}
-
-// The showing theme, when it has a home-screen icon of its own to suggest.
-function seasonWithIcon(S) {
-  const th = THEMES.find(x => x.id === activeSeason(S))
-  return th?.appIcon ? th : null
-}
-
 function accentLabel(S) {
   const k = accentKey(S)
   return k === CUSTOM ? t('Your own color') : t(ACCENT_NAMES[k] || 'Green')

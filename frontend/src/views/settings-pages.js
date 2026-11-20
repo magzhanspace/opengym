@@ -9,7 +9,6 @@ import { t } from '../lib/i18n.js'
 import { ACCENT_NAMES } from '../lib/format.js'
 import { MODULES } from '../lib/modules.js'
 import { OFFLINE_OFF_MODULES } from '../lib/build-caps.js'
-import { available, shownThemes } from '../lib/seasonal.js'
 
 // `mod`: the module (lib/modules.js) a page belongs to; with it off the page and its rows are gone,
 // from the root and from the search alike (pageVisible, searchSettings).
@@ -53,8 +52,6 @@ export const PAGES = {
   gym: { title: 'Gym reminder', icon: 'mapPin', tint: 'var(--green)', parent: 'reminders', kw: 'gym location arrive geofence remind start' },
   'gym-find': { title: 'Add a gym', icon: 'plusCircle', tint: 'var(--green)', parent: 'gym' },
   'gym-edit': { title: 'Your gym', icon: 'mapPin', tint: 'var(--orange)', parent: 'gym' },
-  // Seasonal themes (lib/seasonal.js), one section per theme.
-  themes: { title: 'Seasonal themes', icon: 'pumpkin', tint: 'var(--orange)', parent: 'look', mod: 'seasonal' },
   // The phone's health store, one page per platform (until 1.4.4 a section of Data & backup).
   'apple-health': { title: 'Apple Health', icon: 'heart', tint: 'var(--red)', parent: 'integrations', mod: 'health', kw: 'apple health healthkit heart rate weight scale watch sync workouts' },
   'health-connect': { title: 'Health Connect', icon: 'heart', tint: 'var(--red)', parent: 'integrations', mod: 'health', kw: 'health connect google fit samsung fitbit garmin heart rate weight scale watch sync workouts' },
@@ -135,12 +132,7 @@ const MODULE_KW = {
   health: 'health apple health healthkit health connect heart rate recovery sync',
   motivation: 'motivation streak challenges badges trophies recap wrapped year share gamification',
   integrations: 'integrations webhook webhooks home assistant n8n mcp automation',
-  seasonal: 'seasonal season halloween theme decoration',
 }
-// The words for a theme that only exists in its own weeks (lib/seasonal.js `hidden`): outside
-// December "christmas" or "advent" finds nothing at all.
-const SEASON_KW = { christmas: 'christmas xmas advent calendar snow santa december' }
-const seasonKw = () => shownThemes().map(th => SEASON_KW[th.id] || '').join(' ')
 export const SEARCH = [
   // Modules
   ...MODULES.map(m => ({ page: 'modules', title: m.title, icon: m.icon, tint: m.tint,
@@ -148,7 +140,7 @@ export const SEARCH = [
     ...(m.id === 'community' ? { when: c => !!c.library } : {}),
     // Not built into openGym Offline at all (lib/build-caps.js).
     ...(OFFLINE_OFF_MODULES.includes(m.id) ? { net: true } : {}),
-    get kw() { return MODULE_KW[m.id] + (m.id === 'seasonal' ? ' ' + seasonKw() : '') + ' module turn on off hide' } })),
+    get kw() { return MODULE_KW[m.id] + ' module turn on off hide' } })),
   { page: 'modules', title: 'Start from', icon: 'slider', tint: 'var(--blue)', kw: 'preset just training body everything custom modules' },
   // Workout
   { page: 'workout', title: 'Automatic warm-ups', icon: 'sunrise', tint: 'var(--orange)', mod: 'plates', kw: 'warm-up warmup ramp automatic generator compounds' },
@@ -277,13 +269,6 @@ export const SEARCH = [
   { page: 'look', title: 'Week and month recap', icon: 'chart', tint: 'var(--purple)', mod: 'motivation', kw: 'recap summary weekly monthly report your week your month card home share' },
   { page: 'look', title: 'Weekly sets on Home', icon: 'figureStrength', tint: 'var(--teal)', kw: 'weekly sets muscle volume range home card line' },
   { page: 'look', title: 'Monthly challenges', icon: 'target', tint: 'var(--orange)', mod: 'motivation', kw: 'challenge challenges monthly month goal goals badge badges trophy motivation' },
-  { page: 'look', title: 'Seasonal themes', icon: 'pumpkin', tint: 'var(--orange)', mod: 'seasonal', get kw() { return 'seasonal season holiday halloween theme decoration ' + seasonKw() } },
-  // Seasonal themes
-  { page: 'themes', title: 'Halloween', icon: 'pumpkin', tint: 'var(--orange)', kw: 'halloween seasonal theme spooky spider pumpkin bats witch october decoration', opts: ['Auto', 'On', 'Off'] },
-  { page: 'themes', title: 'Also during workouts', icon: 'play', tint: 'var(--green)', kw: 'halloween seasonal workout training decoration' },
-  { page: 'themes', title: 'Spooky colors', icon: 'palette', tint: 'var(--purple)', kw: 'halloween orange purple accent color colour seasonal' },
-  { page: 'themes', title: 'Christmas', icon: 'gift', tint: 'var(--red)', kw: 'christmas xmas seasonal theme snow santa sleigh reindeer advent calendar december decoration on off', when: () => available('christmas') },
-  { page: 'themes', title: 'Festive colors', icon: 'palette', tint: 'var(--purple)', kw: 'christmas red green accent color colour seasonal', when: () => available('christmas') },
   { page: 'look', title: 'Motion', icon: 'sparkles', tint: 'var(--teal)', kw: 'reduce motion animation animations accessibility calm still vestibular', opts: ['Like the phone', 'Less'] },
   { page: 'look', title: 'Text size', icon: 'note', tint: 'var(--blue)', kw: 'text size font fonts letters type typeface bigger larger smaller tiny huge big small scale dynamic accessibility zoom read reading eyes glasses', opts: ['Smallest', 'Small', 'Default', 'Large', 'Larger', 'Largest'], tkw: () => t('font text size bigger smaller letters') },
   { page: 'look', title: 'Show connection status', icon: 'cloud', tint: 'var(--blue)', kw: 'sync offline banner bar connection', when: c => !c.demo },

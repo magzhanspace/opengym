@@ -7,7 +7,6 @@ import { reducedMotion } from '../lib/use-swipe-row.js'
 import { vibrate } from '../lib/sound.js'
 import Icon from './Icon.jsx'
 import { Button } from './ui.jsx'
-import { SeasonDeco } from './Seasonal.jsx'
 import { iconChoice } from '../lib/streak-icons.js'
 import { freezeLine } from '../lib/streak-explain.js'
 import { levelOf, earnedBadges, pinnedBadges, pinnedIds, togglePin, PIN_MAX } from '../lib/levels.js'
@@ -345,6 +344,5 @@ export function StreakParty ({ S, info, tally }) {
   const tier = TIERS[STREAK_BADGES.indexOf(party.weeks)] || 'gold'
   return <PartyBanner text={text} className={party.kind === 'badge' ? 'is-badge' : 'is-week'} onClose={() => setParty(null)}
     icon={party.kind === 'badge' ? <Medal tier={tier} /> : <StreakFlame />}>
-    <SeasonDeco spot="streak-party" />
   </PartyBanner>
 }

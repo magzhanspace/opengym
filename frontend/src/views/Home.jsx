@@ -30,7 +30,6 @@ import { dayNoteOf } from '../lib/day-notes.js'
 import { weighInAt } from '../lib/bodyweight.js'
 import WeightRate from '../components/WeightRate.jsx'
 import { programmeChip } from '../lib/programmes.js'
-import { SeasonDeco } from '../components/Seasonal.jsx'
 import { WrappedHomeCard } from '../components/WrappedEntry.jsx'
 import { DeloadCard } from '../components/DeloadCard.jsx'
 import RecoveryHint from '../components/RecoveryHint.jsx'
@@ -136,7 +135,6 @@ export default function Home() {
 
   return <div className="narrow">
     <div className="hdr">
-      <SeasonDeco spot="header-bats" />
       <div><h1>{user ? t('Hi {0}', user.name) : 'openGym'}</h1><div className="sub">{today.toLocaleDateString(dateLocale(), { weekday: 'long', day: 'numeric', month: 'long' })}</div></div>
       <button className="iconbtn" data-tour="settings-gear" onClick={() => nav('/settings')} aria-label={trouble ? t('Settings') + ', ' + t('Connection problem') : t('Settings')}><Icon name="gear" />{trouble && <span className="tab-dot" aria-hidden="true" />}</button>
     </div>
@@ -217,14 +215,11 @@ export default function Home() {
           {t('Choose a different workout')}
         </Button>
       </div>}
-      <SeasonDeco spot="home-hero" />
     </div>
 
     {/* Monday: Your week; the 1st: Your month (lib/recap.js). Off in Settings → Look & Home. */}
     <RecapHomeCard S={S} />
 
-    {/* Christmas (lib/seasonal.js): the advent calendar's card, 1 to 24 December, from the theme's chunk. */}
-    <SeasonDeco spot="home-advent" />
 
     {/* December and January: the year in openGym is ready (lib/wrapped.js homeCardYear). */}
     {on('motivation') && <WrappedHomeCard S={S} />}
@@ -291,9 +286,7 @@ export default function Home() {
     {/* The streak opens its calendar from its text (CardHead open); the weekly-sets line and the
         party banner are buttons of their own beside it, not inside a card that is a button. */}
     {on('motivation') ? <div className="card tap-host streak-card">
-      <SeasonDeco spot="home-streak" />
-      {/* in season, a Santa hat on the flame (components/Seasonal.jsx) */}
-      <CardHead className="streak-head" glyph={<span className="streak-flame-wrap"><StreakFlame lit={streak.current > 0} /><SeasonDeco spot="streak-flame" /></span>}
+      <CardHead className="streak-head" glyph={<span className="streak-flame-wrap"><StreakFlame lit={streak.current > 0} /></span>}
         title={t('{0} week streak', streak.current)} open={{ onClick: () => calendarSheet(), haspopup: 'dialog' }}
         sub={<>{doneThisWeek}{plannedPerWeek ? ' / ' + plannedPerWeek : ''} {t('this week')} · {tn('{0} workout total', '{0} workouts total', S.workouts.length)}</>}
         action={<Icon name="calendar" className="chev" style={{ fontSize: 'var(--fs-title3)' }} />} />

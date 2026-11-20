@@ -14,7 +14,7 @@
 //   - The MCP server reads the data whatever the modules say: hiding is about the
 //     screen, the data is the same (docs/MODULES.md).
 //   - S.modules syncs per key (lib/sync-merge.js PER_KEY and api/sync-stamps.js), so switching
-//     Body off on the phone and Seasonal off on the laptop keeps both.
+//     Body off on the phone and Motivation off on the laptop keeps both.
 //
 // The core (logging, plans, history, the exercise library, the basic stats) is not a module.
 // Pure: no imports, so lib/ helpers such as history.js effortOf can use it without a cycle.
@@ -41,8 +41,6 @@ export const MODULES = [
     desc: 'Webhooks for Home Assistant and friends, and the MCP server.' },
   { id: 'community', group: 'extras', icon: 'globe', tint: 'var(--blue)', title: 'Community',
     desc: 'Exercises, plans and sounds people on your server shared, and a way to share yours.' },
-  { id: 'seasonal', group: 'extras', icon: 'pumpkin', tint: 'var(--orange)', title: 'Seasonal themes',
-    desc: 'Halloween and friends, little extras for the time of year. All optional.' },
 ]
 export const MODULE_IDS = MODULES.map(m => m.id)
 export const MODULE = Object.fromEntries(MODULES.map(m => [m.id, m]))

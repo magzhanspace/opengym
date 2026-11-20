@@ -18,7 +18,6 @@ import { bwSheet, goalSheet, calendarSheet, dayOverrideSheet, workoutDetailSheet
 import LineChart from '../components/LineChart.jsx'
 import WeightRate from '../components/WeightRate.jsx'
 import Heatmap from '../components/Heatmap.jsx'
-import { SeasonDeco } from '../components/Seasonal.jsx'
 import Icon from '../components/Icon.jsx'
 import { StreakCard } from '../components/Streak.jsx'
 import { ChallengesStatsCard } from '../components/Challenges.jsx'
@@ -910,7 +909,7 @@ export default function Stats() {
   </>
 
   return <>
-    <div className="hdr"><SeasonDeco spot="stats-hdr" /><div><h1>{t('Stats')}</h1><div className="sub">{t('Progress & history')}</div></div>
+    <div className="hdr"><div><h1>{t('Stats')}</h1><div className="sub">{t('Progress & history')}</div></div>
       <div className="row" style={{ gap: 8 }}>
         <button className="iconbtn" onClick={reportSheet} aria-label={t('Performance report')} title={t('Performance report')}><Icon name="note" /></button>
         <button className="iconbtn" data-tour="stats-history" onClick={() => nav('/history')} aria-label={t('History')}><Icon name="history" /></button>
@@ -932,7 +931,7 @@ export default function Stats() {
       {/* Everything ever lifted (Discord): imports included, warm-ups only when the profile
           counts them (#719). */}
       {/* With the rest of the all-time sums under it (Discord, 10-22), and a size to picture. */}
-      {lifetime > 0 && <div className="tile wide" data-lifetime-volume><SeasonDeco spot="stats-tile" /><div className="l">{t('Lifted in total')}</div><div className="v">{fmtVol(Math.round(lifetime), S.unit)}</div>
+      {lifetime > 0 && <div className="tile wide" data-lifetime-volume><div className="l">{t('Lifted in total')}</div><div className="v">{fmtVol(Math.round(lifetime), S.unit)}</div>
         <div className="small muted lifetime-sub" data-lifetime-totals>{[tn('{0} workout', '{0} workouts', totals.workouts), tn('{0} set', '{0} sets', totals.sets), ...(totals.hours >= 1 ? [t('{0} h', fmtNum(Math.round(totals.hours)))] : [])].join(' · ')}</div>
         {likeness && <div className="small lifetime-like">{likeness}</div>}
       </div>}
@@ -947,7 +946,6 @@ export default function Stats() {
     {workouts.length > 0 && <CardioWeekCard S={S} />}
 
     <div className="card">
-      <SeasonDeco spot="stats-heatmap" />
       <h2>{t('Activity (last 12 months)')}</h2>
       <Heatmap
         S={S}
@@ -986,7 +984,6 @@ export default function Stats() {
       {S.bodyweight.length > 0 && <div className="row" style={{ justifyContent: 'flex-end', marginTop: 4 }}>
         <Button size="sm" variant="ghost" trailingIcon="chevronRight" onClick={weighInsSheet}>{t('All weigh-ins')}</Button>
       </div>}
-      <SeasonDeco spot="stats-web" />
     </div>
       {statsLinks}
     </section>}
@@ -994,7 +991,6 @@ export default function Stats() {
     <section className="stats-sect" id="stats-lifts" data-stats-sect="lifts" aria-labelledby="stats-h-lifts">
       <h2 className="stats-sect-h" id="stats-h-lifts">{t('Lifts')}</h2>
     <div className="card" data-tour="stats-records">
-      <SeasonDeco spot="stats-peek" />
       <h2>{t('Exercise progress')}</h2>
       {exHist.length ? <>
         {/* What to chart, as one grouped list: the exercise, then the chart of it. */}

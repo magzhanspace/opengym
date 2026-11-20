@@ -48,7 +48,6 @@ import { REST_MAX, fmtRest, restWheelValue, fmtDuration } from './lib/duration.j
 import Icon from './components/Icon.jsx'
 import CommunityBits from './components/CommunityBits.jsx'
 import './views/Community.css'
-import { SeasonDeco } from './components/Seasonal.jsx'
 import { usesBands, withBandEx, setBandsOf, toggleSetBand, bandText } from './lib/bands.js'
 import { BandChips } from './components/Bands.jsx'
 import { Button, Slider, Switch, Segmented, SelectRow, Row, TextField, NumberField, MultiSelectRow } from './components/ui.jsx'
@@ -4682,7 +4681,7 @@ function FinishSummary({ w, prs, e1prs = [], additions = [], close }) {
   return <div style={{ textAlign: 'center', padding: '8px 0' }}>
     {/* Sticky, so the summary can be left from the top however far it has been scrolled. */}
     <div className="fin-x"><button type="button" className="iconbtn" aria-label={t('Close')} onClick={() => closeThenNav(close, '/home')}><Icon name="xmark" /></button></div>
-    <div style={{ fontSize: '2.75rem', display: 'flex', justifyContent: 'center', color: 'var(--acc-ink)', position: 'relative' }}><Icon name="trophy" /><SeasonDeco spot="finish" workout /></div>
+    <div style={{ fontSize: '2.75rem', display: 'flex', justifyContent: 'center', color: 'var(--acc-ink)', position: 'relative' }}><Icon name="trophy" /></div>
     <h3 style={{ margin: '8px 0' }}>{t('Workout complete!')}</h3>
     <AutoEndedNote w={w} />
     <div className="tiles fin" style={{ textAlign: 'start' }}>

@@ -20,7 +20,9 @@ import { todayISO } from '../lib/format.js'
 import { cardPalette } from '../lib/card-draw.js'
 import { makeCanvas, toPng, currentAccent, isRtl } from '../lib/share-image.js'
 import { viewAspect, CARD_FONT } from '../lib/workout-card.js'
-import { reducedMotion } from '../lib/seasonal.js'
+const reducedMotion = () => {
+  try { return !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches } catch (e) { return false }
+}
 import { t, useLang, dateLocale } from '../lib/i18n.js'
 import Icon from './Icon.jsx'
 import BodyMap from './BodyMap.jsx'
