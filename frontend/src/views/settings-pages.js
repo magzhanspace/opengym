@@ -31,8 +31,6 @@ export const PAGES = {
   wear: { title: 'Wear OS watch', icon: 'watch', tint: 'var(--grey)', mod: 'watch', parent: 'watches', kw: 'wear os wearos galaxy watch pixel watch samsung oneplus ticwatch fossil pair pairing connect sync wrist' },
   data: { title: 'Data & backup', icon: 'folder', tint: 'var(--blue)' },
   about: { title: 'About & updates', icon: 'info', tint: 'var(--grey)' },
-  // The phone app's own list of what it sent where this session (lib/net-log.js, views/NetworkLog.jsx).
-  network: { title: 'Network log', icon: 'shield', tint: 'var(--green)', parent: 'about', kw: 'network log requests privacy internet offline connections traffic tracking telemetry data sent who what' },
   account: { title: 'Account', icon: 'personCircle', tint: 'var(--grey)' },
   advanced: { title: 'Fine-tuning', icon: 'wrench', tint: 'var(--grey)', parent: 'workout' },
   // The live workout widget (components/LiveWidgetSettings.jsx, lib/live-glance.js, v1.4.5).
@@ -76,8 +74,6 @@ export function pageVisible(page, ctx) {
   // A page of a module that is off (ctx.mod answers isOn for this profile; absent: all on).
   if (PAGES[page]?.mod && ctx.mod && !ctx.mod(PAGES[page].mod)) return false
   if (page === 'reminders') return !!(ctx.user || ctx.mobile)
-  // The phone app's network log: there only (a browser has its own developer tools for that).
-  if (page === 'network') return !!ctx.mobile
   // openGym Offline (lib/build-caps.js) has no network: nothing that needs a server or a connection.
   if (ctx.offline && (page === 'api-tokens' || page === 'trainer')) return false
   // Only on a server that offers trainers, signed in: there is nobody to share with otherwise.

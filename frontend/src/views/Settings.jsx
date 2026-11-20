@@ -103,7 +103,6 @@ import { readOrientation, setOrientation } from '../lib/orientation.js'
 import { AvatarFace, AvatarSection } from '../components/Avatar.jsx'
 import { useOfflineBuild } from '../lib/use-offline-build.js'
 import { offlineBuild } from '../lib/build-caps.js'
-import NetworkLogPage, { NetworkLogRow } from './NetworkLog.jsx'
 import ReminderSounds from '../components/ReminderSounds.jsx'
 import DisplayRows from '../components/DisplayRows.jsx'
 
@@ -566,7 +565,6 @@ export default function Settings({ page = null, find = null, via = null, entryKe
     'health-connect': () => <HealthPage key="health-connect" S={S} toast={toast} android />,
     wear: () => <WearSettingsPage />,
     gym: () => <GymReminderPage />,
-    network: () => <NetworkLogPage />,
     live: () => <LiveWidgetSettings />,
     'live-custom': () => <LiveWidgetCustomise />,
     'gym-find': () => <GymFindPage />,
@@ -1199,10 +1197,6 @@ export default function Settings({ page = null, find = null, via = null, entryKe
           leaves out): said here rather than having a watch that silently never connects. */}
       {fdroid && <Section footer={t('Wear OS watches talk to the phone through Google Play services, which F-Droid apps leave out. The APK from opengym.ch and the Google Play app have the watch link.')}>
         <Row icon="watch" iconTint="var(--grey)" title={t('Wear OS watch')} value={t('Not in this build')} />
-      </Section>}
-      {/* What this copy of the app sent where since it started (lib/net-log.js), phone app only. */}
-      {MOBILE && <Section>
-        <NetworkLogRow />
       </Section>}
       {/* Support: the project's own donation pages, and on the iPhone a straight line to writing a
           review. Plain links, no pop-up asking for anything (App Store 5.6.1). The Google Play build
