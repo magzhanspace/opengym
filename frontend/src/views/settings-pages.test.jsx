@@ -160,12 +160,6 @@ describe('the root', () => {
     expect(pageVisible('watches', { ...phone, mod: id => id !== 'watch' })).toBe(false)
     expect(pageVisible('watches', { user: { id: 'u' } })).toBe(false)
     expect(pageTrail('watch')).toBe('Watches › Apple Watch')
-    // The Wear OS watch (1.4.5) joins the others under Watches on Android, never a row of its own.
-    const android = { mobile: true, ios: false, android: true }
-    expect(pageVisible('wear', android)).toBe(true)
-    expect(pageVisible('watches', android)).toBe(true)
-    expect(ROOT_GROUPS.flatMap(g => g.ids)).not.toContain('wear')
-    expect(pageTrail('wear')).toBe('Watches › Wear OS watch')
   })
 
   it('a row opens its page; the card opens Account', () => {

@@ -64,8 +64,6 @@ describe('in the health records', () => {
 
 describe('the native sides', () => {
   const swift = readFileSync(new URL('../../ios/App/App/AppleHealthPlugin.swift', import.meta.url), 'utf8')
-  const java = readFileSync(new URL('../../android/app/src/main/java/ch/duartesantos/opengym/HealthWrite.java', import.meta.url), 'utf8')
-  const manifest = readFileSync(new URL('../../android/app/src/main/AndroidManifest.xml', import.meta.url), 'utf8')
   it('Apple Health adds the estimate to the workout under its own sync id', () => {
     expect(swift).toMatch(/activeEnergyBurned/)
     expect(swift).toMatch(/builder\.add\(\[sample\]\)/)
@@ -75,10 +73,5 @@ describe('the native sides', () => {
     expect(swift).toMatch(/let measured = await measuredEnergy\(type, from: start, to: end\)[\s\S]*?HealthWriteCore\.kcal\(measured \?\? estimate\)/)
     // Not its own earlier estimates.
     expect(swift).toMatch(/func measuredEnergy[\s\S]*?bundleIdentifier != me/)
-  })
-  it('Health Connect writes an ActiveCaloriesBurnedRecord beside the session', () => {
-    expect(java).toMatch(/new ActiveCaloriesBurnedRecord\(/)
-    expect(java).toMatch(/"-kcal"/)
-    expect(manifest).toMatch(/android\.permission\.health\.WRITE_ACTIVE_CALORIES_BURNED/)
   })
 })

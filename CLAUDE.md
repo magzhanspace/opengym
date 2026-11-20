@@ -15,11 +15,10 @@ media are licensed separately (NOTICE.md).
 
 ```
 frontend/   React 19 + Vite app (src/views, src/components, src/store, src/lib, src/sheets.jsx).
-            android/ + ios/ are the Capacitor shells (docs/MOBILE.md); ios/ also holds the watch
-            app (Watch, WatchCore, WatchWidgets), the widgets and the animation-pack downloader.
-            android/wear is the Wear OS watch app (Kotlin, Compose; docs/WEAR_OS.md), on the same
-            watch protocol as the Apple Watch (lib/watch-sync.js). The Garmin and Zepp OS watch apps
-            are removed in this fork (the native Garmin link code in ios/ and android/ is dormant).
+            ios/ is the Capacitor shell (docs/MOBILE.md), kept but not built; it also holds the
+            Apple Watch app (Watch, WatchCore, WatchWidgets) on lib/watch-sync.js, the widgets and
+            the animation-pack downloader. Android, Wear OS, Garmin and Zepp are removed in this
+            fork; `platform === 'android'` branches left in shared JS are dead code.
 api/        Backend: server.js (plain node:http) plus small testable modules beside it.
             shared/ holds the code the frontend imports too (streaks, starter plans, plan validation).
             openapi.yaml documents every route.
@@ -141,9 +140,8 @@ and per field, so the newest edit of each wins and deletions stay deleted.
 The API image cannot import the frontend, so some rules are hand-copied. Change both sides
 together: `lib/sync-merge.js` and `api/sync-stamps.js` (parity test), `lib/glyphs.js` and
 `api/shared/glyphs.js` (parity test), `lib/nudge.js` and `api/nudge.js`, `lib/queue.js` and
-`api/queue.js` (mirrored test cases only, nothing compares the code), and the workout card's
-button moves in `android/.../WorkoutCard.java` and `LiveActivityTick` in
-`ios/App/App/WorkoutActivity.swift` (each has its own tests). The other way round, the
+`api/queue.js` (mirrored test cases only, nothing compares the code), and `LiveActivityTick` in
+`ios/App/App/WorkoutActivity.swift`. The other way round, the
 frontend imports `api/shared/` directly (streaks, starter plans, the routines library, validatePlan).
 
 ### MCP server (`mcp/src`)

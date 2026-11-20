@@ -27,8 +27,6 @@ export const PAGES = {
   watch: { title: 'Apple Watch', icon: 'watch', tint: 'var(--grey)', mod: 'watch', parent: 'watches' },
   // Settings → Integrations (v1.4.4): the directory of what openGym talks to (views/Integrations.jsx).
   integrations: { title: 'Integrations', icon: 'plug', tint: 'var(--indigo)', kw: 'integrations connect apps services fitbit sync api mcp import hevy' },
-  // The Android app: the Wear OS watch app is its own package next to it (views/WearSettings.jsx).
-  wear: { title: 'Wear OS watch', icon: 'watch', tint: 'var(--grey)', mod: 'watch', parent: 'watches', kw: 'wear os wearos galaxy watch pixel watch samsung oneplus ticwatch fossil pair pairing connect sync wrist' },
   data: { title: 'Data & backup', icon: 'folder', tint: 'var(--blue)' },
   about: { title: 'About & updates', icon: 'info', tint: 'var(--grey)' },
   account: { title: 'Account', icon: 'personCircle', tint: 'var(--grey)' },
@@ -58,7 +56,7 @@ export const ROOT_GROUPS = [
   { ids: ['data', 'about'] },
 ]
 
-export const WATCH_PAGES = ['watch', 'wear']
+export const WATCH_PAGES = ['watch']
 
 /** Whether a page has its own row on the root. */
 export const onRoot = (page, ctx) => pageVisible(page, ctx)
@@ -81,7 +79,6 @@ export function pageVisible(page, ctx) {
   // The iPhone app only: the watch app ships inside it.
   if (page === 'watch') return !!ctx.ios
   // The Android app only. Every build has the page: the F-Droid one says why it has no watch link.
-  if (page === 'wear') return !!ctx.mobile && !!ctx.android && !ctx.demo
   // The phone app only: a browser cannot watch where you are with the page closed.
   if (page === 'gym' || page === 'gym-find' || page === 'gym-edit') return !!ctx.mobile && ctx.gymReminder !== false
   // The health store of the phone this runs on (unknown counts as yes, as for the watch).
@@ -266,8 +263,6 @@ export const SEARCH = [
   { page: 'integrations', mod: 'health', title: 'Withings', icon: 'scale', tint: 'var(--grey)', kw: 'withings scale weight body' },
   { page: 'integrations', mod: 'health', title: 'Renpho', icon: 'scale', tint: 'var(--grey)', kw: 'renpho scale weight body' },
   // About & updates
-  { page: 'about', title: 'Check for updates', net: true, icon: 'download', tint: 'var(--green)', kw: 'update apk android version', when: c => c.mobile && c.android },
-  { page: 'about', title: 'Get the Android app', icon: 'download', tint: 'var(--green)', kw: 'apk android download app', when: c => !c.mobile },
   { page: 'about', title: 'Version', icon: 'info', tint: 'var(--grey)', kw: 'version about licence license source code open source' },
   { page: 'about', title: 'In Chrome: ⋮ menu → Add to Home screen', icon: 'share', tint: 'var(--blue)', kw: 'install app home screen tip pwa', when: c => c.installTip && c.androidWeb },
   { page: 'about', title: 'In Safari: Share → Add to Home Screen', icon: 'share', tint: 'var(--blue)', kw: 'install app home screen tip pwa', when: c => c.installTip && !c.androidWeb && !c.desktopWeb },

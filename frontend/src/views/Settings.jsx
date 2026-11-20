@@ -1,6 +1,6 @@
 import { recordHintsOn } from '../lib/set-records.js'
 import { setRecoveryHint } from '../lib/recovery-hint.js'
-import { useEffect, useRef, useState, forwardRef, useSyncExternalStore } from 'react'
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { useNavigate, useParams, useLocation, Navigate } from 'react-router-dom'
 import { useStore, DEF, hasData } from '../store/useStore.js'
 import { readWatchPrefs, writeWatchPrefs } from '../lib/watch-settings.js'
@@ -54,9 +54,6 @@ import { getMediaStatus, subscribeMediaStatus, pendingRefCount, localOnlyRefCoun
 import { limitsFrom, fmtMB, MB } from '../lib/media-limits.js'
 import { setRestAccent } from '../lib/rest-alert.js'
 import { CUSTOM, accentKey, adjustedIn, applyAccent, cleanHex, inkOn, isGrey } from '../lib/accent.js'
-import { checkForUpdate, downloadAndInstall, fetchChecksum, forgetDownloadedUpdate, RELEASES_PAGE } from '../lib/update.js'
-import { APK_VARIANT, VARIANT_NAMES } from '../lib/apk-variant.js'
-import { BUILTIN_PX } from '../lib/anim-quality.js'
 import { getChannel, gymReminderBuilt } from '../lib/channel.js'
 import { REST_MAX, REST_PAUSE_MIN, REST_PAUSE_MAX, fmtRest, fmtDuration } from '../lib/duration.js'
 import { starterPlanSheet, confirmSheet, importFromApp, importFromHevy, equipmentProfileSheet, plateInventorySheet, dumbbellInventorySheet, barDefaultsSheet, menuSheet } from '../sheets.jsx'
@@ -82,7 +79,6 @@ import { PAGES, ROOT_GROUPS, WATCH_PAGES, pageVisible, onRoot, searchSettings, p
 import { platformNow } from '../lib/platform-now.js'
 import { pathBefore } from '../lib/nav.js'
 import WatchSettingsPage from './WatchSettings.jsx'
-import WearSettingsPage from './WearSettings.jsx'
 import IntegrationsPage from './Integrations.jsx'
 import ApiTokensPage from './ApiTokens.jsx'
 import ModulesPage from './Modules.jsx'
@@ -220,7 +216,6 @@ export default function Settings({ page = null, find = null, via = null, entryKe
   }
 
   // --- update check state ---
-  const [updateInfo, setUpdateInfo] = useState(null) // { hasUpdate, latestVersion, apkUrl, hashUrl } | null
   const [android, setAndroid] = useState(() => MOBILE && platformNow() === 'android')
   const [ios, setIos] = useState(() => MOBILE && platformNow() === 'ios')   // the iPhone app: Settings → Apple Watch
   const [selfUpdate, setSelfUpdate] = useState(false)   // the sideloaded APK, which updates itself
@@ -250,8 +245,6 @@ export default function Settings({ page = null, find = null, via = null, entryKe
       setPlay(channel === 'play')
       setFdroid(channel === 'fdroid' || channel === 'offline')
       if (ok) gymReminderBuilt().then(setGymReminder)
-      // Nothing newer: an update APK still in the cache is the one already installed.
-      if (own && page === 'about') checkForUpdate().then(info => { setUpdateInfo(info); if (!info?.hasUpdate) forgetDownloadedUpdate() }).catch(() => {})
     })
   }, [page])
 
@@ -286,60 +279,6 @@ export default function Settings({ page = null, find = null, via = null, entryKe
     }, 1500)
     return () => { done = true; mo?.disconnect(); clearTimeout(wait); clearTimeout(tm) }
   }, [find])
-
-  // The same check, on demand: the automatic one is silent when it finds nothing or cannot
-  // reach GitHub, and a person who taps "Check for updates" deserves an answer either way.
-  const checkNow = async () => {
-    if (checking) return
-    setChecking(true)
-    try {
-      const info = await checkForUpdate()
-      setUpdateInfo(info)
-      if (!info.hasUpdate) { toast(t('You have the latest version.')); forgetDownloadedUpdate() }
-    } catch {
-      toast(t('Couldn’t check for updates. Are you online?'))
-    }
-    setChecking(false)
-  }
-
-  const onUpdateRowClick = () => {
-    if (!updateInfo?.hasUpdate) return
-    if (updateInfo.apkUrl) {
-      // Start download & install
-      const version = updateInfo.latestVersion
-      confirmSheet({
-        title: t('Update to {0}?', version),
-        message: t('The latest version will be downloaded and the installer will open.'),
-        confirmText: t('Download & Install'),
-        onConfirm: async () => {
-          // Open a progress sheet
-          let closeProgress = null
-          let setProgress = null
-          useUI.getState().openSheet(close => {
-            closeProgress = close
-            return <DownloadProgress ref={fn => { setProgress = fn }} />
-          }, { locked: true })
-          try {
-            // The release always publishes the checksum next to the APK. Without it the file is
-            // not installed — a sideloaded binary is exactly the thing that should be verified.
-            let expectedHash = null
-            try { expectedHash = await fetchChecksum(updateInfo.hashUrl, updateInfo.hashApiUrl) } catch (e) { /* reported below */ }
-            if (!/^[0-9a-f]{64}$/i.test(expectedHash || '')) throw new Error(t('Checksum not available, so not installing'))
-            await downloadAndInstall(updateInfo.apkUrl, expectedHash, (received, total) => {
-              if (setProgress) setProgress(received, total)
-            }, updateInfo.apkApiUrl)
-            if (closeProgress) closeProgress()
-          } catch (e) {
-            if (closeProgress) closeProgress()
-            toast(t('Update failed: {0}', e.message))
-          }
-        },
-      })
-    } else {
-      // Update available but no APK asset — open the releases page
-      window.open(RELEASES_PAGE, '_blank', 'noopener')
-    }
-  }
 
   // Reads the store at the moment of the tap: the sheet that asks before a sign-out offers it too,
   // and the copy it exports is the one that has not reached the server.
@@ -551,7 +490,6 @@ export default function Settings({ page = null, find = null, via = null, entryKe
     // The phone's health store (#200, #544): its switches, moved here from Data & backup in 1.4.4.
     'apple-health': () => <HealthPage key="apple-health" S={S} toast={toast} android={false} />,
     'health-connect': () => <HealthPage key="health-connect" S={S} toast={toast} android />,
-    wear: () => <WearSettingsPage />,
     gym: () => <GymReminderPage />,
     live: () => <LiveWidgetSettings />,
     'live-custom': () => <LiveWidgetCustomise />,
@@ -1161,30 +1099,11 @@ export default function Settings({ page = null, find = null, via = null, entryKe
     </>,
 
     about: () => <>
-      {/* Updates. On Android the row is always there: it checks on demand and installs when a
-          release is newer (checksum verified, see onUpdateRowClick). On the web the app updates
-          with its server, so the row points at the APK for the phone instead. iOS and the Google
-          Play build are updated by their store. */}
-      <Section footer={MOBILE ? (selfUpdate ? t('Releases are checked on GitHub. The download is verified against its checksum before the installer opens.') : offline ? t('openGym Offline never checks for updates, it can’t. New versions come from wherever you got this one.') : fdroid ? t('F-Droid installs the updates for this build.') : null) : t('The web app updates together with your server. The Android app installs its own updates from here.')}>
-        {/* The sideloaded APK comes in three kinds that differ only in the animations built in
-            (lib/apk-variant.js): which one this is, so nobody has to guess from the file size. */}
+      {/* The web app updates together with its server; the iPhone shell, if built, by its store. */}
+      <Section footer={MOBILE ? (offline ? t('openGym Offline never checks for updates, it can’t. New versions come from wherever you got this one.') : null) : t('The web app updates together with your server. The Android app installs its own updates from here.')}>
         <Row icon="info" iconTint="var(--grey)" title={t('Version')} value={'v' + __APP_VERSION__}
-          subtitle={MOBILE && selfUpdate ? t('{0} APK, animations at {1} px', VARIANT_NAMES[APK_VARIANT], BUILTIN_PX) : offline ? t('openGym Offline, no internet permission') : undefined} />
-        {MOBILE
-          ? selfUpdate && <Row icon="download" iconTint="var(--green)"
-              title={updateInfo?.hasUpdate ? t('Update to openGym v{0}', updateInfo.latestVersion) : t('Check for updates')}
-              subtitle={checking ? t('Checking…') : t('You have v{0}', __APP_VERSION__)}
-              accessory="chevron"
-              onClick={() => (updateInfo?.hasUpdate ? onUpdateRowClick() : checkNow())} />
-          : <Row icon="download" iconTint="var(--green)" title={t('Get the Android app')}
-              subtitle={t('Download the APK from opengym.ch')} accessory="chevron"
-              onClick={() => window.open('https://opengym.ch/#download', '_blank', 'noopener')} />}
+          subtitle={offline ? t('openGym Offline, no internet permission') : undefined} />
       </Section>
-      {/* The F-Droid build has no Wear OS link (it would need Google Play services, which F-Droid
-          leaves out): said here rather than having a watch that silently never connects. */}
-      {fdroid && <Section footer={t('Wear OS watches talk to the phone through Google Play services, which F-Droid apps leave out. The APK from opengym.ch and the Google Play app have the watch link.')}>
-        <Row icon="watch" iconTint="var(--grey)" title={t('Wear OS watch')} value={t('Not in this build')} />
-      </Section>}
       {/* Support: the project's own donation pages, and on the iPhone a straight line to writing a
           review. Plain links, no pop-up asking for anything (App Store 5.6.1). The Google Play build
           shows only its rating link: Play's payments policy wants Play billing for anything paid
@@ -1389,32 +1308,6 @@ const EFFORT_ROWS = [
 // against. Not where the stepper starts; + walks up from the bottom of the scale.
 const EFFORT_TYPICAL = 2
 
-
-// Download progress sheet — receives a ref callback that exposes a (received, total) setter.
-// Uses forwardRef so the caller can push byte counts in without re-rendering the whole Settings tree.
-const DownloadProgress = forwardRef(function DownloadProgress(_, ref) {
-  const [pct, setPct] = useState(0)
-  const [text, setText] = useState(t('Starting download…'))
-  // Expose a setter the caller can invoke directly
-  if (ref) ref(function update(received, total) {
-    if (total > 0) {
-      const p = Math.min(100, Math.round((received / total) * 100))
-      setPct(p)
-      setText(t('{0} %', p))
-    } else {
-      setText(t('{0} MB', (received / 1_000_000).toFixed(1)))
-    }
-  })
-  return (
-    <div style={{ textAlign: 'center', padding: '8px 0' }}>
-      <h3>{t('Downloading update…')}</h3>
-      <div style={{ margin: '16px 0', height: 6, borderRadius: 3, background: 'var(--fill-3)', overflow: 'hidden' }}>
-        <div style={{ height: '100%', width: pct + '%', background: 'var(--acc)', borderRadius: 3, transition: 'width .2s' }} />
-      </div>
-      <div className="muted small">{text}</div>
-    </div>
-  )
-})
 
 // Settings → Sound (#306): every end-of-rest sound, each played as it is picked so you hear it
 // before the next rest does. The sheet stays open for the next one; Done closes it. Stored as

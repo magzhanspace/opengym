@@ -20,10 +20,6 @@ describe('segmentType', () => {
     expect(segmentType('cx1', [{ id: 'cx1', n: 'My weird machine' }])).toBe('weightlifting')
     expect(segmentType('cx2', [{ id: 'cx2', n: 'Bulgarian split squat' }])).toBe('lunge')
   })
-  it('only hands out types the native side maps', () => {
-    const java = readFileSync(new URL('../../android/app/src/main/java/ch/duartesantos/opengym/HealthWrite.java', import.meta.url), 'utf8')
-    for (const t of SEGMENT_TYPES) if (t !== 'weightlifting') expect(java, t).toContain(`case "${t}"`)
-  })
 })
 
 describe('workoutSegments', () => {
