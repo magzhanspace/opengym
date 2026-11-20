@@ -1,6 +1,6 @@
 import { favRoutinesFirst, isFavRoutine } from '../lib/routine-favs.js'
 import Icon from './Icon.jsx'
-import { useMemo } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { startFlow, menuSheet } from '../sheets.jsx'
@@ -17,6 +17,8 @@ import { leftoversBefore } from '../lib/leftovers.js'
 import { closeThenNav } from '../lib/nav.js'
 import { Button, Row } from './ui.jsx'
 import MiniBodyMap from './MiniBodyMap.jsx'
+import Media from './Media.jsx'
+import { hasWorkoutMedia } from './WorkoutThumb.jsx'
 
 const ui = () => useUI.getState()
 const S = () => useStore.getState().S
@@ -126,6 +128,43 @@ function setsLine(entry, speedUnit) {
   return [body, warm ? t('warm-ups: {0}', String(warm)) : ''].filter(Boolean).join(' · ')
 }
 
+// One card per exercise, its animation on top and its sets under the name, swiped sideways like
+// the workout's own cards (a native scroll-snap row: the browser does the gesture). The dots
+// under it say where you are, and a tap on one goes to that exercise.
+function PreviewCards({ entries, speedUnit }) {
+  const row = useRef(null)
+  const [at, setAt] = useState(0)
+  const n = entries.length
+  const step = el => { const c = el?.children[0]; return c ? c.offsetWidth + (el.children[1] ? el.children[1].offsetLeft - c.offsetLeft - c.offsetWidth : 0) : 1 }
+  const onScroll = () => {
+    const el = row.current
+    if (el) setAt(Math.max(0, Math.min(n - 1, Math.round(el.scrollLeft / step(el)))))
+  }
+  const go = i => {
+    const el = row.current, c = el?.children[i]
+    if (c) el.scrollTo({ left: c.offsetLeft - el.offsetLeft - (el.clientWidth - c.offsetWidth) / 2, behavior: 'smooth' })
+  }
+  return <div className="pv" aria-label={t('In this workout')}>
+    <ol ref={row} className={'pv-cards' + (n === 1 ? ' one' : '')} onScroll={onScroll}>
+      {entries.map((e, i) => {
+        const ex = exOr(e.id)
+        return <li key={e.id + ':' + i} className="pv-card">
+          {hasWorkoutMedia(ex)
+            ? <Media ex={ex} notes={e.target?.notes} />
+            : <div className="exmedia broken"><div className="exmedia-x"><Icon name="dumbbell" /></div></div>}
+          <div className="pv-n muted small">{i + 1} / {n}</div>
+          <div className={'pv-t ' + exerciseNameClass(ex)}>{exerciseNameFor(ex)}</div>
+          <div className="pv-s muted small">{setsLine(e, speedUnit) || t('Pick sets as you go')}</div>
+        </li>
+      })}
+    </ol>
+    {n > 1 && <div className="pv-dots">
+      {entries.map((e, i) => <button key={i} type="button" className={'pv-dot' + (i === at ? ' on' : '')}
+        aria-label={exerciseNameFor(exOr(e.id))} aria-current={i === at || undefined} onClick={() => go(i)} />)}
+    </div>}
+  </div>
+}
+
 function Preview({ ids, close }) {
   const st = useStore(s => s.S)
   const built = useMemo(() => buildCombinedEntries(st, ids), [st, ids])
@@ -145,17 +184,7 @@ function Preview({ ids, close }) {
       <MiniBodyMap routines={built.routines} body={st.body} />
     </div>
     {built.entries.length
-      ? <ol className="list preview-list" style={{ margin: '12px 0 16px' }} aria-label={t('In this workout')}>
-        {built.entries.map((e, i) => {
-          const ex = exOr(e.id)
-          return <li key={e.id + ':' + i} className="lrow">
-            <span className="lrow-m">
-              <span className={'lrow-t ' + exerciseNameClass(ex)}>{exerciseNameFor(ex)}</span>
-              <span className="lrow-s">{setsLine(e, speedUnit) || t('Pick sets as you go')}</span>
-            </span>
-          </li>
-        })}
-      </ol>
+      ? <PreviewCards entries={built.entries} speedUnit={speedUnit} />
       : <div className="muted small" style={{ margin: '12px 0 16px' }}>{t('No exercises in it yet. You can add them once it runs.')}</div>}
     <Button variant="primary" icon="play" onClick={start}>{t('Start {0}', name)}</Button>
     <div style={{ height: 8 }} />

@@ -55,7 +55,7 @@ describe('Home — today’s plan opens on its preview', () => {
     expect(useUI.getState().sheets).toHaveLength(1)
     renderTop()
     expect(sheetHost.querySelector('h3').textContent).toBe('Push')
-    expect(sheetHost.querySelectorAll('.preview-list li')).toHaveLength(1)
+    expect(sheetHost.querySelectorAll('.pv-card')).toHaveLength(1)
     act(() => [...sheetHost.querySelectorAll('button')].find(b => b.textContent.trim() === 'Start Push').click())
     expect(startFlow).toHaveBeenCalledWith(['r1'])
   })

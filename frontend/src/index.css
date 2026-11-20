@@ -949,7 +949,7 @@ h4.sec{
    rows before that). So a strip never scrolls vertically (overflow-y:hidden), keeps its sideways
    overscroll to itself, and leaves both pan axes to the browser: a sideways swipe scrolls the
    strip, a vertical one that starts on it scrolls the page (pan-x alone used to swallow that). */
-.chips,.seg.seg-scroll,.fv-strip,.pc-picks,.sharew-pick,.ci-rail,.tr-controls .tr-chips,.hm-wrap,.pcard-tabs,.chips-row{
+.chips,.seg.seg-scroll,.fv-strip,.pc-picks,.sharew-pick,.ci-rail,.tr-controls .tr-chips,.hm-wrap,.pcard-tabs,.chips-row,.pv-cards{
   overflow-y:hidden;overscroll-behavior-x:contain;overscroll-behavior-y:auto;touch-action:pan-x pan-y}
 :is(.chips,.seg.seg-scroll,.fv-strip,.pc-picks,.sharew-pick,.ci-rail,.tr-chips,.pcard-tabs,.chips-row) :is(.chip,button)::before{top:0;bottom:0}
 /* The chip hit-area (.chip::before, inset:-6px) must not poke out of the strip vertically:
@@ -1404,6 +1404,23 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 .exmedia.broken{background:var(--surface-2)}
 .exmedia-x{width:100%;height:320px;display:flex;align-items:center;justify-content:center;color:var(--label-3);font-size:2.125rem}
 .exmedia.compact .exmedia-x{height:120px}
+/* the preview before a workout (components/StartSheets.jsx): a sideways row of exercise cards,
+   the next one peeking in so it reads as swipeable, and dots under it */
+.pv{margin:12px 0 16px}
+.pv-cards{list-style:none;margin:0 -18px;padding:0 18px;display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding-inline:18px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.pv-cards::-webkit-scrollbar{display:none}
+.pv-card{flex:0 0 86%;min-width:0;scroll-snap-align:center;background:var(--surface-2);border-radius:var(--r-lg);padding:8px 8px 12px}
+.pv-cards.one .pv-card{flex-basis:100%}
+.pv-card .exmedia{margin-bottom:8px}
+.pv-card .exmedia img,.pv-card .exmedia video,.pv-card .exmedia-x{height:230px}
+.pv-n{padding:0 4px}
+.pv-t{font-weight:600;padding:2px 4px 0}
+.pv-s{padding:2px 4px 0}
+.pv-dots{display:flex;justify-content:center;flex-wrap:wrap;gap:2px;margin-top:8px}
+.pv-dot{width:22px;height:22px;padding:0;border:0;background:none;display:flex;align-items:center;justify-content:center}
+.pv-dot::after{content:"";width:7px;height:7px;border-radius:50%;background:var(--label-3);opacity:.5;transition:transform .15s}
+.pv-dot.on::after{background:var(--acc);opacity:1;transform:scale(1.25)}
+@media (prefers-reduced-motion: reduce){.pv-dot::after{transition:none}}
 .exmedia.mini .exmedia-x{height:84px}
 /* a custom exercise's own video (components/CustomMedia.jsx): the same box as a picture, on black
    so a clip that does not fill it is letterboxed like any player */

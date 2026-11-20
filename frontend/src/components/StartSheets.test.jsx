@@ -91,9 +91,10 @@ describe('the preview (#976)', () => {
     expect(started).toHaveLength(1)
     renderTop()
     expect(host.querySelector('h3').textContent).toBe('Push')
-    const items = [...host.querySelectorAll('.preview-list li')]
+    const items = [...host.querySelectorAll('.pv-card')]
     expect(items).toHaveLength(1)
-    expect(items[0].querySelector('.lrow-s').textContent).toMatch(/^3 sets · /)
+    expect(items[0].querySelector('.pv-s').textContent).toMatch(/^3 sets · /)
+    expect(host.querySelector('.pv-dots')).toBe(null)
     click('Start Push')
     expect(started).toEqual([['push'], ['push']])
   })
@@ -118,6 +119,20 @@ describe('the preview (#976)', () => {
     expect(started).toEqual([])
     previewSheet(['push', 'pull']); renderTop()
     expect([...host.querySelectorAll('button')].some(b => b.textContent.trim() === 'Edit')).toBe(false)
+  })
+  it('shows each exercise as a card with its animation, dots to move between them', () => {
+    previewSheet(['push', 'pull']); renderTop()
+    const cards = [...host.querySelectorAll('.pv-card')]
+    expect(cards.length).toBeGreaterThan(1)
+    expect(cards[0].querySelector('.pv-n').textContent).toBe('1 / ' + cards.length)
+    expect(cards.every(c => c.querySelector('.exmedia'))).toBe(true)
+    const dots = [...host.querySelectorAll('.pv-dot')]
+    expect(dots).toHaveLength(cards.length)
+    expect(dots[0].getAttribute('aria-current')).toBe('true')
+    const row = host.querySelector('.pv-cards')
+    row.scrollTo = vi.fn()
+    act(() => dots[1].click())
+    expect(row.scrollTo).toHaveBeenCalled()
   })
   it('can swap to another workout from the preview', () => {
     previewSheet(['pull']); renderTop()
