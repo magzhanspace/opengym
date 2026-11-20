@@ -53,3 +53,17 @@ jobs:
       # plain runner as it did before the fork, so it is left out here.
       - run: npx vitest run --reporter=dot --exclude scripts/app-icons.test.mjs
         working-directory: frontend
+
+  mcp:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: mcp/package-lock.json
+      - run: npm ci --no-audit --no-fund
+        working-directory: mcp
+      - run: npm test
+        working-directory: mcp
