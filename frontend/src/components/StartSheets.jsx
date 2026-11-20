@@ -38,7 +38,7 @@ export function startOrPreview(routineIds, { preview = true } = {}) {
   startFlow(ids)
 }
 
-/** An explicit Start (the tab bar's button, the Start screen's "Start …"): no preview, the way
+/** An explicit Start (the Start screen's "Start …"): no preview, the way
  *  the button says. The leftovers question (#985) still comes first. */
 export const startPlanned = routineIds => startOrPreview(routineIds, { preview: false })
 
