@@ -2,10 +2,10 @@
  * plan-shaped ones turned into the proposal they are, through the plan and review validators. */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { validateAsk } from '../coach/core/validate.js';
+import { validateAsk } from '../shared/validate.js';
 import { attemptOnce } from '../coach/core/pipeline.js';
 import { build } from '../coach/core/payload.js';
-import { builtinIndex, compactEntry } from '../coach/core/routine-library.js';
+import { builtinIndex, compactEntry } from '../shared/routine-library.js';
 
 const plan = { routines: [{ id: 'r1', name: 'Legs', ex: [{ id: '0043', sets: 3, reps: 8 }, { id: '0085', sets: 3, reps: 8 }] }], week: { 1: 'r1' } };
 const payload = { plan, library: [], routineLibrary: [compactEntry(builtinIndex()[4])] };
@@ -99,4 +99,4 @@ test('a bodyweight question narrows the library to exercises that need nothing',
   const { LIB_BY_ID } = awaitLib;
   assert.ok(p.library.every(e => e.custom || ['body weight'].includes(LIB_BY_ID.get(e.id)?.eq)));
 });
-const awaitLib = await import('../coach/core/library.js');
+const awaitLib = await import('../shared/library.js');

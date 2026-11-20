@@ -234,7 +234,7 @@ export function checkRoutine(raw, { slug, source, cat, starters = {}, coverInfo 
   if (raw.builtin != null) {
     if (source !== 'starter') say('"builtin" is only for routines/starter/')
     const plan = starters[raw.builtin]
-    if (!plan) say(`"builtin": no starter plan "${raw.builtin}" in api/coach/core/starter-plans.js`)
+    if (!plan) say(`"builtin": no starter plan "${raw.builtin}" in api/shared/starter-plans.js`)
     else {
       if (raw.sessions || raw.schedule) say('a "builtin" routine takes its sessions and schedule from the app; leave them out')
       const keys = plan.routines.map(r => r[0])

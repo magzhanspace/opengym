@@ -201,7 +201,7 @@ export const withDumbbells = (S, weights, now = Date.now()) =>
 // switch of its own. It sits in the same stamped map under `none` ({ on, _ts }), not under a unit,
 // since no bells is no bells in kg and lb alike; the map's per-key merge keeps the last flip.
 // lib/equipment.js then keeps dumbbell lifts out like missing equipment, and the Coach's library
-// (api/coach/core/library.js) reads the same key.
+// (api/shared/library.js) reads the same key.
 /** Whether this profile said it owns no dumbbells at all. */
 export const ownsNoDumbbells = S => S?.dumbbells?.none?.on === true
 /** S.dumbbells with the "none" switch set, stamped. Off is kept as a stamped false, so it wins a sync. */

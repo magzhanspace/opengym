@@ -11,7 +11,7 @@
  * profile, a first sync of a phone that trained offline for months, or an import from another
  * app brings in hundreds of "new" workouts that are not news. The hub also skips anything older
  * than the connection itself. Pure, so the tests can feed it documents. */
-import { libraryName } from '../coach/core/library.js';
+import { libraryName } from '../shared/library.js';
 
 export const EVENTS = ['workout.finished', 'workout.pr', 'weighin.logged'];
 export const RECENT_MS = 7 * 86400_000;

@@ -10,7 +10,7 @@
  * references, photo hashes and notes are stripped from workouts unless their own category is on. */
 import { effectiveRoutineId } from '../queue.js';
 import { excusedOn } from '../nudge.js';
-import { streakWalk } from '../coach/core/streak.js';
+import { streakWalk } from '../shared/streak.js';
 
 const DAY = 86400000;
 const records = v => (Array.isArray(v) ? v.filter(x => x && typeof x === 'object' && !Array.isArray(x)) : []);
@@ -46,7 +46,7 @@ const e1rm = (w, r) => (r > 0 && w > 0 ? (r === 1 ? w : w * (1 + r / 30)) : 0);
 const dated = S => records(S?.workouts).filter(w => isISO(w.d)).sort((a, b) => (a.d < b.d ? 1 : a.d > b.d ? -1 : num(b.start) - num(a.start)));
 
 /* ---------- the streak ---------- */
-// The app's own walk (coach/core/streak.js, which lib/streak.js runs too): the freeze rule with its
+// The app's own walk (shared/streak.js, which lib/streak.js runs too): the freeze rule with its
 // history, so the trainer's number matches the member's phone week for week.
 export const streakWeeks = (S, today) => streakWalk(S, today).current;
 

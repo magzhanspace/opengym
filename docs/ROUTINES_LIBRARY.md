@@ -1,6 +1,6 @@
 # Routines library index
 
-The AI Coach can suggest and import routines from a library (`api/coach/core/routine-library.js`).
+The AI Coach can suggest and import routines from a library (`api/shared/routine-library.js`).
 The built-in starter plans are always in it. More come from an **index**: one JSON file at an
 https address, by default `https://opengym.ch/routines/index.json`, set per instance on the admin
 card (AI Coach → Advanced → Routines library, `off` for none).

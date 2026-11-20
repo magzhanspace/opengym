@@ -4,7 +4,7 @@ import { buildPrompt, buildPromptParts, taskOf } from '../coach/core/prompt.js';
 import { SCHEMAS } from '../coach/core/schemas.js';
 import { build, FULL_DETAIL_SESSIONS } from '../coach/core/payload.js';
 import { chatCompletionsSpec } from '../coach/core/adapters/openai.js';
-import { validatePlan } from '../coach/core/validate.js';
+import { validatePlan } from '../shared/validate.js';
 import { D as fixtureDay } from './helpers.mjs';
 
 const S = (workouts = []) => ({

@@ -144,7 +144,7 @@ and per field, so the newest edit of each wins and deletions stay deleted.
 
 The API image cannot import the frontend, so some rules are hand-copied. Change both sides
 together: `lib/sync-merge.js` and `api/sync-stamps.js` (parity test), `lib/glyphs.js` and
-`api/coach/core/glyphs.js` (parity test), `lib/nudge.js` and `api/nudge.js`, `lib/queue.js` and
+`api/shared/glyphs.js` (parity test), `lib/nudge.js` and `api/nudge.js`, `lib/queue.js` and
 `api/queue.js` (mirrored test cases only, nothing compares the code), and the workout card's
 button moves in `android/.../WorkoutCard.java` and `LiveActivityTick` in
 `ios/App/App/WorkoutActivity.swift` (each has its own tests). The other way round,

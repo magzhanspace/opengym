@@ -43,7 +43,7 @@ S.activities = {
   one and a removed one is never brought back.
 - Activities never enter `S.workouts`: no sets, no volume, no records.
 - Streak: counted only with `S.activityStreak === true` (the shared walk,
-  `api/coach/core/streak.js`, so a trainer sees the same number).
+  `api/shared/streak.js`, so a trainer sees the same number).
 - Recovery: `activityStimuli(S)` turns each activity of the last 30 days into hard-set
   equivalents per muscle (`SPORT_LOAD`: per 30 minutes; football 3 sets spread over quads,
   hamstrings, calves, glutes, adductors and hip flexors, a run 3 sets mostly calves and quads,

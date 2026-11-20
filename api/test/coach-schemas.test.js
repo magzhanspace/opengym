@@ -17,7 +17,7 @@ import assert from 'node:assert/strict';
 import { CREATE_SCHEMA, REVIEW_SCHEMA } from '../coach/core/schemas.js';
 import { strictSchema } from '../coach/core/adapters/openai.js';
 import { geminiSchema, geminiSpec } from '../coach/core/adapters/gemini.js';
-import { validatePlan } from '../coach/core/validate.js';
+import { validatePlan } from '../shared/validate.js';
 
 const DAYS = ['0', '1', '2', '3', '4', '5', '6'];
 const sorted = list => list.slice().sort();

@@ -1,4 +1,4 @@
-// Applying "Ask the Coach" mid-workout (the `adapt` job, api/coach/core/validate.js validateAdapt).
+// Applying "Ask the Coach" mid-workout (the `adapt` job, api/shared/validate.js validateAdapt).
 //
 // The Coach answers with up to six changes to the unfinished part of the session running on this
 // device; the lifter ticks the ones they want and they are applied here, to `S.active`, in one

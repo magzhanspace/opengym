@@ -7,7 +7,7 @@ import { tempData, sampleState } from './helpers.mjs';
 
 tempData();
 const payload = await import('../coach/core/payload.js');
-const { focusOf } = await import('../coach/core/library.js');
+const { focusOf } = await import('../shared/library.js');
 
 const waist = lib => lib.filter(e => e.bp === 'waist');
 const H = 'h'.repeat(16);

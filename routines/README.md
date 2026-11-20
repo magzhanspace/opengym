@@ -12,7 +12,7 @@ also open a pull request with a file yourself.
 
 | Folder | What's in it |
 |---|---|
-| `starter/` | The plans built into the app. Words only; the days come from `api/coach/core/starter-plans.js` (`"builtin": "<key>"`). Not in `index.json`, every app has them already |
+| `starter/` | The plans built into the app. Words only; the days come from `api/shared/starter-plans.js` (`"builtin": "<key>"`). Not in `index.json`, every app has them already |
 | `opengym/` | Classic programme shapes, written by us in our own words |
 | `community/` | Everyone else's. A cover photo sits next to its routine as `<name>.webp` |
 

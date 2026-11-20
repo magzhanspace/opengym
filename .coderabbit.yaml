@@ -41,7 +41,7 @@ reviews:
     - "!frontend/src/instr/**"
     - "!frontend/src/exercise-names/**"
     - "!frontend/src/exercise-desc/**"
-    - "!api/coach/core/library-data.js"
+    - "!api/shared/library-data.js"
     # generated watch strings (frontend/ios/ci/watch-strings.mjs, garmin/garmin-strings.mjs)
     - "!frontend/ios/App/**/*.lproj/Localizable.strings"
     - "!frontend/garmin/resources-*/strings/strings.xml"

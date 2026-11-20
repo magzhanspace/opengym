@@ -7,7 +7,7 @@ import { tempData, sampleState } from './helpers.mjs';
 
 tempData();
 const payload = await import('../coach/core/payload.js');
-const { validatePlan } = await import('../coach/core/validate.js');
+const { validatePlan } = await import('../shared/validate.js');
 const { handleFor } = await import('../coach/handle.js');
 
 const eqOf = id => (payload.LIBRARY.find(e => e.id === id) || {}).eq;

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { accessoriesOf, exAvailable, activeProfile, benchKindOf, benchIn, withBench, profileEquipment, ACC_V, ALL_EQUIPMENT, ACCESSORIES } from './equipment.js'
 import { EXDB } from './exercises-data.js'
-import { benchKind, benchAllows, benchNeedOf } from '../../../api/coach/core/library.js'
+import { benchKind, benchAllows, benchNeedOf } from '../../../api/shared/library.js'
 
 // Flat vs adjustable bench (1.4.5): incline and decline work needs a bench that tilts.
 const ex = n => EXDB.find(e => e.n === n)

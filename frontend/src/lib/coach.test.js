@@ -166,7 +166,7 @@ describe('staleness', () => {
   })
 
   it('a rename of a routine whose name is longer than the Coach reads is not shown as stale', async () => {
-    const { validateReview } = await import('../../../api/coach/core/validate.js')
+    const { validateReview } = await import('../../../api/shared/validate.js')
     const S = state()
     S.routines[0].name = 'Upper body, heavy day — '.repeat(6)
     // The real path: the server's payload cuts the name, and the validator copies what the
@@ -195,7 +195,7 @@ describe('staleness', () => {
 
 describe('applying changes', () => {
   it('has an implementation for every type the server can send', async () => {
-    const { CHANGE_TYPES: serverTypes } = await import('../../../api/coach/core/validate.js')
+    const { CHANGE_TYPES: serverTypes } = await import('../../../api/shared/validate.js')
     expect([...CHANGE_TYPES].sort()).toEqual([...serverTypes].sort())
   })
 

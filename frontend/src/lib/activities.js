@@ -11,7 +11,7 @@
 //
 // They show in History and the month calendar, they load the muscles they use in the recovery
 // model (lib/recovery.js `activities`), and they count for the week streak only when the profile
-// asks for it (`S.activityStreak`, Settings → Look & Home; the walk is api/coach/core/streak.js,
+// asks for it (`S.activityStreak`, Settings → Look & Home; the walk is api/shared/streak.js,
 // shared with the server).
 //
 // Stored one entry per session, keyed by its id, like recovery sessions:

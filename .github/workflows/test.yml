@@ -131,8 +131,8 @@ jobs:
               - 'website/routines/**'
               - 'website/index.html'
               - 'catalogue/exercises/**'
-              - 'api/coach/core/starter-plans.js'
-              - 'api/coach/core/routine-library.js'
+              - 'api/shared/starter-plans.js'
+              - 'api/shared/routine-library.js'
 
   frontend:
     needs: changes

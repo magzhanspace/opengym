@@ -1,11 +1,11 @@
 // The trainer's member list (api/trainers/projections.js) and the member's own phone (lib/streak.js)
-// must show the same streak. Both run api/coach/core/streak.js; these cases keep it that way.
+// must show the same streak. Both run api/shared/streak.js; these cases keep it that way.
 import { describe, expect, it } from 'vitest'
 import { streakInfo } from './streak.js'
 import { setStreakRule } from './streak-rule.js'
 import { weekKey, isoOf } from './format.js'
 import { streakWeeks, summarize } from '../../../api/trainers/projections.js'
-import { weekKeyOf } from '../../../api/coach/core/streak.js'
+import { weekKeyOf } from '../../../api/shared/streak.js'
 
 const day = (iso, n) => { const d = new Date(iso + 'T12:00:00'); d.setDate(d.getDate() + n); return isoOf(d) }
 

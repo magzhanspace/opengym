@@ -117,7 +117,7 @@ imported. When you change one side, change the other in the same pull request:
 | Frontend | Server | Held together by |
 |---|---|---|
 | `lib/sync-merge.js` | `api/sync-stamps.js` | `lib/sync-stamps-parity.test.js` runs both on the same cases |
-| `lib/glyphs.js` | `api/coach/core/glyphs.js` | `lib/coach-parity.test.js` |
+| `lib/glyphs.js` | `api/shared/glyphs.js` | `lib/coach-parity.test.js` |
 | `lib/nudge.js` | `api/nudge.js` | mirrored cases in `lib/nudge.test.js` and `api/test/nudge.test.js` |
 | `lib/queue.js` | `api/queue.js` | mirrored cases in `lib/queue.test.js` and `api/test/queue.test.js` |
 

@@ -8,7 +8,7 @@ tempData();
 const payloadLib = await import('../coach/core/payload.js');
 const { runPipeline } = await import('../coach/core/pipeline.js');
 const { buildPromptParts } = await import('../coach/core/prompt.js');
-const { validateAsk } = await import('../coach/core/validate.js');
+const { validateAsk } = await import('../shared/validate.js');
 const { SCHEMAS } = await import('../coach/core/schemas.js');
 
 const set = (w, r, done = true) => ({ w, r, done });

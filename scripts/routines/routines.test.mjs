@@ -11,7 +11,7 @@ import {
   checkRoutine, catalogueFrom, factsOf, indexEntry, planFile, linkBundle, encodePayload, decodePayload, payloadFromLink,
   sessionsFromPlan, slugify, imageInfo, kitOf, weeklyVolume, focusOf, dayLink
 } from './lib.mjs'
-import { normalizeIndex } from '../../api/coach/core/routine-library.js'
+import { normalizeIndex } from '../../api/shared/routine-library.js'
 import * as F from '../../website/routines/filter.mjs'
 import { createApp, moderationText, keyboard, envTag, Limiter, routineFromRequest, planFromRequest } from './service/server.mjs'
 

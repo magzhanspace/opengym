@@ -7,7 +7,7 @@
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { loadCatalogue, loadAll } from './lib.mjs'
-import { STARTER_PLANS } from '../../api/coach/core/starter-plans.js'
+import { STARTER_PLANS } from '../../api/shared/starter-plans.js'
 
 export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 

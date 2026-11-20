@@ -15,7 +15,7 @@ import { tempData } from './helpers.mjs';
 
 tempData();
 const { runPipeline } = await import('../coach/core/pipeline.js');
-const { validateReview } = await import('../coach/core/validate.js');
+const { validateReview } = await import('../shared/validate.js');
 const payloadLib = await import('../coach/core/payload.js');
 
 const daysAgo = n => { const d = new Date(); d.setDate(d.getDate() - n); return d.toISOString().slice(0, 10); };

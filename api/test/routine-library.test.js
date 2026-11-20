@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { builtinIndex, normalizeIndex, cleanEntry, searchRoutines, compactEntry, entryToBundle, asksForBodyweight, FORMAT } from '../coach/core/routine-library.js';
-import { validatePlan } from '../coach/core/validate.js';
+import { builtinIndex, normalizeIndex, cleanEntry, searchRoutines, compactEntry, entryToBundle, asksForBodyweight, FORMAT } from '../shared/routine-library.js';
+import { validatePlan } from '../shared/validate.js';
 
 test('the built-in index is the starter plans, every one a valid entry with its schedule', () => {
   const idx = builtinIndex();

@@ -278,7 +278,7 @@ export function FrozenWeeks ({ frozen }) {
 }
 
 /**
- * The weeks a sick or travel note carried in the running streak (api/coach/core/streak.js), the
+ * The weeks a sick or travel note carried in the running streak (api/shared/streak.js), the
  * newest three, with how many are left this year. Same idea as FrozenWeeks: a gap you can see on
  * the calendar is never a mystery.
  */

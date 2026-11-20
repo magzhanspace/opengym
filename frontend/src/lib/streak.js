@@ -20,9 +20,9 @@
 // Each week is judged by the rule in force that week, so a new pick never rewrites the past; on
 // the first week of a new rule the freezes banked are trimmed to what it keeps.
 import { todayISO, weekKey } from './format.js'
-import { streakWalk } from '../../../api/coach/core/streak.js'
+import { streakWalk } from '../../../api/shared/streak.js'
 
-export { FREEZE_EVERY, FREEZE_MAX, STREAK_BADGES } from '../../../api/coach/core/streak.js'
+export { FREEZE_EVERY, FREEZE_MAX, STREAK_BADGES } from '../../../api/shared/streak.js'
 
 /**
  * The streak as of `today`:
@@ -42,7 +42,7 @@ export { FREEZE_EVERY, FREEZE_MAX, STREAK_BADGES } from '../../../api/coach/core
  * after that week, earned whether it earned a freeze. Only a record of the walk: the calendar
  * (components/StreakCalendar.jsx) reads it to say why a week counted, nothing here depends on it.
  *
- * The walk itself is api/coach/core/streak.js, shared with the server so a trainer's member list
+ * The walk itself is api/shared/streak.js, shared with the server so a trainer's member list
  * shows the same number as the member's phone.
  */
 export function streakInfo (S, today = todayISO(), log = null) {

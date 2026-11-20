@@ -3,7 +3,7 @@
 // of everything that reads S.workouts. They show in History and the month calendar beside the
 // workouts, in the journal when they carry a note, and they count for the week streak only when
 // the profile asks for it (`S.recoveryStreak`, Settings → Look & Home; the walk is
-// api/coach/core/streak.js, shared with the server so a trainer sees the same number).
+// api/shared/streak.js, shared with the server so a trainer sees the same number).
 //
 // Stored one entry per session, keyed by its id, the way day photos are (lib/day-photos.js):
 //

@@ -8,7 +8,7 @@ import { tempData } from './helpers.mjs';
 tempData();
 const payloadLib = await import('../coach/core/payload.js');
 const { runPipeline } = await import('../coach/core/pipeline.js');
-const { validateAdapt, validateReview } = await import('../coach/core/validate.js');
+const { validateAdapt, validateReview } = await import('../shared/validate.js');
 const { SCHEMAS } = await import('../coach/core/schemas.js');
 const { muscleLoad, gymOf, challengesOf } = await import('../coach/core/context.js');
 const { strictSchema } = await import('../coach/core/adapters/openai.js');

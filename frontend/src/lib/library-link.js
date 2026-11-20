@@ -11,7 +11,7 @@
 // are never claimed by the iPhone, and on Android they can still arrive (an intent filter has no
 // "except"): those go back to the browser as .../index.html, which no filter claims, so the
 // phone cannot bounce the link straight back into the app.
-import { DEFAULT_INDEX_URL } from '../../../api/coach/core/routine-library.js'
+import { DEFAULT_INDEX_URL } from '../../../api/shared/routine-library.js'
 import { parsePlan } from './plan-share.js'
 import { cleanFrom } from './routine-link.js'
 

@@ -1,4 +1,4 @@
-// Sick and travel weeks (api/coach/core/streak.js): a missed week with a sick, travel or injured
+// Sick and travel weeks (api/shared/streak.js): a missed week with a sick, travel or injured
 // day note keeps the streak without spending a freeze, up to a cap a year, the same on the server.
 import { describe, expect, it } from 'vitest'
 import { streakInfo } from './streak.js'

@@ -17,10 +17,10 @@
 // older app version that does not know it) counts every week with `generous`, as it always did.
 // It syncs as one setting (lib/sync-merge.js: the last change wins whole) and travels in backups.
 import { weekKey, todayISO, weekStartOf } from './format.js'
-import { streakRuleOf, LEGACY_RULE, HISTORY_MAX, RULE_IDS, EXCUSE_DEFAULT as EXCUSE_DEFAULT_ } from '../../../api/coach/core/streak.js'
+import { streakRuleOf, LEGACY_RULE, HISTORY_MAX, RULE_IDS, EXCUSE_DEFAULT as EXCUSE_DEFAULT_ } from '../../../api/shared/streak.js'
 
-// The reading side lives in api/coach/core/streak.js, shared with the server's streak.
-export { STREAK_RULES, RULE_IDS, LEGACY_RULE, NEW_PROFILE_RULE, HISTORY_MAX, streakRuleOf, ruleTimeline, ruleAt, EXCUSE_TAGS, EXCUSE_DEFAULT, EXCUSE_CHOICES, excuseCapOf } from '../../../api/coach/core/streak.js'
+// The reading side lives in api/shared/streak.js, shared with the server's streak.
+export { STREAK_RULES, RULE_IDS, LEGACY_RULE, NEW_PROFILE_RULE, HISTORY_MAX, streakRuleOf, ruleTimeline, ruleAt, EXCUSE_TAGS, EXCUSE_DEFAULT, EXCUSE_CHOICES, excuseCapOf } from '../../../api/shared/streak.js'
 
 const okRule = r => (RULE_IDS.includes(r) ? r : null)
 
@@ -47,7 +47,7 @@ export function setStreakRule (S, rule, today = todayISO(), { always = false } =
 }
 
 /**
- * Sick and travel weeks (api/coach/core/streak.js): how many missed weeks a year a sick, travel or
+ * Sick and travel weeks (api/shared/streak.js): how many missed weeks a year a sick, travel or
  * injured day note may carry the streak through, 0 for none. The default (4) is kept as no key,
  * so a profile that never touched it and an older app count the same.
  */

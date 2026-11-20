@@ -54,7 +54,7 @@ export const streakRuleSheet = () => useUI.getState().openSheet(close => <Streak
 
 /**
  * Settings → Look & Home: how many missed weeks a year a sick, travel or injured day note keeps
- * the streak through (api/coach/core/streak.js). Off leaves those weeks to the freezes.
+ * the streak through (api/shared/streak.js). Off leaves those weeks to the freezes.
  */
 export function StreakExcuseRow () {
   const cap = useStore(s => excuseCapOf(s.S))
