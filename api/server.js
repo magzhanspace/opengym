@@ -43,9 +43,6 @@ import { excusedOn, nudgeFor, nudgeWindowOpen, toneOf } from './nudge.js';
 import { wrappedPushYear, wrappedSummary, wrappedPushOwed, wrappedPush } from './wrapped.js';
 import { createToken, findToken, touchToken, listTokens, revokeTokens, scopedState, mergeScoped, ScopeError, TOKEN_CATEGORIES, TOKEN_DAYS, DEFAULT_DAYS, TOKEN_PREFIX } from './tokens.js';
 import * as oauth from './oauth.js';
-import { oidcConfig } from './oidc/config.js';
-import { createProvider } from './oidc/provider.js';
-import { oidcRoutes } from './oidc/routes.js';
 
 const PORT = +(process.env.PORT || 3000);
 const DATA = process.env.DATA_DIR || '/data';
@@ -85,11 +82,6 @@ const PASSWORD_LOGIN = /^(1|true|yes|on)$/i.test(process.env.PASSWORD_LOGIN || '
 // Whether the admin dashboard shows a member's workouts and weigh-ins (1.4.5: off by default).
 // Off, admins see counts only; on, every look is in the activity log.
 const ADMIN_DATA_VIEW = /^(1|true|yes|on)$/i.test(process.env.ADMIN_DATA_VIEW || '');
-// Sign in with an identity provider (#130, docs/SELF_HOSTING.md): on once OIDC_ISSUER and
-// OIDC_CLIENT_ID are set. OIDC_ONLY makes the provider the one way in (admins keep their passkeys).
-const OIDC = oidcConfig(process.env, { origin: ORIGIN });
-for (const p of OIDC.problems) console.warn('OIDC is off:', p);
-let oidcApi = null;   // the routes and helpers, made once everything they need exists (below)
 // The language the sign-in screen, and every profile that never picked one, starts in (#303) —
 // for an instance whose people share a language. Only a tag's shape is checked here; the app
 // matches it against the languages it has and ignores one it does not know. Unset, it is left
@@ -779,13 +771,11 @@ const clearCookie = COOKIE === LEGACY_COOKIE
 // any site sign a visitor into the attacker's account and collect what they log (login CSRF).
 // The watch relay's two routes for the watch are the same kind: the code in the body, or a watch
 // token in the Authorization header, which no browser attaches on its own.
-// The phone's OIDC redeem is the same kind as pair/redeem: a one-time code and the verifier only
-// the app holds, in the body; the token comes back in the body, never as a cookie.
 // A scoped token's write (tokens.js) is the same kind as the watch's: the token in the
 // Authorization header is the only credential the route reads, and no browser attaches one.
 // The connector's OAuth registration and token exchange (oauth.js) are called by the assistant's
 // own server: the code and verifier in the body are the credential, and no cookie is read.
-const CSRF_EXEMPT = new Set(['POST /api/oauth/register', 'POST /api/oauth/token', 'POST /api/oauth/revoke', 'POST /api/pair/redeem', 'POST /api/watch/redeem', 'POST /api/watch/box', 'POST /api/oidc/app/redeem', 'PUT /api/token/data']);
+const CSRF_EXEMPT = new Set(['POST /api/oauth/register', 'POST /api/oauth/token', 'POST /api/oauth/revoke', 'POST /api/pair/redeem', 'POST /api/watch/redeem', 'POST /api/watch/box', 'PUT /api/token/data']);
 // The routes that answer to the credential in the body and never to a Bearer. No Bearer is the
 // credential that acts there, so none buys the shortcut below: any valid token would do, the
 // attacker's own included.
@@ -1338,11 +1328,9 @@ function loginTarget(body) {
 }
 const acctKey = u => 'acct:' + u.id;
 const passkeyCount = u => db.creds.filter(c => c.userId === u.id).length;
-const publicUser = u => ({ id: u.id, name: u.name, admin: isAdmin(u), ...(isOwner(u) ? { owner: true } : {}), ...(oidcWayIn(u) ? { oidc: true } : {}) });
-// A linked provider identity is a way in while the provider is configured (and the same issuer).
-const oidcWayIn = u => !!(OIDC.enabled && u?.oidc && String(u.oidc.iss || '').replace(/\/+$/, '') === OIDC.issuer);
+const publicUser = u => ({ id: u.id, name: u.name, admin: isAdmin(u), ...(isOwner(u) ? { owner: true } : {}) });
 // The ways in besides passkeys, for "never remove the last one".
-const otherWaysIn = u => (passwordWayIn(u) ? 1 : 0) + (oidcWayIn(u) ? 1 : 0);
+const otherWaysIn = u => (passwordWayIn(u) ? 1 : 0);
 const POLICY_ERRORS = {
   'too-short': `the password needs at least ${MIN_LENGTH} characters`,
   'too-long': `the password can have at most ${MAX_LENGTH} characters`,
@@ -1439,11 +1427,6 @@ function passwordAttempt(req, res, k) {
 // proof is logged as `auth.proof.fail` for that change, not as a failed sign-in — the owner was
 // signed in all along, and "Password sign-in failed" sent an admin looking for the wrong thing.
 async function proveOwner(req, res, user, body, act) {
-  if (body.provider === true && oidcApi) {
-    if (oidcApi.providerProof(req, user)) return 'provider';
-    json(res, 403, { error: 'sign in with your provider again first', code: 'reauth-required' });
-    return null;
-  }
   if (body.credential) {
     if (await passkeyStepUp(user, body)) return 'passkey';
     audit(req, 'auth.proof.fail', { ok: false, user, msg: 'step-up-failed', act });
@@ -1540,7 +1523,6 @@ const passwordRoutes = {
       return json(res, 403, { error: 'this account has been disabled', code: 'disabled' });
     }
     check.ok();
-    if (oidcOnlyRefused(res, user)) return audit(req, 'auth.password.fail', { ok: false, user, msg: 'oidc-only' });
     // A hash made with older parameters is replaced now, while the password is at hand.
     if (needsRehash(rec.h)) {
       try {
@@ -1669,7 +1651,7 @@ const passwordRoutes = {
     const body = await readBody(req);
     const lastWayIn = () => json(res, 409, { error: 'the password is the only way into this profile', code: 'last-way-in' });
     if (!hasPassword(user)) return json(res, 200, { ok: true });
-    if (!passkeyCount(user) && !oidcWayIn(user)) return lastWayIn();
+    if (!passkeyCount(user)) return lastWayIn();
     const proof = await proveOwner(req, res, user, body, 'password-remove');
     if (!proof) return;
     // Everything above awaited: the session may have ended, and the profile's last passkey may
@@ -1677,7 +1659,7 @@ const passwordRoutes = {
     if (readSession(req) !== user) return json(res, 401, { error: 'not signed in' });
     if (proof === 'passkey') saveDb();   // the confirming passkey's counter and last use
     if (!hasPassword(user)) return json(res, 200, { ok: true });
-    if (!passkeyCount(user) && !oidcWayIn(user)) return lastWayIn();
+    if (!passkeyCount(user)) return lastWayIn();
     delete user.pw;
     saveDb();
     audit(req, 'auth.password.remove', { user });
@@ -1777,7 +1759,6 @@ const passwordRoutes = {
       audit(req, 'auth.password.reset', { ok: false, user, msg: 'account-disabled' });
       return json(res, 403, { error: 'this account has been disabled', code: 'disabled' });
     }
-    if (oidcOnlyRefused(res, user)) return;
     // The code is good and stays good until a password is actually set with it.
     const problem = passwordProblem(body.next, user.name);
     if (problem) return policyError(res, problem);
@@ -2040,7 +2021,6 @@ const passkeyRoutes = {
       return json(res, 400, { error: 'challenge expired, try again', code: 'challenge-expired' });
     }
     const owner = db.users.find(u => u.id === link.userId);
-    if (oidcOnlyRefused(res, owner)) return;
     const cred = await newPasskey(req, res, c, body, 'auth.link.fail', owner || { id: link.userId });
     if (!cred) return;
     // Everything above awaited: the code may have been used, replaced or dropped since (a sign-out
@@ -2246,30 +2226,6 @@ function dataWritable() {
   return ok;
 }
 
-// OIDC (#130): its own burst budget per address, and wrong states, tokens or codes count
-// toward the same address pause the other sign-in routes use.
-const OIDC_BURST = createWindow({ max: 30, windowMs: 60000 });
-setInterval(() => OIDC_BURST.sweep(), 60000).unref();
-if (OIDC.enabled) {
-  oidcApi = oidcRoutes({
-    cfg: OIDC, provider: createProvider(OIDC), secure: !!SECURE,
-    json, readBody, readSession, sessionOf, audit, auditFail, saveDb, publicUser, requireAdmin,
-    db: () => db, sessionCookie, makeSession, claimFirstAdmin, isAdmin, nameTaken, normalizeEmail,
-    inviteOnly: INVITE_ONLY, proveOwner, otherWaysIn: u => passkeyCount(u) + (passwordWayIn(u) ? 1 : 0),
-    cookieValues,
-    syncRoles: null,
-    throttle: req => { const a = limitAddress(req); return OIDC_BURST.take(a) || ADDR_FAILS.retryAfter('oidc|' + a); },
-    strike: req => strikeAddress(req, 'oidc')
-  });
-}
-// OIDC_ONLY: the provider is the way in. Passkeys and passwords still sign in an admin, so an
-// outage at the provider never locks the operator out of their own server.
-const oidcOnlyRefused = (res, user) => {
-  if (!OIDC.enabled || !OIDC.only || (user && isAdmin(user))) return false;
-  json(res, 403, { error: `sign in with ${OIDC.label} instead`, code: 'oidc-only' });
-  return true;
-};
-const OIDC_ONLY_SIGNUPS = new Set(['POST /api/register/options', 'POST /api/register/verify', 'POST /api/register/password']);
 
 /* ---------- the MCP connector's OAuth (oauth.js) ---------- */
 const APP_BASE = String(process.env.BASE_PATH || '').replace(/\/+$/, '');
@@ -2434,8 +2390,6 @@ const routes = {
       // Scoped tokens (Settings → API tokens), and whether /mcp is served beside the app: for a
       // signed-in profile only, which is who can make one, so a stranger's answer stays as it was.
       ...(API_TOKENS && readSession(req) ? { api_tokens: true, ...(MCP_ON ? { mcp: true } : {}) } : {}),
-      // Public like the flags above: the sign-in screen draws its provider button from it.
-      ...(oidcApi ? { oidc: { label: OIDC.label, ...(OIDC.only ? { only: true } : {}) } } : {}),
       // Public: the sign-in screen is the first thing that reads it.
       ...(DEFAULT_LANG ? { default_lang: DEFAULT_LANG } : {}),
       // Public like the two flags above: the caps are not a secret, and the absence of the
@@ -2598,7 +2552,6 @@ const routes = {
       audit(req, 'auth.login.fail', { ok: false, user, msg: 'account-disabled' });
       return json(res, 403, { error: 'this account has been disabled', code: 'disabled' });
     }
-    if (oidcOnlyRefused(res, user)) return audit(req, 'auth.login.fail', { ok: false, user, msg: 'oidc-only' });
     audit(req, 'auth.login.ok', { user });
     json(res, 200, { user: publicUser(user) }, { 'Set-Cookie': sessionCookie(user) });
   },
@@ -2608,9 +2561,7 @@ const routes = {
   'POST /api/logout': async (req, res) => {
     const user = readSession(req);
     if (user) audit(req, 'auth.logout', { user });
-    // OIDC_LOGOUT: where the browser goes next to end the provider's session too.
-    const out = user && oidcApi ? oidcApi.logoutUrl(user) : null;
-    json(res, 200, { ok: true, ...(out ? { provider_logout: out } : {}) }, { 'Set-Cookie': clearCookie });
+    json(res, 200, { ok: true }, { 'Set-Cookie': clearCookie });
   },
 
   // "Sign out everywhere" — bumps this user's session version, which invalidates every cookie
@@ -2625,7 +2576,6 @@ const routes = {
     // does an unused device link.
     for (const [k, v] of pairings) if (v.uid === user.id) pairings.delete(k);
     dropDeviceLinks(db, user.id);
-    oidcApi?.forget(user.id);
     // Every scoped token ends with the sessions (its version would stop matching anyway); gone
     // from the list too, so Settings shows what still works.
     revokeTokens(db, user.id);
@@ -2960,7 +2910,6 @@ const routes = {
 
   // Always there: more passkeys and device links need nothing an instance has to switch on.
   ...passkeyRoutes,
-  ...(oidcApi ? oidcApi.routes : {}),
 
   // `rev` is the server's own count of writes to this profile (also stored inside the document as
   // `_rev`, so every other reader of the file — reminder tick, admin, MCP — is unaffected).
@@ -3512,7 +3461,6 @@ const server = http.createServer(async (req, res) => {
   if (lc) { key = req.method + ' /api/calendar/{token}.ics'; req.calToken = lc[1]; }
   const handler = routes[key];
   if (!handler) return json(res, 404, { error: 'not found' });
-  if (OIDC_ONLY_SIGNUPS.has(key) && oidcOnlyRefused(res, null)) return;
   if (!csrfOk(req, key)) {
     // A Bearer that does not verify and no cookie beside it: nothing ambient is in play, the caller
     // is simply not signed in. That is the paired app once its token is revoked or expired, and it

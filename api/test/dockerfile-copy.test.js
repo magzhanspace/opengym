@@ -61,7 +61,7 @@ test('every local module and folder server.js reaches, at any depth, is copied i
       if (/\.m?js$/.test(rel)) queue.push(rel);
     }
   }
-  assert.ok(seen.has('oidc/config.js') && seen.has('shared/library.js'), 'the walk reaches into the folders');
+  assert.ok(seen.has('integrations/index.js') && seen.has('shared/library.js'), 'the walk reaches into the folders');
   assert.deepEqual(outside, [], 'the image only holds api/, so nothing may import from outside it');
   const missing = [...seen].filter(f => {
     const top = f.split(path.sep)[0];
