@@ -36,13 +36,18 @@ async function startServer(t) {
   return h;
 }
 const post = (h, p, body, headers = {}) => fetch(h.api + p, { method: 'POST', headers: { 'Content-Type': 'application/json', ...headers }, body: JSON.stringify(body) });
+// The child writes the log line after it answers, so the response can arrive first.
+async function refusalLine(h) {
+  for (let i = 0; i < 100 && !h.log.includes('refused cross-origin'); i++) await new Promise(r => setTimeout(r, 20));
+  return h.log.split('\n').find(l => l.startsWith('refused cross-origin'));
+}
 
 test('a write from the LAN address names ORIGIN in the log and the answer', async t => {
   const h = await startServer(t);
   const r = await post(h, '/api/login/options', {}, { Origin: 'http://10.11.0.4:3030' });
   assert.equal(r.status, 403);
   assert.deepEqual(await r.json(), { error: 'cross-origin request refused', code: 'origin-mismatch', expected: ORIGIN });
-  const line = h.log.split('\n').find(l => l.startsWith('refused cross-origin'));
+  const line = await refusalLine(h);
   assert.match(line, /origin="http:\/\/10\.11\.0\.4:3030" expected=http:\/\/localhost:8080/);
   assert.match(line, /set ORIGIN=http:\/\/10\.11\.0\.4:3030 and RP_ID=10\.11\.0\.4 on the api service/);
 });
@@ -52,7 +57,7 @@ test('a page on another site gets the same refusal, and the log does not advise 
   const r = await post(h, '/api/login/options', {}, { Origin: 'https://evil.test', 'Sec-Fetch-Site': 'cross-site' });
   assert.equal(r.status, 403);
   assert.equal((await r.json()).code, 'origin-mismatch');
-  const line = h.log.split('\n').find(l => l.startsWith('refused cross-origin'));
+  const line = await refusalLine(h);
   assert.doesNotMatch(line, /set ORIGIN/);
 });
 
