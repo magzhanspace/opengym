@@ -2,6 +2,7 @@ import { TempoTag, tempoGuideSheet } from '../components/Tempo.jsx'
 import { tempoOf, guideReps } from '../lib/tempo.js'
 import { useEffect, useState } from 'react'
 import { useStore } from '../store/useStore.js'
+import { voiceOnlyNow } from '../components/VoiceNoteButton.jsx'
 import { useUI } from '../store/useUI.js'
 import { exOr } from '../lib/exercises.js'
 import { clampIncline, INCLINE_MAX, INCLINE_STEP, clampLevel, LEVEL_MAX, cardioCol } from '../lib/incline.js'
@@ -258,7 +259,7 @@ export default function FocusView({
       { items: [
         { icon: 'plus', label: t('Add set'), onClick: addRow(onAddSet) },
         { icon: 'sunrise', label: t('Add warm-up set'), onClick: addRow(onAddWarmup) },
-        { icon: 'note', label: entry.note ? t('Edit note') : t('Add note'), onClick: () => exerciseNoteSheet(entryIdx) },
+        (entry.note || useStore.getState().S.active?.editingWorkoutId || !voiceOnlyNow()) && { icon: 'note', label: entry.note ? t('Edit note') : t('Add note'), onClick: () => exerciseNoteSheet(entryIdx) },
         { icon: 'swap', label: t('Swap exercise'), onClick: onSwap, disabled: busy },
         { icon: 'history', label: t('History'), onClick: () => exerciseHistorySheet(entry.id) },
       ] },

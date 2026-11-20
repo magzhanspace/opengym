@@ -436,6 +436,12 @@ button.conn:active{filter:brightness(1.12)}
   transition:background var(--fast),transform var(--fast);
 }
 .iconbtn:active{transform:scale(var(--press-scale-sm))}
+/* The voice-note mic (components/VoiceNoteButton.jsx): a red pill with the seconds while it records. */
+.iconbtn.vn-btn.rec{width:auto;padding:0 10px;gap:4px;border-radius:18px;background:var(--red);color:#fff;animation:vnpulse 1.4s ease-in-out infinite}
+.iconbtn.vn-btn:disabled{opacity:.35}
+.vn-sec{font-size:var(--fs-footnote, .8125rem);font-variant-numeric:tabular-nums;font-weight:600}
+@keyframes vnpulse{0%,100%{box-shadow:0 0 0 0 rgba(255,59,48,.45)}50%{box-shadow:0 0 0 6px rgba(255,59,48,0)}}
+@media (prefers-reduced-motion:reduce){.iconbtn.vn-btn.rec{animation:none}}
 /* invisible hit-area extension: these look right at their size but fall short of a
    finger-sized target, so the pseudo element widens what the tap lands on without
    changing the painted box. Segmented buttons sit flush against each other, so they
@@ -4658,3 +4664,5 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 
 /* Add set / Warm-up / Remove: 44px tall, the leading glyph on the card's content edge; wrapped siblings share the same edge */
 .wk-add{min-height:44px;margin-inline-start:-14px}
+/* A note said at the mic, shown to read (sheets.jsx ExerciseNote and SessionNote with voice notes on). */
+.vn-note{white-space:pre-wrap;padding:10px 12px;border-radius:12px;background:var(--surface);color:var(--label);min-height:44px;line-height:1.35}

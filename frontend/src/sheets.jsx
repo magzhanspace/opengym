@@ -32,6 +32,7 @@ import { FormVideosSection } from './components/SetVideo.jsx'
 import { workoutSetVideos } from './lib/set-videos.js'
 import { mediaOf, normalizeMediaRef, cleanUrl, workoutMediaOf } from './lib/media-refs.js'
 import { syncMedia } from './lib/media-sync.js'
+import { voiceOnlyNow } from './components/VoiceNoteButton.jsx'
 import LineChart from './components/LineChart.jsx'
 import Stepper from './components/Stepper.jsx'
 import DateField from './components/DateField.jsx'
@@ -4285,11 +4286,13 @@ function ExerciseNote({ entryIdx, close }) {
   // Only true at one gym ("seat 4" on that brand of machine): pinned at the active gym (lib/journal.js).
   const gym = !editing ? activeGym(st) : null
   const [atGym, setAtGym] = useState(gym && entry ? gymNoteText(st, gym.id, entry.id) : '')
+  // Voice notes on: today's note is said at the mic, here it is read, pinned or deleted.
+  const [spoken] = useState(() => !editing && voiceOnlyNow())
   useEffect(() => { if (!entry) close() }, [!entry])
   if (!entry) return null
 
-  const save = () => {
-    const today = note.trim().slice(0, NOTE_MAX)
+  const save = (over = note) => {
+    const today = over.trim().slice(0, NOTE_MAX)
     const always = standing.trim().slice(0, NOTE_MAX)
     update(s => {
       const e = s.active?.entries?.[entryIdx]
@@ -4310,9 +4313,11 @@ function ExerciseNote({ entryIdx, close }) {
   return <>
     <h3 className={exerciseNameClass(ex)}>{exerciseNameFor(ex)}</h3>
     <div className="small muted" style={{ marginBottom: 6 }}>{t('This session')}</div>
-    <textarea ref={noteRef} className="input" rows={3} maxLength={NOTE_MAX} value={note}
-      placeholder={t('How it went, what to change. Saved with today’s workout.')}
-      onFocus={onNoteFocus} onChange={e => setNote(e.target.value)} />
+    {spoken
+      ? <div className="vn-note">{note || t('No note yet. Tap the mic beside the exercise name and say it.')}</div>
+      : <textarea ref={noteRef} className="input" rows={3} maxLength={NOTE_MAX} value={note}
+        placeholder={t('How it went, what to change. Saved with today’s workout.')}
+        onFocus={onNoteFocus} onChange={e => setNote(e.target.value)} />}
     <div style={{ height: 10 }} />
     <div className="sect-b">
       <Row icon="pin" iconTint="var(--yellow)" title={t('Show this next time')}
@@ -4320,22 +4325,27 @@ function ExerciseNote({ entryIdx, close }) {
         <Switch checked={pin} onChange={setPin} disabled={!note.trim()} />
       </Row>
     </div>
-    {!editing && <>
+    {!editing && (!spoken || standing) && <>
       <div style={{ height: 18 }} />
       <div className="small muted" style={{ marginBottom: 6 }}>{t('Always for this exercise')}</div>
-      <textarea className="input" rows={2} maxLength={NOTE_MAX} value={standing}
-        placeholder={t('Seat height, pin position, a form cue. Shown every session.')}
-        onChange={e => setStanding(e.target.value)} />
+      {spoken
+        ? <div className="vn-note">{standing}</div>
+        : <textarea className="input" rows={2} maxLength={NOTE_MAX} value={standing}
+          placeholder={t('Seat height, pin position, a form cue. Shown every session.')}
+          onChange={e => setStanding(e.target.value)} />}
     </>}
-    {gym && <>
+    {gym && (!spoken || atGym) && <>
       <div style={{ height: 18 }} />
       <div className="small muted" style={{ marginBottom: 6 }}><Icon name="mapPin" style={{ marginInlineEnd: 4, verticalAlign: '-2px' }} />{t('Only at {0}', gymLabel(gym))}</div>
-      <textarea className="input" rows={2} maxLength={NOTE_MAX} value={atGym}
+      {spoken
+        ? <div className="vn-note">{atGym}</div>
+        : <textarea className="input" rows={2} maxLength={NOTE_MAX} value={atGym}
         placeholder={t('The machine here, the rack you like. Shown when you train at this gym.')}
-        onChange={e => setAtGym(e.target.value)} />
+        onChange={e => setAtGym(e.target.value)} />}
     </>}
     <div style={{ height: 18 }} />
-    <Button variant="primary" onClick={save}>{t('Save')}</Button>
+    <Button variant="primary" onClick={() => save()}>{spoken ? t('Done') : t('Save')}</Button>
+    {spoken && note && <><div style={{ height: 8 }} /><Button variant="danger" onClick={() => save('')}>{t('Delete note')}</Button></>}
   </>
 }
 export const exerciseNoteSheet = entryIdx => ui().openSheet(close => <ExerciseNote entryIdx={entryIdx} close={close} />)
@@ -4388,22 +4398,26 @@ function SessionNote({ close }) {
   const update = useStore(s => s.update)
   const A = st.active
   const [note, setNote] = useState(A?.note || '')
+  const [spoken] = useState(() => !A?.editingWorkoutId && voiceOnlyNow())
   useEffect(() => { if (!A) close() }, [!A])
   if (!A) return null
 
-  const save = () => {
-    const text = note.trim().slice(0, NOTE_MAX)
+  const save = (over = note) => {
+    const text = over.trim().slice(0, NOTE_MAX)
     update(s => { if (!s.active) return; if (text) s.active.note = text; else delete s.active.note })
     close()
   }
 
   return <>
     <h3>{t('Session note')}</h3>
-    <textarea ref={noteRef} className="input" rows={4} maxLength={NOTE_MAX} value={note}
-      placeholder={t('How the session went as a whole.')}
-      onFocus={onNoteFocus} onChange={e => setNote(e.target.value)} />
+    {spoken
+      ? <div className="vn-note">{note}</div>
+      : <textarea ref={noteRef} className="input" rows={4} maxLength={NOTE_MAX} value={note}
+        placeholder={t('How the session went as a whole.')}
+        onFocus={onNoteFocus} onChange={e => setNote(e.target.value)} />}
     <div style={{ height: 18 }} />
-    <Button variant="primary" onClick={save}>{t('Save')}</Button>
+    <Button variant="primary" onClick={() => save()}>{spoken ? t('Done') : t('Save')}</Button>
+    {spoken && note && <><div style={{ height: 8 }} /><Button variant="danger" onClick={() => save('')}>{t('Delete note')}</Button></>}
   </>
 }
 export const sessionNoteSheet = () => ui().openSheet(close => <SessionNote close={close} />)

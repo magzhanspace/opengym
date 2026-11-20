@@ -63,7 +63,8 @@ There is no linter/formatter config and no TypeScript; match the existing style 
 
 This is a personal fork (github.com/magzhanspace/opengym, branch `main`) of
 github.com/DuarteSantos8/openGym v1.4.5, remote `upstream`. FORK.md lists what was cut and what
-is kept; upstream is not merged back. `.github/workflows/test.yml` runs the suites and checks on
+is kept; upstream is not merged back. Own feature: voice notes (FORK.md "Своё"; `api/transcribe.js`,
+`lib/voice-notes.js`, `lib/voice-live.js`). `.github/workflows/test.yml` runs the suites and checks on
 push. The app is deployed as a PWA on gym.magjan.dev (hermes); the iOS shell is kept but not built.
 
 ## Architecture

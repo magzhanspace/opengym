@@ -161,6 +161,8 @@ tags:
     description: Live-workout presence heartbeat
   - name: admin
     description: Admin dashboard. Requires an admin session (`ADMIN_UIDS` or `admin:true`)
+  - name: voice
+    description: Voice notes recorded during a workout, turned into text. Off unless the server has OPENAI_API_KEY.
   - name: media
     description: >-
       The photo, GIF or video of a user's own custom exercise, and the photos and videos
@@ -285,6 +287,11 @@ paths:
                       always wins; a tag the app has no translation for is ignored.
                   media:
                     $ref: '#/components/schemas/MediaConfig'
+                  voice:
+                    type: boolean
+                    description: >-
+                      Present (true) only when the server has OPENAI_API_KEY: the app then
+                      offers voice notes during a workout (POST /api/transcribe).
               examples:
                 anonymous: { value: { invite_only: true, allow_guest: false } }
                 passwordLogin: { value: { invite_only: true, allow_guest: false, password_login: true } }
@@ -2094,6 +2101,44 @@ paths:
               schema: { $ref: '#/components/schemas/Error' }
               example: { error: "the server is running out of disk space", code: "storage-full" }
 
+  /api/transcribe:
+    post:
+      tags: [voice]
+      operationId: transcribe
+      summary: The text of a voice note
+      description: |
+        One short clip recorded in the app during a workout, passed to OpenAI's transcription API
+        and dropped. Nothing is stored or logged. The app writes the text into the note of the
+        exercise the clip was recorded on. 404 when the server has no OPENAI_API_KEY (and then
+        GET /api/config has no `voice`); 429 past 120 clips an hour.
+      parameters:
+        - name: X-OpenGym-Hint
+          in: header
+          required: false
+          description: The exercise's name, URL-encoded, so the transcription spells it right.
+          schema: { type: string, maxLength: 600 }
+      requestBody:
+        required: true
+        content:
+          audio/mp4: { schema: { type: string, format: binary, maxLength: 4194304 } }
+          audio/webm: { schema: { type: string, format: binary } }
+          audio/ogg: { schema: { type: string, format: binary } }
+      responses:
+        '200':
+          description: The text.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [text]
+                properties:
+                  text: { type: string }
+        '401': { description: Not signed in. }
+        '404': { description: Voice notes are off on this server. }
+        '413': { description: Longer than 4 MiB. }
+        '415': { description: Not an audio clip. }
+        '429': { description: Too many clips this hour. }
+        '502': { description: The transcription API refused or did not answer. }
   /api/media/missing:
     post:
       tags: [media]

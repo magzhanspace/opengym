@@ -27,6 +27,7 @@ import {
 import { createDeviceLink, findDeviceLink, burnDeviceLink, dropDeviceLinks, recoveryLinkOf, RECOVERY_TTL_MS } from './device-link.js';
 import { startAdminSocket } from './admin-socket.js';
 import { createMediaStore, mediaLimits, mediaConfig, MediaError, HASH_RE } from './media.js';
+import { voiceConfig, readRaw, transcribe, hintOf, clipExtension } from './transcribe.js';
 import { effectiveRoutineId } from './queue.js';
 import { stampPut, highestStamp } from './sync-stamps.js';
 import { atomicWrite as durableWrite } from './durable.js';
@@ -2007,6 +2008,9 @@ const passkeyRoutes = {
 // either way: an admin deleting a profile must still remove files uploaded while it was on.
 const MEDIA_LIMITS = mediaLimits(process.env);
 const MEDIA_ON = MEDIA_LIMITS.enabled;
+const VOICE = voiceConfig();
+// A clip a minute for two hours straight is far more than a workout's worth of notes.
+const VOICE_BURST = createWindow({ max: 120, windowMs: 3600000 });
 const MEDIA = createMediaStore({ dir: path.join(DATA, 'uploads'), limits: MEDIA_LIMITS, readState });
 // Leftovers of uploads the previous process was receiving when it stopped.
 try { MEDIA.cleanTmp(); } catch (e) { console.error('media: boot cleanup failed', e.message); }
@@ -2317,6 +2321,26 @@ function oauthRoutes() {
 }
 
 const routes = {
+  // A voice note recorded during a workout, as text (api/transcribe.js). The clip is passed to the
+  // transcription API and dropped; nothing of it is stored or logged.
+  'POST /api/transcribe': async (req, res) => {
+    const user = readSession(req);
+    if (!user) { req.resume(); return json(res, 401, { error: 'not signed in' }); }
+    if (!VOICE) { req.resume(); return json(res, 404, { error: 'voice notes are off on this server' }); }
+    const contentType = req.headers['content-type'];
+    if (!clipExtension(contentType)) { req.resume(); return json(res, 415, { error: 'not an audio clip' }); }
+    const wait = VOICE_BURST.take(user.id);
+    if (wait) { req.resume(); return json(res, 429, { error: 'too many voice notes, try again later', retryAfter: wait }, { 'Retry-After': String(wait) }); }
+    const audio = await readRaw(req).catch(e => { throw e.status ? new HttpError(e.status, e.message) : e; });
+    if (!audio.length) return json(res, 400, { error: 'empty clip' });
+    const text = await transcribe({ audio, contentType, hint: hintOf(req.headers['x-opengym-hint']) }, VOICE).catch(e => {
+      // The status only: the clip and whatever came back are the user's words.
+      console.warn('transcribe:', e.message);
+      throw new HttpError(e.status || 502, e.message);
+    });
+    json(res, 200, { text });
+  },
+
   // 503 rather than a flag in a 200: the container healthcheck is `wget --spider`, which reads
   // the status and nothing else, and an instance that cannot write its data directory is exactly
   // what "unhealthy" is for. The 200 keeps the shape it had, plus the flag it is now asserting.
@@ -2344,7 +2368,9 @@ const routes = {
       ...(DEFAULT_LANG ? { default_lang: DEFAULT_LANG } : {}),
       // Public like the two flags above: the caps are not a secret, and the absence of the
       // block is how the app knows this server does not take photos and videos at all.
-      ...(MEDIA_ON ? { media: mediaConfig(MEDIA_LIMITS) } : {})
+      ...(MEDIA_ON ? { media: mediaConfig(MEDIA_LIMITS) } : {}),
+      // Voice notes (api/transcribe.js): only when this server has a transcription key.
+      ...(VOICE ? { voice: true } : {})
     });
   },
 

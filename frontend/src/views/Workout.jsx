@@ -48,6 +48,7 @@ import Elapsed from '../components/Elapsed.jsx'
 import LiveHeartRate from '../components/LiveHeartRate.jsx'
 import LiveCard from '../components/LiveCard.jsx'
 import Icon from '../components/Icon.jsx'
+import VoiceNoteButton, { voiceOnlyNow, useVoiceOnly } from '../components/VoiceNoteButton.jsx'
 import { Button, Check, NumberField } from '../components/ui.jsx'
 import { defaultIncrement, weightIncrement, stepWeight } from '../lib/progression.js'
 import { progressionGuidance } from '../lib/progression-copy.js'
@@ -594,7 +595,7 @@ function ExerciseBlock({ entryIdx, compact, listed, dense, editing, onToggle, on
     titleClass: exerciseNameClass(ex),
     sections: [
       { items: [
-        { icon: 'note', label: entry.note ? t('Edit note') : t('Add note'), sub: entry.note || undefined, onClick: () => exerciseNoteSheet(entryIdx) },
+        (editing || entry.note || !voiceOnlyNow()) && { icon: 'note', label: entry.note ? t('Edit note') : t('Add note'), sub: entry.note || undefined, onClick: () => exerciseNoteSheet(entryIdx) },
         onSwap && { icon: 'swap', label: t('Swap exercise'), onClick: onSwap, disabled: busy },
         // The slot's planned backups (#649), one tap each: the machine is taken, the plan says what next.
         ...(onSwapBackup ? backups.map(b => ({ icon: 'swap', label: t('Swap to {0}', exerciseNameText(b)), sub: entry.target?.subCfg?.[b.id] ? t('Planned backup, with its own plan') : t('Planned backup, same sets and reps'), onClick: () => onSwapBackup(b.id), disabled: busy })) : []),
@@ -731,7 +732,7 @@ function ExerciseBlock({ entryIdx, compact, listed, dense, editing, onToggle, on
             ? { icon: 'play', label: t('Watch your video'), sub: video.dur != null ? fmtClip(video.dur) : undefined, onClick: () => setVideoAt(spanStart) }
             : { icon: 'camera', label: t('Film this set'), sub: t('Check your form later'), onClick: () => filmSet(i) },
           // A word about this one set (lib/set-notes.js), kept with the workout.
-          { icon: 'note', label: noteHere ? t('Edit note') : t('Note'), sub: noteHere || t('A word about this set'), onClick: () => setNoteSheet(entryIdx, spanStart, warm ? t('Warm-up') : t('Set {0}', setNumOf(s, i))) },
+          (editing || noteHere || !voiceOnlyNow()) && { icon: 'note', label: noteHere ? t('Edit note') : t('Note'), sub: noteHere || t('A word about this set'), onClick: () => setNoteSheet(entryIdx, spanStart, warm ? t('Warm-up') : t('Set {0}', setNumOf(s, i))) },
           // A colour of your own for this set (lib/set-tags.js): up here once the set has one, under
           // More until then, so the menu stays as it was for everyone who never uses it.
           tagHere && tagItem,
@@ -936,6 +937,8 @@ function ExerciseBlock({ entryIdx, compact, listed, dense, editing, onToggle, on
       {thumb && <WorkoutThumb ex={ex} dense={dense} sayAs={exSay} onExpand={dense ? () => exerciseDetailSheet(ex) : () => update(s => { s.gifSize = 'full' })} />}
       <div style={{ flex: 1, minWidth: 0, fontSize: (compact || dense) ? 'var(--fs-body)' : 'var(--fs-title3)', fontWeight: 600, letterSpacing: '-.02em', lineHeight: 1.2 }} className={exerciseNameClass(ex)}>{exerciseNameFor(ex)}</div>
       <div className="row" style={{ gap: 2, flex: 'none' }}>
+        {!editing && !S.active.backfill && <VoiceNoteButton entryIdx={entryIdx} exId={entry.id} start={S.active.start}
+          hint={exerciseNameFor(ex)} label={exerciseNameFor(ex)} />}
         {entry.note && <button className="iconbtn" aria-label={inEx(t('Note'))} title={t('Note')} style={{ color: 'var(--acc-ink)' }}
           onClick={() => exerciseNoteSheet(entryIdx)}><Icon name="note" /></button>}
         <button className="iconbtn" aria-label={inEx(t('More'))} title={t('More')} onClick={openMore}><Icon name="more" /></button>
@@ -1266,6 +1269,7 @@ function ActiveWorkout() {
   const readyRestEnds = useUI(s => (s.timer?.ready ? s.timer.endsAt : undefined))
   const A = S.active
   const editing = !!A.editingWorkoutId
+  const voiceOnly = useVoiceOnly() && !editing
   const paused = isPaused(A)
   // Paused here, by a reload of a paused workout or on another device (#976): the timers hold too.
   useEffect(() => { if (paused) useUI.getState().pauseAuto() }, [paused])
@@ -1957,7 +1961,7 @@ function ActiveWorkout() {
           sub: paused ? undefined : t('The clock and the rest wait for you'), onClick: togglePause },
         A.backfill && A.entries.length > 0 && { icon: 'checkCircle', label: t('Mark all sets done'), onClick: markAllDone },
         { icon: 'plusCircle', label: t('Add exercise'), onClick: addExercise },
-        { icon: 'note', label: A.note ? t('Edit session note') : t('Add session note'), onClick: sessionNoteSheet },
+        (editing || A.note || !voiceOnlyNow()) && { icon: 'note', label: A.note ? t('Edit session note') : t('Add session note'), onClick: sessionNoteSheet },
         { icon: 'layout', label: t('Layout'), sub: LAYOUT_LABEL[workoutView] || LAYOUT_LABEL.cards, onClick: openLayoutMenu },
       ] },
       { more: [{ items: [
@@ -2867,14 +2871,14 @@ function ActiveWorkout() {
         <Icon name="plusCircle" className="wk-end-i" />
         <span className="lrow-m"><span className="lrow-t">{t('Add exercise')}</span></span>
       </button>
-      <button type="button" className={'lrow tap wk-end-row' + (A.note ? ' has-note' : '')} onClick={sessionNoteSheet}>
+      {(!voiceOnly || A.note) && <button type="button" className={'lrow tap wk-end-row' + (A.note ? ' has-note' : '')} onClick={sessionNoteSheet}>
         <Icon name="note" className="wk-end-i" />
         <span className="lrow-m">
           <span className="lrow-t">{A.note ? t('Edit session note') : t('Add session note')}</span>
           {A.note && <span className="lrow-s wk-end-note">{A.note}</span>}
         </span>
         <Icon name="chevronRight" className="lrow-c" />
-      </button>
+      </button>}
     </div>
     {wc.exerciseButtons && A.entries.length > 0 && <>
       <div style={{ height: 6 }} />

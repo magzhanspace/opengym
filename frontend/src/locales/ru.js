@@ -5405,4 +5405,17 @@ export default {
   "shorter": "чуть покороче",
   // fork: the About footer without the Android app
   "The web app updates together with your server.": "Веб-приложение обновляется вместе с сервером.",
+  // fork: voice notes during a workout (components/VoiceNoteButton.jsx, lib/voice-live.js)
+  "Voice note": "Голосовая заметка",
+  "Voice note on {0}": "Голосовая заметка: {0}",
+  "Stop the voice note": "Остановить запись",
+  "The microphone is off for openGym. Allow it in the browser settings.": "Микрофон для openGym выключен. Разреши его в настройках браузера.",
+  "The voice note could not be saved on this device.": "Не получилось сохранить голосовую заметку на этом устройстве.",
+  "Voice note saved, turning it into text…": "Заметка записана, перевожу в текст…",
+  "Voice note saved. It turns into text once you are online.": "Заметка записана. Превратится в текст, когда появится сеть.",
+  "Voice note added to the exercise note.": "Голосовая заметка добавлена к упражнению.",
+  "{0} voice notes added to the notes.": "Голосовых заметок добавлено: {0}.",
+  "A voice note could not be turned into text.": "Одну голосовую заметку не удалось перевести в текст.",
+  "No note yet. Tap the mic beside the exercise name and say it.": "Заметки пока нет. Нажми на микрофон рядом с названием упражнения и надиктуй.",
+  "Delete note": "Удалить заметку",
 }
