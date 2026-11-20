@@ -691,23 +691,8 @@ export const PT_BR_OVERRIDES = {
   "{0} more rep for a record at this weight": "Mais {0} rep para um recorde com este peso",
   "{0} more reps for a record at this weight": "Mais {0} reps para um recorde com este peso",
   // --- Settings → Garmin (garmin-146) ---
-  "This version of openGym comes without the Garmin link, since Garmin’s part of it isn’t open source. The App Store, Google Play and GitHub versions have it.": "Esta versão do openGym vem sem a conexão com o Garmin, porque a parte da Garmin não é open source. As versões da App Store, do Google Play e do GitHub têm.",
-  "Garmin Connect isn’t on this phone. Install it, pair your watch there, then come back here.": "O Garmin Connect não está neste celular. Instale, pareie seu relógio lá e volte aqui.",
-  "Garmin Connect needs an update before openGym can talk to your watch.": "O Garmin Connect precisa de uma atualização antes que o openGym possa falar com seu relógio.",
-  "Couldn’t reach Garmin Connect. Try again in a moment.": "Não deu para alcançar o Garmin Connect. Tente de novo daqui a pouco.",
-  "Pick your Garmin in Garmin Connect and your workouts show up on your wrist.": "Escolha seu Garmin no Garmin Connect e seus treinos aparecem no pulso.",
-  "Your Garmin isn’t in reach right now. Bring it close with Bluetooth on, and this page catches up by itself.": "Seu Garmin não está ao alcance agora. Traga ele para perto com o Bluetooth ligado e esta página se atualiza sozinha.",
-  "Garmin Connect doesn’t know a watch yet. Pair yours there first.": "O Garmin Connect ainda não conhece nenhum relógio. Pareie o seu lá primeiro.",
-  "openGym is on your Garmin. Sets you log on the wrist land here.": "O openGym está no seu Garmin. As séries que você registra no pulso chegam aqui.",
-  "openGym is on your Garmin. It catches up as soon as the watch is in reach.": "O openGym está no seu Garmin. Ele se atualiza assim que o relógio estiver por perto.",
-  "Your Garmin is here, openGym isn’t on it yet. Get it, then open it once on the watch.": "Seu Garmin está aqui, mas o openGym ainda não. Instale e abra uma vez no relógio.",
   "Not in reach": "Fora de alcance",
   "openGym isn’t on it yet": "O openGym ainda não está nele",
-  "Your Garmins": "Seus Garmin",
-  "Choose watches": "Escolher relógios",
-  "Look again": "Procurar de novo",
-  "Get openGym for Garmin": "Obter o openGym para Garmin",
-  "Start a workout on the phone and your Garmin asks to open openGym.": "Comece um treino no celular e seu Garmin pergunta se abre o openGym.",
   // --- API tokens and MCP over HTTPS (mcp-146) ---
   "You made the token {0}": "Você criou o token {0}",
   "The token {0} was revoked": "O token {0} foi revogado",
@@ -2948,11 +2933,6 @@ export const PT_BR_OVERRIDES = {
   "Overview": "Visão geral",
   "Lifts": "Exercícios",
   // Settings → Zepp OS watch
-  "Amazfit and other Zepp OS watches talk to openGym through this server. Pair one and your workouts show up on your wrist.": "Os Amazfit e outros relógios Zepp OS falam com o openGym por este servidor. Pareie um e seus treinos aparecem no pulso.",
-  "Pair a watch": "Parear um relógio",
-  "In the Zepp app, open the openGym watch app’s settings and type in this address and code. The code lasts ten minutes.": "No aplicativo Zepp, abra as configurações do app openGym do relógio e digite este endereço e este código. O código vale por dez minutos.",
-  "Paired watches": "Relógios pareados",
-  "Couldn’t reach your server. Try again in a moment.": "Não foi possível acessar seu servidor. Tente de novo daqui a pouco.",
   // --- the F-Droid build ---
   "Wear OS watches talk to the phone through Google Play services, which F-Droid apps leave out. The APK from opengym.ch and the Google Play app have the watch link.": "Os relógios Wear OS falam com o celular através dos serviços do Google Play, que os aplicativos do F-Droid deixam de fora. O APK de opengym.ch e o aplicativo do Google Play têm a conexão com o relógio.",
   // --- Settings → Modules (1.4.4) ---
@@ -3052,10 +3032,6 @@ export const PT_BR_OVERRIDES = {
   "Up to 30 seconds, from an MP3, M4A, WAV or OGG file. Silence at either end is trimmed off.": "Até 30 segundos, de um arquivo MP3, M4A, WAV ou OGG. O silêncio nas pontas é cortado.",
   "Your own sounds": "Seus próprios sons",
   // --- 1.4.5: Zepp page without a server, frozen streak weeks ---
-  "openGym isn’t in the Zepp App Store yet. Until it is, the watch app goes on through the Zepp app’s developer mode. The guide walks you through it.": "O openGym ainda não está na Zepp App Store. Até lá, o app do relógio é instalado pelo modo de desenvolvedor do app Zepp. O guia mostra o passo a passo.",
-  "Install the watch app": "Instalar o app do relógio",
-  "A Zepp OS watch reaches openGym through your own openGym server, since its side of the app runs inside the Zepp app and not here. Connect this phone to your server and the pairing code shows up right here.": "Um relógio Zepp OS chega ao openGym pelo seu próprio servidor openGym, porque a parte dele do app roda dentro do app Zepp e não aqui. Conecte este celular ao seu servidor e o código de pareamento aparece bem aqui.",
-  "Copy address": "Copiar endereço",
   "Copy code": "Copiar código",
   "A freeze covered the week of {0}, so the streak kept going.": "Um congelamento cobriu a semana de {0}, então a sequência continuou.",
   "Freezes covered the weeks of {0}, so the streak kept going.": "Os congelamentos cobriram as semanas de {0}, então a sequência continuou.",

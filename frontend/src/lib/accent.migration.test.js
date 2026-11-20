@@ -15,7 +15,6 @@ import { ACCENTS, ACCENT_INK, ACCENT_NAMES } from './format.js'
 import { NEW_ACCENT, DEFAULT_ACCENT, accentKey, accentValue, accentPair, sanitizeAccent, contrast } from './accent.js'
 import { mergeStates } from './sync-merge.js'
 import { watchAccent } from './watch-sync.js'
-import { garminLook } from './garmin-snapshot.js'
 
 const clone = v => JSON.parse(JSON.stringify(v))
 const blank = () => ({ workouts: [], routines: [], bodyweight: [], customEx: [] })
@@ -152,7 +151,6 @@ describe('the brand green everywhere it is drawn', () => {
   it('goes to the watches as it is, with its ink', () => {
     expect(watchAccent({ accent: 'brand' })).toEqual({ accent: '#a3e635', onAccent: '#0c0e12' })
     expect(watchAccent({ accent: 'lime' })).toEqual({ accent: '#30d158', onAccent: '#000000' })
-    expect(garminLook(watchAccent({ accent: 'brand' }))).toMatchObject({ accent: '#a3e635', onAccent: '#0c0e12' })
   })
   it('the ink of every preset reads at 3:1 (button text, large) or better on its swatch', () => {
     for (const [k, c] of Object.entries(ACCENTS)) expect(contrast(c, ACCENT_INK[k]), k).toBeGreaterThanOrEqual(3)

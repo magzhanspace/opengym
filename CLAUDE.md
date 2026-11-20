@@ -18,8 +18,8 @@ frontend/   React 19 + Vite app (src/views, src/components, src/store, src/lib, 
             android/ + ios/ are the Capacitor shells (docs/MOBILE.md); ios/ also holds the watch
             app (Watch, WatchCore, WatchWidgets), the widgets and the animation-pack downloader.
             android/wear is the Wear OS watch app (Kotlin, Compose; docs/WEAR_OS.md), on the same
-            watch protocol as the Apple Watch (lib/watch-sync.js). garmin/ is the Garmin Connect IQ
-            watch app (Monkey C; docs/GARMIN.md), on a cut-down snapshot (lib/garmin-snapshot.js).
+            watch protocol as the Apple Watch (lib/watch-sync.js). The Garmin and Zepp OS watch apps
+            are removed in this fork (the native Garmin link code in ios/ and android/ is dormant).
 api/        Backend: server.js (plain node:http) plus small testable modules beside it.
             shared/ holds the code the frontend imports too (streaks, starter plans, plan validation).
             openapi.yaml documents every route.

@@ -13,7 +13,7 @@ import { platformNow } from '../lib/platform-now.js'
 import { api } from '../lib/api.js'
 import { libraryOn } from '../lib/shared-api.js'
 import { MODULES, GROUPS, PRESETS, isOn, presetOf, presetModules, applyPreset, setModule, turnedOff, moduleBuilt } from '../lib/modules.js'
-import { readWatchStatus, readGarminLink } from '../lib/watch-settings.js'
+import { readWatchStatus } from '../lib/watch-settings.js'
 import { moduleCopy, groupCopy, presetCopy } from '../lib/modules-copy.js'
 import { confirmSheet } from '../sheets.jsx'
 import { Section, Row, SelectRow, Switch } from '../components/ui.jsx'
@@ -32,11 +32,10 @@ function useConnections() {
       import('../lib/health-sync.js').then(m => m.loadHealth()).then(h => {
         if (h && (h.on || h.readHr || h.readWeight || h.readBody || h.readVitals)) put({ health: platformNow() === 'android' ? 'Health Connect' : 'Apple Health' })
       }).catch(() => {})
-      // An Apple Watch that has reported in, or a Garmin the watch link found (docs/GARMIN.md).
-      if (readWatchStatus() || readGarminLink()) put({ watch: true })
+      // An Apple Watch that has reported in.
+      if (readWatchStatus()) put({ watch: true })
     }
     if (user && !DEMO) {
-      import('../lib/watch-relay.js').then(m => m.relayLinks()).then(links => { if (links.length) put({ watch: true }) }).catch(() => {})
       if ((config?.integrations?.providers || []).includes('webhook')) {
         api('/api/integrations').then(d => {
           const n = (d?.connections || []).filter(c => c.provider === 'webhook' && !c.paused).length

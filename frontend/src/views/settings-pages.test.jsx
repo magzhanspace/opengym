@@ -154,34 +154,18 @@ describe('the root', () => {
   })
 
   // #1105: one Watches row on the phones; the web has only Zepp, so its row stays on the root.
-  it('groups the watches on a phone, and keeps Zepp on the root on the web', () => {
+  it('groups the watches on a phone', () => {
     const phone = { mobile: true, ios: true, android: false }
     expect(pageVisible('watches', phone)).toBe(true)
     expect(pageVisible('watches', { ...phone, mod: id => id !== 'watch' })).toBe(false)
     expect(pageVisible('watches', { user: { id: 'u' } })).toBe(false)
-    expect(onRoot('zepp', phone)).toBe(false)
-    expect(onRoot('zepp', { user: { id: 'u' } })).toBe(true)
-    expect(pageTrail('garmin')).toBe('Watches › Garmin')
+    expect(pageTrail('watch')).toBe('Watches › Apple Watch')
     // The Wear OS watch (1.4.5) joins the others under Watches on Android, never a row of its own.
     const android = { mobile: true, ios: false, android: true }
     expect(pageVisible('wear', android)).toBe(true)
     expect(pageVisible('watches', android)).toBe(true)
     expect(ROOT_GROUPS.flatMap(g => g.ids)).not.toContain('wear')
     expect(pageTrail('wear')).toBe('Watches › Wear OS watch')
-    mocks.MOBILE = true
-    mount()
-    expect(titles()).toContain('Watches')
-    for (const w of ['Apple Watch', 'Garmin', 'Zepp OS watch']) expect(titles()).not.toContain(w)
-    mount('watches')
-    // this test phone is not known to be an iPhone, so no Apple Watch (pageVisible above covers it)
-    expect(titles()).toEqual(['Garmin', 'Zepp OS watch'])
-    act(() => rowTitled('Garmin').click())
-    expect(mocks.navs).toEqual([['/settings/garmin']])
-    mocks.MOBILE = false
-    mocks.user = { id: 'u1', name: 'Dana' }
-    mount()
-    expect(titles()).toContain('Zepp OS watch')
-    expect(titles()).not.toContain('Watches')
   })
 
   it('a row opens its page; the card opens Account', () => {

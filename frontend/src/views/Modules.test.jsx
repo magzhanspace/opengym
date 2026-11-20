@@ -130,7 +130,7 @@ describe('Settings follows the modules', () => {
 
   it('a module that is off takes its pages away', () => {
     const phone = { ...web, user: { id: 'u' }, mobile: true, ios: true }
-    for (const [page, mod] of [['watch', 'watch'], ['zepp', 'watch'], ['apple-health', 'health']]) {
+    for (const [page, mod] of [['watch', 'watch'], ['apple-health', 'health']]) {
       expect(pageVisible(page, phone), page).toBe(true)
       expect(pageVisible(page, { ...phone, mod: id => id !== mod }), page).toBe(false)
     }

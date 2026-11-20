@@ -31,7 +31,6 @@ import { startWatchSync, bindWatchAppActions, patchSetIn, watchStatus, watchClai
 import { buildSessionEntry } from './lib/session-start.js'
 import { EXIDX } from './lib/exercises.js'
 import { readWatchPrefs, readWatchStatus } from './lib/watch-settings.js'
-import { startWatchRelay } from './lib/watch-relay.js'
 import { startPhoneWorkout } from './lib/phone-workout.js'
 import { stampWorkout } from './lib/sync-merge.js'
 import { logWeighIn } from './lib/bodyweight.js'
@@ -462,12 +461,10 @@ export default function App() {
   // iOS: swipe from the left edge for the page's own back button (lib/edge-swipe-back.js)
   useEffect(() => installEdgeSwipeBack(), [])
   // iPhone app with an Apple Watch, Android with Wear OS: the running workout goes to the watch,
-  // its ticks come back (lib/watch-sync.js). A Zepp OS watch the same way over the user's own
-  // server (lib/watch-relay.js), from the web app too. Without a paired watch, nothing is sent.
+  // its ticks come back (lib/watch-sync.js). Without a paired watch, nothing is sent.
   useEffect(() => {
-    let stop = null, gone = false, stopRelay = null
+    let stop = null, gone = false
     if (MOBILE) startWatchSync({ useStore, useUI }).then(fn => { if (gone) fn(); else stop = fn })
-    startWatchRelay({ useStore, useUI }).then(fn => { if (gone) fn(); else stopRelay = fn }).catch(() => {})
     // A session started on the watch starts here as the phone's Start does, with the watch's id
     // and start time, and no weigh-in question (the lifter is at the watch, not here).
     const unbind = bindWatchAppActions({
@@ -497,7 +494,7 @@ export default function App() {
       // Ticks from the watch are the workout screen's to apply: it opens, and drains the queue.
       openWorkout: () => { if (!String(window.location.hash || '').startsWith('#/workout')) navToWorkout() },
     })
-    return () => { gone = true; stop?.(); stopRelay?.(); unbind() }
+    return () => { gone = true; stop?.(); unbind() }
   }, [])
   // Settings → Workout → Forgotten workouts (lib/forgotten-phone.js): "Still training?" after a
   // quiet spell, "Looks like you left the gym" from the gym reminder, and the finish nobody answered.

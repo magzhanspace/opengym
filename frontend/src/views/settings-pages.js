@@ -22,16 +22,13 @@ export const PAGES = {
   units: { title: 'Units & language', icon: 'ruler', tint: 'var(--teal)' },
   equipment: { title: 'Equipment', icon: 'kettlebell', tint: 'var(--indigo)' },
   look: { title: 'Look & Home', icon: 'palette', tint: 'var(--purple)' },
-  // The phones' watch pages under one row (#1105); the web has Zepp only, so its row stays on the root.
-  watches: { title: 'Watches', icon: 'watch', tint: 'var(--grey)', mod: 'watch', kw: 'watch watches apple garmin zepp amazfit wrist pair' },
+  // The phones' watch pages under one row (#1105).
+  watches: { title: 'Watches', icon: 'watch', tint: 'var(--grey)', mod: 'watch', kw: 'watch watches apple wear os wrist pair' },
   watch: { title: 'Apple Watch', icon: 'watch', tint: 'var(--grey)', mod: 'watch', parent: 'watches' },
   // Settings → Integrations (v1.4.4): the directory of what openGym talks to (views/Integrations.jsx).
   integrations: { title: 'Integrations', icon: 'plug', tint: 'var(--indigo)', kw: 'integrations connect apps services webhook webhooks home assistant n8n ntfy node-red zapier automation garmin fitbit strava opennutrition nutrition calories sync api mcp' },
-  // The Garmin link (docs/GARMIN.md, views/GarminSettings.jsx): the phone apps only.
   // The Android app: the Wear OS watch app is its own package next to it (views/WearSettings.jsx).
   wear: { title: 'Wear OS watch', icon: 'watch', tint: 'var(--grey)', mod: 'watch', parent: 'watches', kw: 'wear os wearos galaxy watch pixel watch samsung oneplus ticwatch fossil pair pairing connect sync wrist' },
-  garmin: { title: 'Garmin', icon: 'watch', tint: 'var(--blue)', mod: 'watch', parent: 'watches', kw: 'garmin connect iq forerunner fenix epix venu vivoactive instinct enduro marq watch pair' },
-  zepp: { title: 'Zepp OS watch', icon: 'watch', tint: 'var(--orange)', mod: 'watch' },
   data: { title: 'Data & backup', icon: 'folder', tint: 'var(--blue)' },
   about: { title: 'About & updates', icon: 'info', tint: 'var(--grey)' },
   // The phone app's own list of what it sent where this session (lib/net-log.js, views/NetworkLog.jsx).
@@ -61,14 +58,14 @@ export const PAGE_IDS = Object.keys(PAGES)
 export const ROOT_GROUPS = [
   { title: 'Training', ids: ['workout', 'alerts', 'plan', 'reminders'] },
   { title: 'Set once', ids: ['units', 'equipment', 'look', 'modules'] },
-  { title: 'Connections', ids: ['watches', 'zepp', 'integrations'] },
+  { title: 'Connections', ids: ['watches', 'integrations'] },
   { ids: ['data', 'about'] },
 ]
 
-export const WATCH_PAGES = ['watch', 'wear', 'garmin', 'zepp']
+export const WATCH_PAGES = ['watch', 'wear']
 
-/** Whether a page has its own row on the root: Zepp sits inside Watches wherever Watches is. */
-export const onRoot = (page, ctx) => pageVisible(page, ctx) && !(page === 'zepp' && pageVisible('watches', ctx))
+/** Whether a page has its own row on the root. */
+export const onRoot = (page, ctx) => pageVisible(page, ctx)
 
 /**
  * Whether a page exists for this device and profile. Reminders need a push server (signed in) or
@@ -82,7 +79,7 @@ export function pageVisible(page, ctx) {
   // The phone app's network log: there only (a browser has its own developer tools for that).
   if (page === 'network') return !!ctx.mobile
   // openGym Offline (lib/build-caps.js) has no network: nothing that needs a server or a connection.
-  if (ctx.offline && (page === 'zepp' || page === 'api-tokens' || page === 'trainer')) return false
+  if (ctx.offline && (page === 'api-tokens' || page === 'trainer')) return false
   // Only on a server that offers trainers, signed in: there is nobody to share with otherwise.
   if (page === 'trainer') return !!ctx.trainers && !!ctx.user && !ctx.demo
   // Signed in to a server that offers scoped tokens (API_TOKENS, on unless switched off).
@@ -93,12 +90,6 @@ export function pageVisible(page, ctx) {
   if (page === 'watch') return !!ctx.ios
   // The Android app only. Every build has the page: the F-Droid one says why it has no watch link.
   if (page === 'wear') return !!ctx.mobile && !!ctx.android && !ctx.demo
-  // The Garmin link lives in the phone apps (Connect IQ Mobile SDK); the page says when a build has none.
-  if (page === 'garmin') return !!ctx.mobile && !ctx.demo
-  // A Zepp OS watch reaches openGym through a server (lib/watch-relay.js). Signed in, the page pairs
-  // one; a phone on its own gets the page too, saying why it needs a server and how to connect
-  // (Discord, ravk_: on three Android phones the page was simply not there).
-  if (page === 'zepp') return !ctx.demo && (!!ctx.user || !!ctx.mobile)
   // The phone app only: a browser cannot watch where you are with the page closed.
   if (page === 'gym' || page === 'gym-find' || page === 'gym-edit') return !!ctx.mobile && ctx.gymReminder !== false
   // The health store of the phone this runs on (unknown counts as yes, as for the watch).
@@ -125,7 +116,7 @@ const MODULE_KW = {
   plates: 'plates plate math calculator barbell load warm-up warmup ramp automatic',
   strength: 'strength level standards beginner intermediate advanced elite',
   videos: 'form video film record camera technique set',
-  watch: 'watch apple watch wear os zepp amazfit garmin wrist',
+  watch: 'watch apple watch wear os wrist',
   body: 'body weight weigh-in weigh in scale measurements photos progress goal',
   health: 'health apple health healthkit health connect heart rate recovery sync',
   motivation: 'motivation streak challenges badges trophies recap wrapped year share gamification',
@@ -301,10 +292,7 @@ export const SEARCH = [
   { page: 'account', title: 'Sync now', net: true, icon: 'reset', tint: 'var(--acc)', kw: 'server sync upload refresh status connection', when: c => !!c.user && !c.demo && c.synced },
   { page: 'account', title: 'Cloudflare Access', net: true, icon: 'key', tint: 'var(--orange)', kw: 'cloudflare access zero trust service token header proxy', when: c => c.mobile && !!c.user && !c.demo && c.synced },
   { page: 'account', title: 'Passkeys', icon: 'fingerprint', tint: 'var(--acc)', kw: 'passkey security login', when: signedInWeb },
-  { page: 'zepp', title: 'Pair a watch', net: true, icon: 'watch', tint: 'var(--orange)', kw: 'zepp amazfit watch pair balance gtr gts active t-rex bip cheetah falcon', when: c => !!c.user && !c.demo },
-  { page: 'zepp', title: 'Connect to my server', net: true, icon: 'cloud', tint: 'var(--indigo)', kw: 'zepp server connect', when: c => !c.user },
   // Garmin
-  { page: 'garmin', title: 'Send workouts to the watch', icon: 'watch', tint: 'var(--grey)', kw: 'garmin send workouts watch' },
   // Gym reminder: the page's own rule (pageVisible), since the search only asks about the parent.
   { page: 'gym', title: 'Only between certain hours', icon: 'clock', tint: 'var(--purple)', kw: 'gym reminder hours window quiet', when: c => c.mobile && c.gymReminder !== false },
   // Live widget (Lock Screen, Dynamic Island, Android notification, the strip in the workout)

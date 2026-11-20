@@ -85,13 +85,11 @@ import { PAGES, ROOT_GROUPS, WATCH_PAGES, pageVisible, onRoot, searchSettings, p
 import { platformNow } from '../lib/platform-now.js'
 import { pathBefore } from '../lib/nav.js'
 import WatchSettingsPage from './WatchSettings.jsx'
-import GarminSettingsPage from './GarminSettings.jsx'
 import WearSettingsPage from './WearSettings.jsx'
 import IntegrationsPage from './Integrations.jsx'
 import ApiTokensPage from './ApiTokens.jsx'
 import MyTrainerPage from './MyTrainer.jsx'
 import { libraryOn } from '../lib/shared-api.js'
-import ZeppSettingsPage from './ZeppSettings.jsx'
 import ModulesPage from './Modules.jsx'
 import { isOn, presetOf } from '../lib/modules.js'
 import { presetCopy } from '../lib/modules-copy.js'
@@ -488,8 +486,6 @@ export default function Settings({ page = null, find = null, via = null, entryKe
     about: () => 'v' + __APP_VERSION__,
     watch: () => '',
     wear: () => '',
-    garmin: () => '',
-    zepp: () => '',
   }
 
   const open = id => nav('/settings/' + id)
@@ -569,8 +565,6 @@ export default function Settings({ page = null, find = null, via = null, entryKe
     'apple-health': () => <HealthPage key="apple-health" S={S} toast={toast} android={false} />,
     'health-connect': () => <HealthPage key="health-connect" S={S} toast={toast} android />,
     wear: () => <WearSettingsPage />,
-    garmin: () => <GarminSettingsPage />,
-    zepp: () => <ZeppSettingsPage />,
     gym: () => <GymReminderPage />,
     network: () => <NetworkLogPage />,
     live: () => <LiveWidgetSettings />,

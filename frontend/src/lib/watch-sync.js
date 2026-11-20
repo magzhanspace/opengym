@@ -48,9 +48,8 @@ import { sessionHistory } from './backfill.js'
 import { buildCombinedEntries, deriveSessionName } from './session-merge.js'
 import { todayISO, exerciseNameText } from './format.js'
 import { sanitizeHr } from './heart-rate.js'
-import { readWatchPrefs, settingsForWatch, writeWatchStatus, readWatchStatus, onWatchPrefs, writeGarminLink, noteWatchHeard } from './watch-settings.js'
+import { readWatchPrefs, settingsForWatch, writeWatchStatus, readWatchStatus, onWatchPrefs, noteWatchHeard } from './watch-settings.js'
 import { forgottenForWatch, readForgottenPrefs, readForgottenState, onForgottenChange, gymReminderOn } from './forgotten-workout.js'
-import { garminSnapshot, GARMIN_ACKED_MAX } from './garmin-snapshot.js'
 import { plannedType } from './health-connect.js'
 import { exView, exConverted, exUnitOf, viewEntry, viewRow, shownWeight, storedWeight } from './ex-unit.js'
 import { streakInfo } from './streak.js'
@@ -1137,7 +1136,7 @@ export function streakFor (S, today = todayISO()) {
 export async function startWatchSync ({ useStore, useUI }) {
   const p = await watchPlugin()
   if (!p) return () => {}
-  return runLink(p, { useStore, useUI }, { garmin: true })
+  return runLink(p, { useStore, useUI })
 }
 
 // Links besides the phone's own WatchBridge, with the same calls (lib/watch-relay.js). Their
@@ -1157,7 +1156,7 @@ export async function startLinkSync (plugin, { useStore, useUI }, opts = {}) {
   return () => { extraLinks.delete(p); stop() }
 }
 
-async function runLink (p, { useStore, useUI }, { health = true, clips: withClips = true, garmin: withGarmin = false } = {}) {
+async function runLink (p, { useStore, useUI }, { health = true, clips: withClips = true } = {}) {
   getStateRef = () => useStore.getState()
   uiRef = useUI
   // `sentAt`: when the last snapshot went, for the next change to go at once (sendSoon).
@@ -1174,16 +1173,8 @@ async function runLink (p, { useStore, useUI }, { health = true, clips: withClip
   }
   // Whether a watch with the app is there: asked at start and when the app comes back, not on every
   // change. Without one nothing below runs at all: no snapshot, no clips, no bridge call per tick.
-  // The phone's own link can also reach a Garmin (status `garmin`, docs/GARMIN.md): that watch gets
-  // the cut-down snapshot (lib/garmin-snapshot.js) alongside, made here so Java and Swift don't.
-  let linked = false, garmin = false
-  // A Garmin's `acked` list is short (GARMIN_ACKED_MAX, its messages are small), and a workout
-  // logged with the phone away comes back as dozens of events within a second or two. The ids
-  // applied since the last snapshot wait here and are named oldest first, a list per snapshot,
-  // or the first ones would only be named after the watch sent them a second time a minute later.
-  let unnamed = []
-  const onAcked = (ids = []) => {
-    if (garmin && Array.isArray(ids)) unnamed = [...unnamed.filter(id => !ids.includes(id)), ...ids].slice(-ACKED_MAX)
+  let linked = false
+  const onAcked = () => {
     // Sent again even when nothing differs: an event that came a second time means the watch never
     // got the snapshot that named it (the link dropped it), and the same one again is what it needs.
     lastSent = null
@@ -1191,8 +1182,7 @@ async function runLink (p, { useStore, useUI }, { health = true, clips: withClip
   }
   const checkLink = async () => {
     const was = linked
-    try { const st = await p.WatchBridge.status(); linked = !!(st && st.paired && st.installed); garmin = withGarmin && linked && !!st.garmin } catch { linked = false; garmin = false }
-    if (withGarmin) writeGarminLink(garmin)
+    try { const st = await p.WatchBridge.status(); linked = !!(st && st.paired && st.installed) } catch { linked = false }
     // A watch that is new here (the app just installed on it, or reinstalled): it has nothing yet,
     // so the snapshot goes again even when it is the same as the last one sent.
     if (linked && !was) lastSent = null
@@ -1245,20 +1235,12 @@ async function runLink (p, { useStore, useUI }, { health = true, clips: withClip
         if (gone.length) snap.healthGone = [...new Set(gone)]
       }
       const json = JSON.stringify(fitSnapshot(snap))
-      // With the Watch module (or the watch's own switch) off this is the empty snapshot, so the
-      // Garmin pauses with the others.
-      const naming = garmin && unnamed.length > GARMIN_ACKED_MAX ? unnamed.slice(0, GARMIN_ACKED_MAX) : null
-      const g = garmin ? JSON.stringify(garminSnapshot(naming ? { ...snap, acked: naming } : snap)) : null
-      const sent = g ? json + '\n' + g : json
       // `now` changes every time: not a change worth sending by itself.
-      const same = sent.replace(/"now":\d+,?/g, '')
+      const same = json.replace(/"now":\d+,?/g, '')
       if (same !== lastSent) {
         sentAt = Date.now()
-        const r = await p.WatchBridge.sendSnapshot(g ? { json, garmin: g } : { json })
+        const r = await p.WatchBridge.sendSnapshot({ json })
         if (r && r.sent) lastSent = same
-        // The next list of ids goes with the next snapshot (the newest ones are in every one).
-        unnamed = naming ? unnamed.filter(id => !naming.includes(id)) : []
-        if (unnamed.length) schedule()
       }
       // The workout's animations, once per workout and exercise (the native side remembers).
       const clips = prefs.enabled && withClips ? clipsFor(S) : []
@@ -1506,18 +1488,6 @@ function lateRow (w, exId, setIdx, sid = null) {
 }
 
 /** Whether a watch is paired and has the app, for Settings → Apple Watch. */
-/**
- * Settings → Garmin (views/GarminSettings.jsx): the native Garmin calls of WatchBridge
- * (garminStatus, garminPick, garminStore; docs/GARMIN.md). No phone app, or a build without them:
- * null.
- */
-export async function garminCall (name, args = {}) {
-  if (!['garminStatus', 'garminPick', 'garminStore'].includes(name)) return null
-  const p = await watchPlugin()
-  if (!p) return null
-  try { return (await p.WatchBridge[name](args)) || null } catch { return null }
-}
-
 /**
  * The Wear OS link by itself, for Settings → Wear OS watch (views/WearSettings.jsx, lib/wear-view.js):
  * { supported, paired, installed, reachable, watches }. A phone app from before the plugin said it
