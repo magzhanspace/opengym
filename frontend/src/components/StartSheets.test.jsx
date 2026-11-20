@@ -12,7 +12,9 @@ import { todayISO } from '../lib/format.js'
 const started = vi.hoisted(() => [])
 const menus = vi.hoisted(() => [])
 vi.mock('../sheets.jsx', () => ({ startFlow: (ids, opts) => started.push(opts?.lead ? { ids, lead: opts.lead.ex.map(x => x.id) } : ids), menuSheet: m => menus.push(m) }))
-import { startPickerSheet, startOrPreview, previewSheet } from './StartSheets.jsx'
+const navs = vi.hoisted(() => [])
+vi.mock('../lib/nav.js', () => ({ closeThenNav: (close, to) => { close(); navs.push(to) } }))
+import { startPickerSheet, startOrPreview, startPlanned, previewSheet, previewsStart } from './StartSheets.jsx'
 import TabBar, { START_HOLD_MS } from './TabBar.jsx'
 
 vi.mock('react-router-dom', () => ({ useNavigate: () => () => {}, useLocation: () => ({ pathname: '/home' }) }))
@@ -24,7 +26,11 @@ const wd = new Date(todayISO() + 'T12:00:00').getDay()
 beforeEach(() => {
   started.length = 0
   menus.length = 0
+  navs.length = 0
   const S = structuredClone(DEF)
+  // The picker and leftovers tests below are about what starts: the preview (on by default in this
+  // fork) is switched off for them and covered on its own in 'the preview (#976)'.
+  S.previewStart = false
   S.routines = [
     { id: 'push', name: 'Push', emoji: null, ex: [{ id: '0025', sets: 3, reps: 8, w: 60 }] },
     { id: 'pull', name: 'Pull', emoji: null, ex: [{ id: '0027', sets: 3, reps: 10 }] },
@@ -74,10 +80,13 @@ describe('the start picker (#930)', () => {
 })
 
 describe('the preview (#976)', () => {
-  it('starts at once with the setting off, and previews with it on', () => {
+  it('is on unless switched off: a profile that never chose previews, false starts at once', () => {
+    expect(previewsStart({})).toBe(true)
+    expect(previewsStart({ previewStart: true })).toBe(true)
+    expect(previewsStart({ previewStart: false })).toBe(false)
     startOrPreview(['push'])
     expect(started).toEqual([['push']])
-    act(() => useStore.getState().update(s => { s.previewStart = true }))
+    act(() => useStore.getState().update(s => { delete s.previewStart }))
     startOrPreview(['push'])
     expect(started).toHaveLength(1)
     renderTop()
@@ -87,6 +96,28 @@ describe('the preview (#976)', () => {
     expect(items[0].querySelector('.lrow-s').textContent).toMatch(/^3 sets · /)
     click('Start Push')
     expect(started).toEqual([['push'], ['push']])
+  })
+  it('an explicit Start (tab bar, Start screen) skips the preview', () => {
+    act(() => useStore.getState().update(s => { delete s.previewStart }))
+    startPlanned(['push'])
+    expect(started).toEqual([['push']])
+    expect(useUI.getState().sheets).toHaveLength(0)
+  })
+  it('a picked workout opens on its preview too', () => {
+    act(() => useStore.getState().update(s => { delete s.previewStart }))
+    startPickerSheet(); renderTop()
+    click('Morning mobility')
+    expect(started).toEqual([])
+    renderTop()
+    expect(host.querySelector('h3').textContent).toBe('Morning mobility')
+  })
+  it('Edit opens the routine editor, for a single routine only', () => {
+    previewSheet(['pull']); renderTop()
+    click('Edit')
+    expect(navs).toEqual(['/plan/r/pull'])
+    expect(started).toEqual([])
+    previewSheet(['push', 'pull']); renderTop()
+    expect([...host.querySelectorAll('button')].some(b => b.textContent.trim() === 'Edit')).toBe(false)
   })
   it('can swap to another workout from the preview', () => {
     previewSheet(['pull']); renderTop()

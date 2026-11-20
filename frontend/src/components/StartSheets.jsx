@@ -14,6 +14,7 @@ import { exOr } from '../lib/exercises.js'
 import { speedUnitOf } from '../lib/speed.js'
 import { glyphOf } from '../lib/glyphs.js'
 import { leftoversBefore } from '../lib/leftovers.js'
+import { closeThenNav } from '../lib/nav.js'
 import { Button, Row } from './ui.jsx'
 import MiniBodyMap from './MiniBodyMap.jsx'
 
@@ -21,17 +22,25 @@ const ui = () => useUI.getState()
 const S = () => useStore.getState().S
 
 // Settings → Workout → "Preview before starting" (#976): a planned session opens on what it
-// holds, with Start at its foot, instead of starting on the tap. Off (the default) starts at once,
-// the way it always did. Every start of a planned session goes through here.
-export function startOrPreview(routineIds) {
+// holds, with Start at its foot, instead of starting on the tap. On by default in this fork (a tap
+// on today's plan should show it, not start it); `previewStart: false` starts at once, as upstream
+// did. Every start of a planned session goes through here.
+/** Whether a planned start opens the preview first: on unless switched off. */
+export const previewsStart = st => st?.previewStart !== false
+
+export function startOrPreview(routineIds, { preview = true } = {}) {
   const ids = [].concat(routineIds || [])
   // #985: the last session ended before its routine did. Asked once per such session, then the
   // answer is remembered (S.leftoverSeen) and Start goes back to one tap.
   const left = ids.length ? leftoversBefore(S(), todayISO(), ids) : null
   if (left) return askLeftovers(left, ids)
-  if (S().previewStart === true && ids.length) { previewSheet(ids); return }
+  if (preview && previewsStart(S()) && ids.length) { previewSheet(ids); return }
   startFlow(ids)
 }
+
+/** An explicit Start (the tab bar's button, the Start screen's "Start …"): no preview, the way
+ *  the button says. The leftovers question (#985) still comes first. */
+export const startPlanned = routineIds => startOrPreview(routineIds, { preview: false })
 
 const answered = left => useStore.getState().update(s => { s.leftoverSeen = left.key })
 const leftFrom = left => t('From {0}, {1}', deriveSessionName(left.routines.map(r => r.name)), fmtDaysAgo(left.d))
@@ -124,6 +133,9 @@ function Preview({ ids, close }) {
   const speedUnit = speedUnitOf(st)
   const start = () => { close(); startFlow(built.routineIds) }
   const other = () => { close(); startPickerSheet() }
+  // One routine: its editor, to change the plan before starting it. A combined day has no one editor.
+  const editId = built.routines.length === 1 ? built.routines[0].id : null
+  const edit = () => closeThenNav(close, '/plan/r/' + editId)
   return <>
     <div className="row between" style={{ gap: 12, marginBottom: 4 }}>
       <div style={{ minWidth: 0 }}>
@@ -147,6 +159,10 @@ function Preview({ ids, close }) {
       : <div className="muted small" style={{ margin: '12px 0 16px' }}>{t('No exercises in it yet. You can add them once it runs.')}</div>}
     <Button variant="primary" icon="play" onClick={start}>{t('Start {0}', name)}</Button>
     <div style={{ height: 8 }} />
+    {editId && <>
+      <Button variant="ghost" icon="pencil" onClick={edit}>{t('Edit')}</Button>
+      <div style={{ height: 8 }} />
+    </>}
     <Button variant="ghost" className="dim" icon="swap" onClick={other}>{t('Choose a different workout')}</Button>
   </>
 }
