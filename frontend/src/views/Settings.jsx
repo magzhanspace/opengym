@@ -107,7 +107,6 @@ import { readGymConfig } from '../lib/gym-reminder.js'
 import { THEMES, shownThemes, inSeason, seasonChoice, activeSeason } from '../lib/seasonal.js'
 import { adventOf, adventOpenable } from '../lib/advent.js'
 import { openSeasonal } from '../components/Seasonal.jsx'
-import { useNfcSupported, nfcStickerSheet } from '../components/Nfc.jsx'
 import { dailyModeOf, settleAll } from '../lib/weigh-ins.js'
 import { voiceShortcutsSheet, voiceRowTitle } from '../components/VoiceShortcuts.jsx'
 import { readOrientation, setOrientation } from '../lib/orientation.js'
@@ -460,7 +459,6 @@ export default function Settings({ page = null, find = null, via = null, entryKe
   })
 
   /* ---------------- what the pages and the search need to know about this device ---------------- */
-  const nfcOK = useNfcSupported()
   const canVibrate = vibrateSupported()
   const ctx = {
     user, mobile: MOBILE, offline, android, ios: MOBILE && ios, appIcons: MOBILE && !!platformNow(), demo: DEMO, wakeOK, hasMedia, pwOn, webauthn: webauthnOK(),
@@ -468,7 +466,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
     recordHints: recordHintsOn(S),
     profiles: (S.equipProfiles || []).length > 0, nameLang: EXERCISE_NAME_LANGS.includes(baseLang(lang)),
     pushOK: !MOBILE && pushSupported(), reminderOn: !!S.reminder?.on, nudge: !!S.reminder?.nudge,
-    nfc: nfcOK, gymReminder,
+    gymReminder,
     autoBackup: !!S.autoBackup, synced: !!sync, installTip: !MOBILE && !standalone(), androidWeb: IS_ANDROID, desktopWeb: !IS_ANDROID && !APPLE_UA,
     integrations: config?.integrations?.providers || [],
     trainers: !!config?.trainers?.on,
@@ -1131,9 +1129,6 @@ export default function Settings({ page = null, find = null, via = null, entryKe
       </Section>}
       <Section title={t('On Home')}>
         {/* The gym check-in's own switch moved to Settings → Modules (1.4.4, lib/modules.js). */}
-        {/* NFC stickers (components/Nfc.jsx): only where the phone or the browser can write one. */}
-        {nfcOK && on('checkin') && <Row icon="nfc" iconTint="var(--blue)" title={t('Set up an NFC sticker')}
-          subtitle={t('Tap it at the gym to start your workout or show your code.')} accessory="chevron" onClick={nfcStickerSheet} />}
         {/* Siri & Shortcuts / Assistant (components/VoiceShortcuts.jsx): the phone app only. */}
         {MOBILE && platformNow() && <Row icon="chat" iconTint="var(--purple)" title={voiceRowTitle()}
           subtitle={platformNow() === 'android' ? t('Start a workout or log your weight from the app icon.') : t('Start a workout or log your weight by voice.')} accessory="chevron" onClick={voiceShortcutsSheet} />}

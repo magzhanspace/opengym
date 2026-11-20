@@ -6,8 +6,7 @@
 // THE RULES
 //   - One source of truth: every view asks isOn(S, id), never S.modules directly.
 //   - S.modules is { [id]: boolean }, only the choices someone made. A missing key is on, so a
-//     profile from before 1.4.4 keeps every surface it had. The one exception is the gym check-in,
-//     which had a switch of its own before (S.checkIn): until Modules decides, that one does.
+//     profile from before 1.4.4 keeps every surface it had.
 //   - Off hides the module's surfaces (cards, Stats parts, Settings pages and rows, search hits,
 //     notifications, widget fields) and pauses what it would send (health sync, the watch, the
 //     webhooks). It never deletes anything: switched back on, it is all
@@ -32,8 +31,6 @@ export const MODULES = [
     desc: 'Film a set and watch it back right under the row.' },
   { id: 'watch', group: 'training', icon: 'watch', tint: 'var(--grey)', title: 'Watch',
     desc: 'Log sets from your wrist on an Apple Watch, Wear OS, Garmin or Zepp watch.' },
-  { id: 'checkin', group: 'training', icon: 'qr', tint: 'var(--blue)', title: 'Gym check-in',
-    desc: 'Your membership codes on Home, and NFC stickers that start a workout.' },
   { id: 'body', group: 'body', icon: 'scale', tint: 'var(--teal)', title: 'Body',
     desc: 'Weigh-ins, measurements, progress photos and your weight goal.' },
   { id: 'health', group: 'body', icon: 'heart', tint: 'var(--red)', title: 'Health',
@@ -80,8 +77,6 @@ export function isOn(S, id) {
   if (unavailable.has(id)) return false
   const v = isMap(S?.modules) ? S.modules[id] : undefined
   if (typeof v === 'boolean') return v
-  // Before 1.4.4 the check-in had its own switch in Look & Home; it decides until Modules does.
-  if (id === 'checkin') return S?.checkIn !== false
   return true
 }
 

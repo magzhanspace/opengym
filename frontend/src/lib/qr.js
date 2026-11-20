@@ -1,4 +1,5 @@
-// QR rendering for the gym check-in cards (see views/CheckIn.jsx).
+// QR rendering (the device-link code in components/Passkeys.jsx, the server address in
+// views/Assistants.jsx). It began as the gym check-in cards' renderer, which is gone.
 //
 // We never store a photo of a membership card, only its decoded value (+ its symbology in
 // `fmt`). The picture a turnstile scanner reads is regenerated from that value every time the

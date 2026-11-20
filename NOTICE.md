@@ -104,22 +104,17 @@ language-model assistance. They are not copied from a separate Portuguese
 dataset. Their review status and translation policy are documented alongside
 the source files.
 
-## Gym check-in QR codes and barcodes
+## QR codes
 
-The gym check-in feature (a saved membership code shown as a QR code or barcode on the phone,
-added by importing a photo or scanning with the camera) uses three third-party packages. All are
-permissively licensed and compatible with openGym's AGPL, and all load on demand: the QR renderer
-and the browser decoder only when a card is shown or scanned, the ML Kit plugin only in the
-Android/iOS app. Barcodes (Code 128, Code 39, EAN-13, EAN-8, UPC-A) are drawn, and read in
-browsers without a native `BarcodeDetector`, by openGym's own code (`frontend/src/lib/barcode.js`),
-under openGym's license.
+The device-link and server-address QR codes are drawn with one third-party package, loaded on
+demand. (The gym check-in feature these notes used to describe, with its jsQR and ML Kit
+scanners, has been removed from this fork.)
 
 ### QR rendering — `lean-qr`
 
-openGym renders each saved code on the phone with [**lean-qr**](https://github.com/davidje13/lean-qr)
-by David Evans, used under the **MIT License** and reproduced below. Only the code's stored value
-is kept; the picture is generated fresh from that value each time it is shown, never stored.
-It runs the same way in the app and in the browser/PWA.
+openGym renders its QR codes with [**lean-qr**](https://github.com/davidje13/lean-qr)
+by David Evans, used under the **MIT License** and reproduced below. It runs the same way in the app and
+in the browser/PWA.
 
 ```
 MIT License
@@ -144,24 +139,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
-
-### Camera scan & photo decode in the browser — `jsQR`
-
-In a browser (including the installed PWA), reading a code from the camera or from an imported
-photo uses [**jsQR**](https://github.com/cozmo/jsQR) by Cosmo Wolfe, under the **Apache License
-2.0** (text at <https://www.apache.org/licenses/LICENSE-2.0> and in the package's own `LICENSE`).
-Where the browser has a native `BarcodeDetector`, that is tried first and jsQR is the fallback
-(with openGym's own reader for barcodes).
-Video frames are decoded in memory and never uploaded or stored.
-
-### Camera scan & photo decode in the app — `@capacitor-mlkit/barcode-scanning`
-
-In the Android/iOS app, reading a code — from the camera or from an imported photo — uses the
-[**@capacitor-mlkit/barcode-scanning**](https://github.com/capawesome-team/capacitor-mlkit) plugin
-by the Capawesome Team (Robin Genz), a Capacitor wrapper around Google's ML Kit, used under the
-**Apache License 2.0**. openGym pins the `7.x` line to stay on Capacitor 7. The full license text is
-available at <https://www.apache.org/licenses/LICENSE-2.0> and in the package's own `LICENSE` file.
-The decoded string is what openGym keeps; the photo itself is never stored.
 
 ## Garmin watches: the Connect IQ Mobile SDK
 

@@ -75,7 +75,7 @@ describe('the Modules page', () => {
     mount()
     expect(sw('Seasonal themes').getAttribute('aria-checked')).toBe('false')
     expect(row('Start from').querySelector('.lrow-v').textContent).toBe('Custom')
-    expect(host.textContent).toContain('10 of 11 modules on.')
+    expect(host.textContent).toContain('9 of 10 modules on.')
     act(() => sw('Seasonal themes').click())
     expect(isOn(mocks.S, 'seasonal')).toBe(true)
   })
@@ -142,7 +142,7 @@ describe('Settings follows the modules', () => {
     for (const [q, title, mod] of [
       ['rir', 'Effort per set', 'effort'], ['weigh', 'Weigh in before workouts', 'body'], ['recap', 'Week and month recap', 'motivation'],
       ['challenges', 'Monthly challenges', 'motivation'], ['halloween', 'Halloween', 'seasonal'], ['recovery', 'Recovery tips', 'health'],
-      ['webhook', 'Webhooks', 'integrations'], ['nfc', 'Set up an NFC sticker', 'checkin'], ['about you', 'About you', 'strength'],
+      ['webhook', 'Webhooks', 'integrations'], ['about you', 'About you', 'strength'],
       ['warm-up', 'Automatic warm-ups', 'plates'],
     ]) {
       expect(has(q, web, title), title).toBe(true)

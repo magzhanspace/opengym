@@ -66,7 +66,6 @@ import { SeasonalLayer } from './components/Seasonal.jsx'
 import { WrappedLayer } from './components/WrappedEntry.jsx'
 import { openDeviceLinkRedeem } from './components/Passkeys.jsx'
 import { useAnimPacksBoot, useAnimOffer } from './components/Animations.jsx'
-import { useNfcTagLinks } from './components/Nfc.jsx'
 import { useRoutineLinks } from './components/RoutineShare.jsx'
 import Login from './views/Login.jsx'
 import MobileOnboarding from './views/MobileOnboarding.jsx'
@@ -103,7 +102,6 @@ const ProgressPhotos = lazyView(() => import('./views/ProgressPhotos.jsx'))
 const Trainer = lazyView(() => import('./views/Trainer.jsx'))
 // The tabs and screens past Home (Stats, History, the Library, Settings, ...) as well: a start
 // only needs Home, and these are fetched right behind it the same way.
-const CheckIn = lazyView(() => import('./views/CheckIn.jsx'))
 const RoutineEdit = lazyView(() => import('./views/RoutineEdit.jsx'))
 const Programmes = lazyView(() => import('./views/Programmes.jsx'))
 const ProgrammeEdit = lazyView(() => import('./views/Programmes.jsx').then(m => ({ default: m.ProgrammeEdit })))
@@ -358,8 +356,6 @@ function Shell() {
   const setupDone = authed && ready && !needsMobileOnboarding && !permSteps
   // Google Play: the one-time offer of sharper animations, once set up and not mid-workout.
   useAnimOffer(setupDone && !inWorkout)
-  // A tapped NFC sticker (components/Nfc.jsx): one that opened the app waits for the setup.
-  useNfcTagLinks(setupDone)
   // A friend's routine link (components/RoutineShare.jsx): the same wait for the setup.
   useRoutineLinks(setupDone)
   useTourOffer(setupDone, loadTour)
@@ -378,7 +374,6 @@ function Shell() {
       <Route path="/home" element={<Home />} />
       {/* A module switched off (Settings → Modules, lib/modules.js) takes its screens with it: the
           route falls through to the catch-all redirect below. The data stays where it is. */}
-      {isOn(S, 'checkin') && <Route path="/checkin" element={<CheckIn />} />}
       <Route path="/plan" element={<Plan />} />
       <Route path="/plan/r/:id" element={<RoutineEdit />} />
       <Route path="/plan/programmes" element={<Programmes />} />

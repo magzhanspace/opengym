@@ -49,7 +49,6 @@ import Icon from './components/Icon.jsx'
 import CommunityBits from './components/CommunityBits.jsx'
 import './views/Community.css'
 import { SeasonDeco } from './components/Seasonal.jsx'
-import { useNfcSupported, nfcExerciseSheet } from './components/Nfc.jsx'
 import { usesBands, withBandEx, setBandsOf, toggleSetBand, bandText } from './lib/bands.js'
 import { BandChips } from './components/Bands.jsx'
 import { Button, Slider, Switch, Segmented, SelectRow, Row, TextField, NumberField, MultiSelectRow } from './components/ui.jsx'
@@ -1548,7 +1547,6 @@ function ExerciseDetail({ ex, close }) {
   const st = exView(useStore(s => s.S), ex.id)
   const last = lastEntryFor(st, ex.id)
   const best = bestWeightFor(st, ex.id, currentDbLoad(st, ex.id))
-  const nfcOK = useNfcSupported()
   // Merge into… is offered for your own exercise, or a catalogue one with something logged or
   // planned to move.
   const canMerge = !ex.missing && (isCustomEx(ex) || (() => { const p = mergePreview(st, ex.id, null); return p.workouts + p.routines > 0 })())
@@ -1584,8 +1582,6 @@ function ExerciseDetail({ ex, close }) {
     <Button variant="primary" icon="plus" style={{ margin: '10px 0 4px' }} onClick={() => addToRoutineSheet(ex)}>{t('Add to my plan')}</Button>
     {last && <Button icon="history" style={{ marginTop: 4 }} onClick={() => exerciseHistorySheet(ex.id)}>{t('History')}</Button>}
     <FormVideosSection exId={ex.id} />
-    {/* A sticker on the machine that jumps to this exercise in a workout (components/Nfc.jsx). */}
-    {nfcOK && !ex.missing && <Button icon="nfc" style={{ marginTop: 4 }} onClick={() => nfcExerciseSheet(ex)}>{t('Write NFC sticker for this exercise')}</Button>}
     {/* Edit is an ordinary button with the others; Delete waits at the very end, apart (P6). */}
     {isCustomEx(ex) && <Button icon="pencil" style={{ marginTop: 8 }} onClick={() => { close(); customExSheet(ex) }}>{t('Edit')}</Button>}
     {modeOf({ id: ex.id }) === 'reps' && <>

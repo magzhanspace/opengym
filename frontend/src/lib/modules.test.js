@@ -26,13 +26,6 @@ describe('modules', () => {
     expect(isOn({ modules: { body: false } }, 'later-module')).toBe(true)
   })
 
-  it('the old check-in switch decides until Modules does', () => {
-    expect(isOn({ checkIn: false }, 'checkin')).toBe(false)
-    expect(isOn({ checkIn: true }, 'checkin')).toBe(true)
-    expect(isOn({ checkIn: false, modules: { checkin: true } }, 'checkin')).toBe(true)
-    expect(isOn({ checkIn: true, modules: { checkin: false } }, 'checkin')).toBe(false)
-  })
-
   it('presets are nested, smallest first, and every one round-trips', () => {
     let prev = new Set()
     for (const p of PRESETS) {
@@ -52,7 +45,7 @@ describe('modules', () => {
     applyPreset(s, 'training')
     expect(isOn(s, 'effort')).toBe(true)
     expect(isOn(s, 'plates')).toBe(true)
-    for (const id of ['body', 'health', 'motivation', 'seasonal', 'checkin']) expect(isOn(s, id)).toBe(false)
+    for (const id of ['body', 'health', 'motivation', 'seasonal']) expect(isOn(s, id)).toBe(false)
   })
 
   it('one switch away from a preset is Custom, and keeps the other keys', () => {
@@ -67,7 +60,7 @@ describe('modules', () => {
   })
 
   it('names what a change switches off', () => {
-    expect(turnedOff({}, presetModules('training')).sort()).toEqual(['body', 'checkin', 'community', 'health', 'integrations', 'motivation', 'seasonal', 'strength', 'videos'])
+    expect(turnedOff({}, presetModules('training')).sort()).toEqual(['body', 'community', 'health', 'integrations', 'motivation', 'seasonal', 'strength', 'videos'])
     expect(turnedOff({ modules: { body: false } }, { body: false, seasonal: false })).toEqual(['seasonal'])
   })
 })

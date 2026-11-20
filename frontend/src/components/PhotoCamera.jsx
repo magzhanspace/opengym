@@ -3,7 +3,7 @@
 // exactly on the camera's frame, which is also the picture that is kept (lib/camera-frame.js),
 // and none of it ends up in the saved photo.
 //
-// Camera access is getUserMedia, as the QR scan already does (CameraScan.jsx): it works in the
+// Camera access is getUserMedia, as a browser camera page does: it works in the
 // browser on HTTPS or localhost, in the iPhone app's WebView and in the Android one (Capacitor's
 // WebView asks for the CAMERA permission the app already declares). Where it is not there or was
 // refused, the screen says so and offers the phone's own camera through a file input instead;
