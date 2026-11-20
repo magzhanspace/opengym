@@ -11,11 +11,6 @@ import {
   generateAuthenticationOptions, verifyAuthenticationResponse
 } from '@simplewebauthn/server';
 import webpush from 'web-push';
-import * as coachConfig from './coach/config.js';
-import * as coachJobs from './coach/jobs.js';
-import { coachRoutes } from './coach/routes.js';
-import { startCadence } from './coach/cadence.js';
-import { startWarmup } from './coach/warmup.js';
 import { dayReminderPush, nudgePush, restTimerPush, testPush } from './push-messages.js';
 import { reminderOf as checkinReminderOf, dueKeys as checkinDueKeys, dueKind as checkinDueKind, checkinPush } from './checkin-reminder.js';
 import { verifyError, isMisconfigured, originHint } from './verify-error.js';
@@ -148,13 +143,12 @@ fs.mkdirSync(DATA, { recursive: true });
  * this container runs as root, so it lands on the host as root-owned 0700 and anything else
  * the owner runs against their own data directory — a backup script, the MCP server in #19,
  * their own `jq` — gets EACCES on files that are theirs. Locking the four files that actually
- * hold secrets keeps the Coach runtime out of them without taking the directory hostage.
+ * hold secrets keeps them private without taking the directory hostage.
  *
  * Best-effort throughout: a bind-mounted host filesystem may refuse chmod, and that is not a
- * reason to refuse to boot. The privilege drop in adapters/spawn.js is the control that does
- * fail closed. */
+ * reason to refuse to boot. */
 const lock = f => { try { fs.chmodSync(path.join(DATA, f), 0o600); } catch { /* not present yet, or host says no */ } };
-['secret', 'db.json', 'coach.json'].forEach(lock);
+['secret', 'db.json'].forEach(lock);
 
 /* ---------- secret + db ---------- */
 const secretFile = path.join(DATA, 'secret');
@@ -197,8 +191,8 @@ db.subs = db.subs || [];
 db.invites = db.invites || [];
 db.deviceLinks = db.deviceLinks || [];   // unused one-time device links, hashed (device-link.js)
 const isAdmin = user => !!user && (user.admin === true || ADMIN_UIDS.includes(user.id));
-// One owner per instance, any number of admins. Admins run the place day to day (users, invites,
-// the Coach); the owner is the one admin the others cannot act on: only the owner appoints or
+// One owner per instance, any number of admins. Admins run the place day to day (users, invites);
+// the owner is the one admin the others cannot act on: only the owner appoints or
 // removes admins, deletes an admin's account, hands the role on, or clears the activity log.
 // Without this any admin could delete every other admin and then wipe the log of having done it.
 // The owner is whoever carries `owner: true` (the first profile under FIRST_USER_ADMIN, or a
@@ -385,7 +379,7 @@ async function sendPush(userId, payload, deviceId) {
   };
   await Promise.all(Array.from({ length: Math.min(PUSH_CONCURRENCY, subs.length) }, worker));
   // Pruning dead subscriptions is bookkeeping, not the send. Most callers do not await this
-  // function at all (the rest-timer setTimeout, the Coach proposal hook), so a ./data that cannot
+  // function at all (the rest-timer setTimeout), so a ./data that cannot
   // be written right now — disk full, read-only mount, EIO — would turn the throw into an
   // unhandled rejection and take the process down. The row is already gone from db.subs in
   // memory, so only the copy on disk lags: the next saveDb() that succeeds, from any route,
@@ -599,14 +593,13 @@ function nudgeTick(user, S, now) {
   saveDb();
   sendPush(user.id, nudgePush(S.lang, toneOf(S.reminder), routine, now.date));
 }
-// What the tick needs to know before it reads a whole state: the reminder settings and whether
-// the Coach was agreed to, kept per user against the state file's mtime and size. The state cache
+// What the tick needs to know before it reads a whole state: the reminder settings, kept per user against the state file's mtime and size. The state cache
 // above holds at most STATE_CACHE_MAX documents, and the tick walks every subscribed user in the
 // same order, so past that many it missed on every lookup and parsed every state every 10 s: a
 // handful of accounts with multi-megabyte states stalled the instance for everyone. A summary is
 // a few bytes, so there is one for every user, and a full read happens only while one of that
 // user's windows is open and something could still be sent.
-const stateSummaries = new Map(); // uid -> { mtimeMs, size, rem, consent, settled }
+const stateSummaries = new Map(); // uid -> { mtimeMs, size, rem, settled }
 function stateSummary(uid) {
   let st;
   try { st = fs.statSync(stateFile(uid)); } catch { stateSummaries.delete(uid); return null; }
@@ -617,7 +610,6 @@ function stateSummary(uid) {
   const sum = {
     mtimeMs: st.mtimeMs, size: st.size,
     rem: r && typeof r === 'object' ? { on: !!r.on, tz: r.tz, time: r.time, nudge: !!r.nudge } : { on: false },
-    consent: !!S?.coach?.consent?.agreedAt,
     settled: '',   // a local date the reminder was found to owe nothing on, for this file
     wrapped: wrappedSummary(S),   // the December push (wrapped.js): a flag, a year, a few years
     chk: (() => { const c = checkinReminderOf(S); return { on: c.on && Object.keys(c.items).length > 0, tz: c.tz || r?.tz, time: c.time }; })(),
@@ -1402,7 +1394,7 @@ const nameTaken = (name, exceptId) => {
    looked up as an address first, then as a name, so a profile name that happens to contain an
    "@" still signs in. Wrong passwords count against the account the identifier resolves to, so
    switching between name and address does not reset the pause. The full address is never
-   written to the audit log or the console (maskEmail), is not part of /api/me, the Coach, the
+   written to the audit log or the console (maskEmail), is not part of /api/me, the
    MCP bridge or anything shared, and only its owner (GET /api/account/password) and an admin
    (the user list) ever see it. */
 const emailHolder = e => db.users.find(u => hasPassword(u) && u.email === e) || null;
@@ -1576,8 +1568,8 @@ async function removeEmail(req, res, user, body) {
 }
 
 // Everything of an account, gone for good: the user record, their passkeys, push subscriptions,
-// device links and live presence, and outside db.json their training history, any Coach
-// credential and their photos and videos. The admin's delete and the account's own both end here.
+// device links and live presence, and outside db.json their training history and
+// their photos and videos. The admin's delete and the account's own both end here.
 function removeAccount(u) {
   db.users = db.users.filter(x => x.id !== u.id);
   db.creds = (db.creds || []).filter(c => c.userId !== u.id);
@@ -1587,12 +1579,9 @@ function removeAccount(u) {
   dropWatchCodes(watchCodes, u.id);
   revokeTokens(db, u.id);
   presence.delete(u.id);
-  // The training history and any Coach credential of theirs, both outside db.json.
+  // The training history, outside db.json.
   try { fs.unlinkSync(stateFile(u.id)); } catch { /* already gone */ }
   try { fs.unlinkSync(watchFile(u.id)); } catch { /* never had a watch */ }
-  try { coachConfig.clearProfileAuth(u.id); } catch { /* nothing stored */ }
-  // The Coach's own record of them: plans waiting for a yes, the job history, the cohort switch.
-  try { coachJobs.removeUser(u.id); } catch (e) { console.error('coach: could not remove the record of', u.id, e.message); }
   // Their photos and videos — the one place a profile's folder under uploads/ is removed.
   try { MEDIA.removeUser(u.id); } catch (e) { console.error('media: could not remove uploads of', u.id, e.message); }
   // Their integrations: connections, sealed secrets and anything still waiting to be sent.
@@ -2548,25 +2537,8 @@ const routes = {
     json(res, 200, { ok: true, users: db.users.length, writable: true });
   },
 
-  // Public config the login screen needs before anyone is signed in. `coach` is absent unless
-  // the instance has both switched the Coach on and successfully connected a provider — the
-  // single flag every piece of Coach UI hangs off, so an unconfigured instance is byte-for-byte
-  // the app it was before the feature existed.
+  // Public config the login screen needs before anyone is signed in.
   'GET /api/config': async (req, res) => {
-    // The Coach block names the provider this instance is wired to — the same fact
-    // /api/coach/disclosure refuses to hand out without a session, and for the same reason: on an
-    // invite-only instance, which model this box talks to is nobody's business who has not been
-    // let in. The two flags above it are what the login screen and the pre-login boot read
-    // (invite code field, "continue without account"), so those stay public.
-    //
-    // Every Coach consumer on the client side already requires a signed-in user before it looks
-    // at this block (lib/coach.js coachAvailable), so nothing that could render loses anything.
-    //
-    // A signed-in caller always gets the key, even on an instance with no Coach, where it is
-    // null. The client caches this answer for the page load and has to know whether the copy it
-    // holds was made for a session: without the key it cannot tell "no Coach here" from "you
-    // were not signed in when you asked", and would re-ask on every sign-in on every instance
-    // that has no Coach. The key's absence is that answer.
     json(res, 200, {
       invite_only: INVITE_ONLY, allow_guest: ALLOW_GUEST,
       // Whether this request came with a session GET /api/me would accept (the same check). The
@@ -2587,10 +2559,9 @@ const routes = {
       // Public like the two flags above: the caps are not a secret, and the absence of the
       // block is how the app knows this server does not take photos and videos at all.
       ...(MEDIA_ON ? { media: mediaConfig(MEDIA_LIMITS) } : {}),
-      ...(readSession(req) ? { coach: coachConfig.publicConfig() } : {}),
       // The community library: only to a session and only with LIBRARY=on.
       ...(LIBRARY.on && readSession(req) ? { shared: publicLibraryConfig(LIBRARY, currentConsent('library')) } : {}),
-      // Which integrations this server offers (only to a session, like the Coach block). Absent
+      // Which integrations this server offers (only to a session). Absent
       // with INTEGRATIONS unset, which is how the app knows to show the server cards as off.
       ...(readSession(req) && integrations.publicConfig() ? { integrations: integrations.publicConfig() } : {}),
       // Trainers and studios (docs/TRAINERS.md): only to a session and only when on, so the app
@@ -3125,7 +3096,7 @@ const routes = {
   ...(oidcApi ? oidcApi.routes : {}),
 
   // `rev` is the server's own count of writes to this profile (also stored inside the document as
-  // `_rev`, so every other reader of the file — reminder tick, admin, Coach, MCP — is unaffected).
+  // `_rev`, so every other reader of the file — reminder tick, admin, MCP — is unaffected).
   // A client pushes it back as `baseRev`, and a write over a document it never saw is refused.
   // `_unstamped` is the server's note of what it stamped for an older app's last push
   // (sync-stamps.js ownRecord), `_prior` what each field held before (notePrior): read back only
@@ -3599,12 +3570,6 @@ const routes = {
     json(res, 200, { ok: true });
   },
 
-  /* ---------- AI Coach ---------- */
-  // Routes live in coach/routes.js and are handed the helpers above rather than importing
-  // them: they are closures over db and SECRET, and passing them in keeps that module free of
-  // a cycle. Every one of them is inert while the feature is unconfigured.
-  ...coachRoutes({ json, readBody, readSession, requireAdmin }),
-
   /* ---------- integrations ---------- */
   // integrations/routes.js, handed the same helpers. With INTEGRATIONS unset they answer an empty
   // list (GET) or 404 "off", so the routes exist on every server and the app can tell.
@@ -3631,24 +3596,7 @@ const routes = {
   ...(MEDIA_ON ? mediaRoutes : {})
 };
 
-/* ---------- Coach: boot recovery, notifications, scheduled reviews ---------- */
-// A job that was running when the process died is not coming back; say so rather than leaving
-// a spinner that never resolves.
-coachJobs.recoverOnBoot();
-// A ready proposal is the one Coach event worth a notification. Failures and "nothing to
-// change" stay silent on purpose (FR-38/E4).
-coachJobs.setProposalHook((uid, pending) => {
-  const n = (pending?.changes || []).length;
-  if (!n) return;
-  sendPush(uid, {
-    title: 'Your Coach has been reading',
-    body: n === 1 ? '1 suggestion after this week' : `${n} suggestions after this week`,
-    tag: 'coach-proposal', url: '#/coach'
-  });
-});
 integrations.start();
-startCadence({ users: () => db.users.filter(u => !u.disabled), userNow, skip: uid => !stateSummary(uid)?.consent });
-startWarmup();
 
 // node's requestTimeout is one number for every route, and it is half an hour (below) for the
 // sake of one: a video uploaded over a slow uplink. Every other request keeps node's old five

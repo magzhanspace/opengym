@@ -11,7 +11,7 @@ vi.mock('../sheets.jsx', () => ({ askAddDeviceData: async () => true }))
 
 import { DEF, useStore } from './useStore.js'
 import { NUTRITION_KEY, TOKEN_KEY, loadLink, saveLink } from '../lib/sister-nutrition.js'
-import { secureGet, secureSet } from '../lib/coach-secrets.js'
+import { secureGet, secureSet } from '../lib/secure-store.js'
 
 const clone = v => JSON.parse(JSON.stringify(v))
 beforeEach(() => { localStorage.clear(); useStore.setState({ S: { ...clone(DEF), _ts: 1 }, user: null, ready: true }) })

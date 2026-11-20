@@ -8,7 +8,7 @@
 //   - the address, the user name and the switches: this device only (localStorage, CONFIG_KEY),
 //     never S, which syncs to every device and rides in every backup
 //   - the password (an app password, please): the platform's secure storage, like the Coach's
-//     API key (lib/coach-secrets.js): the Keychain on iPhone, the Keystore on Android; a browser
+//     API key (lib/secure-store.js): the Keychain on iPhone, the Keystore on Android; a browser
 //     has nothing better than its own storage
 //   - whose it is (`owner`, see ownerOf in lib/webdav-run.js): the account or the local profile
 //     that set it up. A device is sometimes shared: when someone else is signed in, nothing goes

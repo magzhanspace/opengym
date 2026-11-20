@@ -1,8 +1,6 @@
-/* GET /api/config carries two kinds of fact. The flags the login screen and the pre-login boot
-   need (invite_only for the invite field, allow_guest for "continue without account") are public
-   — there is nobody to authenticate at the point they are read. The Coach block is not: it names
-   the provider this instance talks to, which is exactly what GET /api/coach/disclosure refuses to
-   answer without a session. */
+/* GET /api/config: the flags the login screen and the pre-login boot need (invite_only for the
+   invite field, allow_guest for "continue without account") are public, there is nobody to
+   authenticate at the point they are read. */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
@@ -28,14 +26,10 @@ async function startServer(t, env = {}) {
   fs.writeFileSync(path.join(dataDir, 'db.json'), JSON.stringify({
     users: [{ id: UID, name: 'C', created: new Date().toISOString() }], creds: [], subs: [], invites: []
   }));
-  // The fixture provider is "connected" by definition (coach/config.js isConnected), which is all
-  // publicConfig() needs to produce a block.
-  fs.writeFileSync(path.join(dataDir, 'coach.json'), JSON.stringify({ enabled: true, provider: 'fixture' }));
-  // MEDIA_UPLOADS=0: the answers below are compared whole, and they are about the login flags
-  // and the Coach block. The public media block has its own tests in server-media.test.js.
+  // MEDIA_UPLOADS=0: the answers below are compared whole, and they are about the login flags. The public media block has its own tests in server-media.test.js.
   const child = spawn(process.execPath, ['server.js'], {
     cwd: API, stdio: ['ignore', 'pipe', 'pipe'],
-    env: { ...process.env, PORT: '0', DATA_DIR: dataDir, ORIGIN: 'http://localhost:8080', RP_ID: 'localhost', INVITE_ONLY: '1', ALLOW_GUEST: '0', COACH_DISABLED: '', MEDIA_UPLOADS: '0', ...env }
+    env: { ...process.env, PORT: '0', DATA_DIR: dataDir, ORIGIN: 'http://localhost:8080', RP_ID: 'localhost', INVITE_ONLY: '1', ALLOW_GUEST: '0', MEDIA_UPLOADS: '0', ...env }
   });
   t.after(() => { child.kill('SIGKILL'); fs.rmSync(dataDir, { recursive: true, force: true }); });
   let log = '';
@@ -45,24 +39,16 @@ async function startServer(t, env = {}) {
   return { api: `http://127.0.0.1:${port}`, dataDir };
 }
 
-test('GET /api/config: the login flags are public, the Coach block needs a session', async t => {
+test('GET /api/config: the login flags are public, and a session adds only its own flags', async t => {
   const h = await startServer(t);
   const config = headers => fetch(`${h.api}/api/config`, headers ? { headers } : undefined).then(r => r.json());
 
-  // Nobody signed in — what the login screen and boot() actually read, and nothing else.
-  const anon = await config();
-  assert.deepEqual(anon, { invite_only: true, allow_guest: false, signed_in: false }, 'no coach block for a stranger');
+  // Nobody signed in: what the login screen and boot() actually read, and nothing else.
+  assert.deepEqual(await config(), { invite_only: true, allow_guest: false, signed_in: false });
 
-  // A session cookie gets the block, provider and all.
-  const signedIn = await config({ Cookie: `gymsid=${mint(UID)}` });
-  assert.equal(signedIn.invite_only, true);
-  assert.equal(signedIn.allow_guest, false);
-  assert.equal(signedIn.coach.enabled, true);
-  assert.equal(signedIn.coach.provider, 'fixture');
-
-  // The paired mobile app carries the same token in a header, and boot() reads this route with it.
-  const paired = await config({ Authorization: `Bearer ${mint(UID)}` });
-  assert.equal(paired.coach.provider, 'fixture');
+  // A session cookie, and the paired mobile app's Bearer token, are both a session.
+  assert.deepEqual(await config({ Cookie: `gymsid=${mint(UID)}` }), { invite_only: true, allow_guest: false, signed_in: true, api_tokens: true });
+  assert.deepEqual(await config({ Authorization: `Bearer ${mint(UID)}` }), { invite_only: true, allow_guest: false, signed_in: true, api_tokens: true });
 
   // A signature that does not verify is a stranger, not a session.
   const forged = await config({ Cookie: 'gymsid=u_cfg_1:99999999999999:0.notarealmac' });
@@ -99,24 +85,6 @@ test('GET /api/config: signed_in says what GET /api/me would answer, and /api/me
     assert.equal(r.me, yes ? 200 : 401, `${who}: /api/me status is what it always was`);
     if (yes) assert.equal(r.body.user.id, UID); else assert.deepEqual(r.body, { error: 'not signed in' });
   }
-});
-
-test('a session always gets the key, so the client can tell "no Coach" from "not signed in"', async t => {
-  const h = await startServer(t, { COACH_DISABLED: '1' });
-  const config = headers => fetch(`${h.api}/api/config`, headers ? { headers } : undefined).then(r => r.json());
-
-  // The client caches this answer for the page load. Without the key it cannot tell an instance
-  // with no Coach from an answer made for nobody, and re-asks on every sign-in forever.
-  assert.deepEqual(await config({ Cookie: `gymsid=${mint(UID)}` }), { invite_only: true, allow_guest: false, signed_in: true, api_tokens: true, coach: null },
-    'signed in, no Coach configured: the key is there and it is null');
-  assert.deepEqual(await config(), { invite_only: true, allow_guest: false, signed_in: false }, 'and a stranger gets no key at all');
-});
-
-test('no Coach configured: no block for anyone, signed in or not', async t => {
-  const h = await startServer(t, { COACH_DISABLED: '1' });
-  assert.deepEqual(await fetch(`${h.api}/api/config`).then(r => r.json()), { invite_only: true, allow_guest: false, signed_in: false });
-  const signedIn = await fetch(`${h.api}/api/config`, { headers: { Cookie: `gymsid=${mint(UID)}` } }).then(r => r.json());
-  assert.equal(signedIn.coach, null, 'the key says "asked with a session"; null says "no Coach here"');
 });
 
 test('GET /api/config: DEFAULT_LANG is public when set, absent when unset or malformed (#303)', async t => {

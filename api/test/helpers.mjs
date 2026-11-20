@@ -1,6 +1,6 @@
 /* Shared scaffolding for the api tests.
  *
- * Every module under coach/ resolves DATA_DIR at import time (the same way server.js does),
+ * Server modules resolve DATA_DIR at import time (the same way server.js does),
  * so a test that wants its own data directory has to set the variable before the first
  * import. Hence dynamic imports everywhere below, and one helper that does it in the right
  * order. node:test runs each file in its own process, so one directory per file is enough.

@@ -16,13 +16,13 @@
 // openNutrition serves today; the extras show once it sends them.
 //
 // Device-local on purpose, like the WebDAV backup (lib/webdav.js): the token is a secret, so it is
-// kept in the phone's secure storage (lib/coach-secrets.js) and never in S, a backup or the sync. A second device
+// kept in the phone's secure storage (lib/secure-store.js) and never in S, a backup or the sync. A second device
 // links on its own. Off until linked; unlinking forgets the token and the numbers.
 //
 // Network only: openGym Offline (lib/build-caps.js) leaves the card out (OFFLINE_OFF_CARDS), and
 // link() / refresh() / loadLink() do nothing there, so no screen ever shows or asks for it.
 import { nativeFetch } from './capacitor-fetch.js'
-import { secureGet, secureSet, secureRemove } from './coach-secrets.js'
+import { secureGet, secureSet, secureRemove } from './secure-store.js'
 import { offlineBuild } from './build-caps.js'
 
 export const NUTRITION_KEY = 'gym_sister_nutrition_v1'

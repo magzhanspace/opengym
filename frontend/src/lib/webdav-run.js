@@ -3,7 +3,7 @@
 // run at a time. The daily one starts from App.jsx (on start, on coming back to the app, and
 // every hour while it is open); Back up now and Restore from the sheet (components/WebDavBackup.jsx).
 import { useStore } from '../store/useStore.js'
-import { secureGet, secureSet, secureRemove } from './coach-secrets.js'
+import { secureGet, secureSet, secureRemove } from './secure-store.js'
 import { nativeFetch } from './capacitor-fetch.js'
 import { davClient, backupTo, readBackup, loadConfig, saveConfig, isDue, ownership, DavError, SECRET_KEY } from './webdav.js'
 
