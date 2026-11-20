@@ -8,6 +8,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { makeWorld, readyOf } from './watch-sim.js'
 import { _resetWatchSync } from './watch-sync.js'
 
+// Whole simulated workouts: a few seconds alone, past the 5 s default under a full parallel run.
+vi.setConfig({ testTimeout: 30_000 })
+
 const T0 = 1_800_000_000_000
 const routines = {
   r1: { name: 'Push', entries: [

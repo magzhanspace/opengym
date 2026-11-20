@@ -30,8 +30,6 @@ mcp/        Optional MCP server: stdio (src/index.js, reads DATA_DIR or the api)
             HTTP (src/http.js, the opt-in `mcp` container behind /mcp, scoped tokens only).
             Write tools (log_workout, routines) save through the api. docs/MCP_REMOTE.md.
 scripts/    Build, CI and release helpers (scripts/README.md).
-website/    opengym.ch, plain HTML/CSS/JS, deployed separately.
-helm/, kubernetes/, contrib/nix/   Other ways to deploy.
 docs/       Guides indexed in docs/README.md; docs/dev/ holds feature design notes.
 ```
 
@@ -52,11 +50,10 @@ cd frontend && npx vitest run -t "some test name"           # one test by name
 cd api && npm test                               # node --test
 cd mcp && npm test
 
-# Checks CI runs besides the suites (run `npm ci` in the repo root once, for js-yaml)
+# Checks CI runs besides the suites
 cd frontend && node scripts/check-locales.mjs && node scripts/check-source-strings.mjs --strict
 node scripts/catalogue/build.mjs --check
 node scripts/build-shared-assets.mjs --check
-node scripts/build-api-docs.mjs --check
 
 # Builds
 cd frontend && npm run build
@@ -65,11 +62,10 @@ cd frontend && npm run build:mobile   # VITE_MOBILE build + 180 px media from ca
 
 There is no linter/formatter config and no TypeScript; match the existing style by hand.
 
-GitHub (`github.com/DuarteSantos8/openGym`) is the home of the project; `.github/workflows/mirror.yml`
-pushes `main` and `v*` tags to the GitLab mirror (fast-forward only, never push or merge there).
-Pull requests are gated by `.github/workflows/test.yml`; `ios.yml` compiles the iPhone app on a Mac
-runner. Release packages (APK, Play bundle, App Store IPA) are built and signed on the release
-machine, never in CI (see "Exercise media" below and docs/APP_STORES.md).
+This is a personal fork (github.com/magzhanspace/opengym, branch `main`) of
+github.com/DuarteSantos8/openGym v1.4.5, remote `upstream`. FORK.md lists what was cut and what
+is kept; upstream is not merged back. `.github/workflows/test.yml` runs the suites and checks on
+push. The app is deployed as a PWA on gym.magjan.dev (hermes); the iOS shell is kept but not built.
 
 ## Architecture
 

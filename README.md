@@ -1,3 +1,7 @@
+> **Personal fork.** This is a cut-down fork of [openGym](https://github.com/DuarteSantos8/openGym) v1.4.5,
+> run as a PWA for one person. See [FORK.md](FORK.md) for what was removed and kept. Everything below
+> is the upstream README and may describe features that no longer exist here.
+
 <div align="center">
 
 <p>

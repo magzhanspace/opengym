@@ -32,6 +32,11 @@ DuarteSantos8/openGym; вливать оттуда больше не плани�
 
 ### 1. Бесплатно — ядро это не импортирует
 
+**Сделано 2026-11-20** (кроме iOS/Android — iOS заморожен, Android ждёт решения). Вместе с этим ушли
+`ROADMAP.md`, `SECURITY.md`, `CLA.md`, `renovate.json`, `.coderabbit.yaml`, скрипты сайта, бренда,
+сторов и CI апстрима, `scripts/build-api-docs.mjs` (генерировал `website/api.html`) и корневой
+`package.json`. CI теперь один: `.github/workflows/test.yml`.
+
 | Что | Зачем было |
 |---|---|
 | `website/` | сайт opengym.ch |
