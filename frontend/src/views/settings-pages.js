@@ -27,7 +27,7 @@ export const PAGES = {
   watches: { title: 'Watches', icon: 'watch', tint: 'var(--grey)', mod: 'watch', kw: 'watch watches apple garmin zepp amazfit wrist pair' },
   watch: { title: 'Apple Watch', icon: 'watch', tint: 'var(--grey)', mod: 'watch', parent: 'watches' },
   // Settings → Integrations (v1.4.4): the directory of what openGym talks to (views/Integrations.jsx).
-  integrations: { title: 'Integrations', icon: 'plug', tint: 'var(--indigo)', kw: 'integrations connect apps services webhook webhooks home assistant n8n ntfy node-red zapier automation garmin fitbit strava opennutrition nutrition calories sync api mcp' },
+  integrations: { title: 'Integrations', icon: 'plug', tint: 'var(--indigo)', kw: 'integrations connect apps services garmin fitbit sync api mcp import hevy' },
   // The Garmin link (docs/GARMIN.md, views/GarminSettings.jsx): the phone apps only.
   // The Android app: the Wear OS watch app is its own package next to it (views/WearSettings.jsx).
   wear: { title: 'Wear OS watch', icon: 'watch', tint: 'var(--grey)', mod: 'watch', parent: 'watches', kw: 'wear os wearos galaxy watch pixel watch samsung oneplus ticwatch fossil pair pairing connect sync wrist' },
@@ -289,8 +289,6 @@ export const SEARCH = [
   { page: 'data', title: 'Export as spreadsheet (CSV)', icon: 'share', tint: 'var(--green)', kw: 'csv spreadsheet excel sheets export workouts sets body weight measurements' },
   { page: 'data', title: 'Auto-backup on changes', icon: 'folder', tint: 'var(--blue)', kw: 'auto backup automatic', when: c => c.mobile },
   { page: 'data', title: 'Backup folder', icon: 'folder', tint: 'var(--blue)', kw: 'auto backup folder location directory', when: c => c.mobile && c.android && c.autoBackup },
-  // The daily WebDAV backup (1.4.5, components/WebDavBackup.jsx): a row on the page, not in demo or Offline.
-  { page: 'data', title: 'Back up to WebDAV', net: true, icon: 'cloud', tint: 'var(--blue)', kw: 'webdav nextcloud owncloud cloud backup daily automatic remote server', when: c => !c.demo },
   { page: 'data', title: 'Import backup', icon: 'download', tint: 'var(--teal)', kw: 'import restore backup json zip' },
   { page: 'data', title: 'Import from another app', icon: 'download', tint: 'var(--teal)', kw: 'strong hevy fitnotes gymmane apple health csv import' },
   { page: 'data', title: 'Import from Hevy', net: true, icon: 'key', tint: 'var(--teal)', kw: 'hevy api import' },
@@ -302,13 +300,10 @@ export const SEARCH = [
   { page: 'integrations', title: 'Health Connect', icon: 'heart', tint: 'var(--red)', mod: 'health', kw: 'health connect android google fit heart rate watch', when: c => !c.mobile },
   // The Apple Watch's Zones page takes the max heart rate from the age (#1108): on the iPhone, with the Watch module on.
   { page: 'apple-health', title: 'Birth date, for heart-rate zones', icon: 'heart', tint: 'var(--orange)', mod: 'watch', kw: 'birth date age zones heart rate max watch', when: c => c.ios },
-  { page: 'integrations', title: 'Webhooks', net: true, icon: 'webhook', tint: 'var(--indigo)', mod: 'integrations', kw: 'webhook webhooks home assistant n8n ntfy node-red zapier ifttt automation notify', when: c => c.demo || !c.user || (c.integrations || []).includes('webhook') || !!c.user?.admin },
   { page: 'integrations', title: 'Hevy', net: true, icon: 'key', tint: 'var(--teal)', kw: 'hevy api key import', when: c => !c.demo },
   { page: 'integrations', title: 'Import a file', icon: 'download', tint: 'var(--teal)', kw: 'import strong fitnotes hevy csv gymmane apple health export file' },
   { page: 'integrations', title: 'Spreadsheet (CSV)', icon: 'share', tint: 'var(--green)', kw: 'csv spreadsheet excel export' },
   { page: 'integrations', title: 'MCP server', net: true, icon: 'plug', tint: 'var(--purple)', mod: 'integrations', kw: 'mcp claude desktop cursor llm agent ai model context protocol api' },
-  { page: 'integrations', title: 'WebDAV backup', net: true, icon: 'cloud', tint: 'var(--blue)', kw: 'webdav nextcloud owncloud cloud backup daily automatic', when: c => !c.demo },
-  { page: 'integrations', title: 'Calendar feed', net: true, icon: 'calendar', tint: 'var(--red)', mod: 'integrations', kw: 'calendar ics ical google outlook apple planned sessions feed subscribe', when: c => c.demo || !c.user || c.apiTokens },
   { page: 'integrations', mod: 'health', title: 'Garmin', icon: 'watch', tint: 'var(--grey)', kw: 'garmin fenix forerunner venu watch heart rate' },
   { page: 'integrations', mod: 'health', title: 'COROS', icon: 'watch', tint: 'var(--grey)', kw: 'coros watch heart rate' },
   { page: 'integrations', mod: 'health', title: 'Polar', icon: 'watch', tint: 'var(--grey)', kw: 'polar watch heart rate strap' },

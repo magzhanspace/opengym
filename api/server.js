@@ -35,10 +35,6 @@ import { effectiveRoutineId } from './queue.js';
 import { stampPut, highestStamp } from './sync-stamps.js';
 import { atomicWrite as durableWrite } from './durable.js';
 import { ipv6Groups, guardedLookup, pushEndpointError, MAX_PUSH_ENDPOINT, outboundLookup } from './net-guard.js';
-import { createIntegrations } from './integrations/index.js';
-import { integrationRoutes } from './integrations/routes.js';
-import { buildIcs } from './integrations/calendar.js';
-import { deriveKey, seal as sealText, open as openSealed } from './integrations/crypto.js';
 import { excusedOn, nudgeFor, nudgeWindowOpen, toneOf } from './nudge.js';
 import { wrappedPushYear, wrappedSummary, wrappedPushOwed, wrappedPush } from './wrapped.js';
 import { createToken, findToken, touchToken, listTokens, revokeTokens, scopedState, mergeScoped, ScopeError, TOKEN_CATEGORIES, TOKEN_DAYS, DEFAULT_DAYS, TOKEN_PREFIX } from './tokens.js';
@@ -124,9 +120,6 @@ const lock = f => { try { fs.chmodSync(path.join(DATA, f), 0o600); } catch { /* 
 const secretFile = path.join(DATA, 'secret');
 if (!fs.existsSync(secretFile)) fs.writeFileSync(secretFile, crypto.randomBytes(32).toString('hex'), { mode: 0o600 });
 const SECRET = fs.readFileSync(secretFile, 'utf8').trim();
-// Integrations (integrations/, docs/INTEGRATIONS.md): off unless INTEGRATIONS names some. Their
-// connections live in DATA_DIR/integrations/, sealed with a key derived from SECRET.
-const integrations = createIntegrations({ dataDir: DATA, secret: SECRET, version: '1' });
 
 const dbFile = path.join(DATA, 'db.json');
 // Every account, passkey and invite. Only a missing file starts empty: an unreadable one (a write
@@ -502,9 +495,6 @@ function commitState(uid, cur, state, { overRead = false, stamped = false } = {}
   if (MEDIA_ON) {
     try { MEDIA.noteState(uid, state); } catch (e) { console.error('media noteState', e); }
   }
-  // A finished workout, a record or a weigh-in the profile's integrations asked to hear about:
-  // queued for delivery (integrations/outbox.js), never sent from inside this request.
-  try { integrations.onStateWrite(uid, cur, state); } catch (e) { console.error('integrations onStateWrite', e); }
   return { status: 200, body: { ok: true, ts: state._ts || null, rev: curRev + 1, wid: state._wid } };
 }
 // Missed-workout nudge (nudge.js): opt-in on top of the reminder, so it needs everything the
@@ -1220,7 +1210,7 @@ function tokenAuth(req, res) {
   const auth = req.headers.authorization || '';
   const tok = auth.startsWith('Bearer ') ? auth.slice(7).trim() : '';
   const found = tok.startsWith(TOKEN_PREFIX) ? findToken(db, tok, uid => db.users.find(u => u.id === uid) || null) : null;
-  // A calendar feed's token reads its feed and nothing else (integrations/calendar.js).
+  // A token with a kind (an old calendar feed's) is not an API token.
   const row = found && !found.kind ? found : null;
   if (!row) {
     auditFail(req, 'auth.token.fail', { ok: false, msg: tok ? 'token-invalid' : 'no-token' });
@@ -1234,19 +1224,6 @@ function tokenAuth(req, res) {
   if (wait) { tooMany(res, wait); return null; }
   if (touchToken(row)) saveDb();
   return { row, user };
-}
-
-/* ---------- the calendar feed (integrations/calendar.js, docs/CALENDAR.md) ---------- */
-// One feed address per profile: a `calendar` token in its path, sealed in its row so Settings can
-// show the address again. A new address ends the old one; "Turn off" ends it.
-const CAL_KEY = (() => { try { return deriveKey(SECRET); } catch { return null; } })();
-const calRow = uid => (db.apiTokens || []).find(r => r && r.userId === uid && r.kind === 'calendar' && !(r.exp && r.exp <= Date.now())) || null;
-const calUrl = token => ORIGIN.replace(/\/$/, '') + '/api/calendar/' + token + '.ics';
-function calView(user) {
-  const r = calRow(user.id);
-  if (!r || r.sv !== (user.sv || 0)) return { on: false };
-  const token = CAL_KEY ? openSealed(CAL_KEY, r.seal, 'calendar:' + r.id) : null;
-  return { on: true, id: r.id, done: r.scopes?.workouts === 'view', created: r.created, used: r.used || null, ...(token ? { url: calUrl(token) } : {}) };
 }
 
 /* ---------- password sign-in (#118) ---------- */
@@ -1488,8 +1465,6 @@ function removeAccount(u) {
   try { fs.unlinkSync(watchFile(u.id)); } catch { /* never had a watch */ }
   // Their photos and videos — the one place a profile's folder under uploads/ is removed.
   try { MEDIA.removeUser(u.id); } catch (e) { console.error('media: could not remove uploads of', u.id, e.message); }
-  // Their integrations: connections, sealed secrets and anything still waiting to be sent.
-  try { integrations.removeUser(u.id); } catch (e) { console.error('integrations: could not remove', u.id, e.message); }
   saveDb();
 }
 
@@ -2250,8 +2225,8 @@ function readForm(req) {
 const redirectTo = (res, location) => { res.writeHead(302, { Location: location, 'Cache-Control': 'no-store' }); res.end(); };
 const oauthJson = (res, status, body) => { res.writeHead(status, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', Pragma: 'no-cache' }); res.end(JSON.stringify(body)); };
 const userById = uid => db.users.find(u => u.id === uid) || null;
-// A client metadata document (CIMD) comes from the public internet only: the integrations' outbound
-// rule, so a client_id pointing into the server's own network is never fetched.
+// A client metadata document (CIMD) comes from the public internet only (net-guard.js outboundLookup),
+// the rule so a client_id pointing into the server's own network is never fetched.
 const CIMD_LOOKUP = outboundLookup();
 // Registering a client and starting a sign-in need no session: a budget per address, so nobody
 // can rewrite db.json in a loop, push a real person's waiting sign-in out of the 1000 kept, or
@@ -2394,10 +2369,7 @@ const routes = {
       ...(DEFAULT_LANG ? { default_lang: DEFAULT_LANG } : {}),
       // Public like the two flags above: the caps are not a secret, and the absence of the
       // block is how the app knows this server does not take photos and videos at all.
-      ...(MEDIA_ON ? { media: mediaConfig(MEDIA_LIMITS) } : {}),
-      // Which integrations this server offers (only to a session). Absent
-      // with INTEGRATIONS unset, which is how the app knows to show the server cards as off.
-      ...(readSession(req) && integrations.publicConfig() ? { integrations: integrations.publicConfig() } : {})
+      ...(MEDIA_ON ? { media: mediaConfig(MEDIA_LIMITS) } : {})
     });
   },
 
@@ -2791,65 +2763,6 @@ const routes = {
     // MCP connector sign-in for Claude, ChatGPT and other assistants (oauth.js): only with the mcp
     // container on. What it hands out is an ordinary scoped token, made on the consent screen.
     ...(MCP_ON ? oauthRoutes() : {}),
-
-    // The calendar feed (Settings → Integrations → Calendar feed). Session routes, like the token list.
-    'GET /api/calendar': async (req, res) => {
-      const user = readSession(req);
-      if (!user) return json(res, 401, { error: 'not signed in' });
-      json(res, 200, calView(user));
-    },
-    // { done: bool } with the feed on changes what it shows and keeps the address; `renew: true`
-    // (or no feed yet) makes a new address and ends the old.
-    'POST /api/calendar': async (req, res) => {
-      const user = readSession(req);
-      if (!user) return json(res, 401, { error: 'not signed in' });
-      const body = await readBody(req);
-      const done = body.done === true;
-      const scopes = { plans: 'view', workouts: done ? 'view' : 'off' };
-      const cur = calRow(user.id);
-      if (cur && cur.sv === (user.sv || 0) && body.renew !== true) {
-        cur.scopes = { ...cur.scopes, ...scopes };
-        saveDb();
-        return json(res, 200, calView(user));
-      }
-      if (!CAL_KEY) return json(res, 503, { error: 'the server secret is missing' });
-      const gone = (db.apiTokens || []).filter(r => r && r.userId === user.id && r.kind === 'calendar').flatMap(r => revokeTokens(db, user.id, r.id));
-      let made;
-      try { made = createToken(db, user, { name: 'Calendar feed', scopes, days: 0, kind: 'calendar' }); }
-      catch (e) { if (e instanceof ScopeError) return json(res, e.status, { error: e.message, code: e.code }); throw e; }
-      made.row.seal = sealText(CAL_KEY, made.token, 'calendar:' + made.row.id);
-      saveDb();
-      audit(req, 'auth.token.create', { user, msg: made.row.name });
-      json(res, 200, calView(user));
-    },
-    'POST /api/calendar/revoke': async (req, res) => {
-      const user = readSession(req);
-      if (!user) return json(res, 401, { error: 'not signed in' });
-      const r = calRow(user.id);
-      const gone = r ? revokeTokens(db, user.id, r.id) : [];
-      if (gone.length) {
-        saveDb();
-        audit(req, 'auth.token.revoke', { user, msg: gone[0].name });
-      }
-      json(res, 200, { on: false });
-    },
-    // The feed itself, for a calendar app: no cookie, no header, the token in the path.
-    'GET /api/calendar/{token}.ics': async (req, res) => {
-      const row = findToken(db, req.calToken, uid => db.users.find(u => u.id === uid) || null);
-      if (!row || row.kind !== 'calendar') {
-        auditFail(req, 'auth.token.fail', { ok: false, msg: 'token-invalid' });
-        return json(res, 404, { error: 'not found' });
-      }
-      const wait = TOKEN_READS.take(row.id);
-      if (wait) return tooMany(res, wait);
-      if (touchToken(row)) saveDb();
-      const user = db.users.find(u => u.id === row.userId);
-      const state = readStateStrict(user.id);
-      if (state === UNREADABLE) return json(res, 503, { error: 'state unreadable' });
-      const ics = buildIcs(state ? scopedState(state, row.scopes) : {}, { uid: user.id, done: row.scopes?.workouts === 'view', tz: state?.reminder?.tz, name: user.name || '' });
-      res.writeHead(200, { 'Content-Type': 'text/calendar; charset=utf-8', 'Cache-Control': 'private, max-age=900', 'Content-Disposition': 'inline; filename="opengym.ics"', 'X-Content-Type-Options': 'nosniff' });
-      res.end(ics);
-    },
 
     // The token's side. Whose profile, and what it may do.
     'GET /api/token/me': async (req, res) => {
@@ -3377,18 +3290,12 @@ const routes = {
     json(res, 200, { ok: true });
   },
 
-  /* ---------- integrations ---------- */
-  // integrations/routes.js, handed the same helpers. With INTEGRATIONS unset they answer an empty
-  // list (GET) or 404 "off", so the routes exist on every server and the app can tell.
-  ...integrationRoutes({ json, readBody, readSession, hub: integrations, audit, origin: ORIGIN }),
-
   /* ---------- photos & videos ---------- */
   // Absent, not refusing, when MEDIA_UPLOADS=0: a 404 is what a server from before the feature
   // answers, and the client already treats that as "this server does not store them".
   ...(MEDIA_ON ? mediaRoutes : {})
 };
 
-integrations.start();
 
 // node's requestTimeout is one number for every route, and it is half an hour (below) for the
 // sake of one: a video uploaded over a slow uplink. Every other request keeps node's old five
@@ -3457,8 +3364,6 @@ const server = http.createServer(async (req, res) => {
   // above stays a plain lookup, and so csrfOk and the catch-all see one name for every file.
   const mm = /^\/api\/media\/([0-9a-f]{64})$/.exec(url.pathname);
   if (mm) { key = req.method + ' /api/media/{hash}'; req.mediaHash = mm[1]; }
-  const lc = /^\/api\/calendar\/(ogt_[A-Za-z0-9_-]{43})\.ics$/.exec(url.pathname);
-  if (lc) { key = req.method + ' /api/calendar/{token}.ics'; req.calToken = lc[1]; }
   const handler = routes[key];
   if (!handler) return json(res, 404, { error: 'not found' });
   if (!csrfOk(req, key)) {

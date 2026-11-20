@@ -20,7 +20,6 @@ import { shownWeight, exUnitOf } from './ex-unit.js'
 import { LB_KG } from './units.js'
 import { t, tn, tnf, dateLocale } from './i18n-core.js'
 import { activityTotals } from './activities.js'
-import { nutritionSummary } from './sister-nutrition.js'
 
 const YM = /^\d{4}-\d{2}$/
 const MIN_SESSION_MS = 60000
@@ -164,9 +163,8 @@ export function funLine(st) {
 }
 
 /**
- * Beyond the gym for the month (gm-hooks): the runs and matches (lib/activities.js) and, when this
- * device is linked to openNutrition and the story may show it, what you ate (`nutritionDays`, the
- * month's days from lib/sister-nutrition.js daysIn). { sport, food }, each null when there is none.
+ * Beyond the gym for the month (gm-hooks): the runs and matches (lib/activities.js). { sport },
+ * null when there are none.
  */
 /** The month's first and last day ('YYYY-MM-DD'), the last no later than `today` when given. */
 export function monthRange(ym, today = null) {
@@ -175,17 +173,17 @@ export function monthRange(ym, today = null) {
   return { from, to: today && today >= from && today < last ? today : last }
 }
 
-export function monthExtras(S, ym, nutritionDays = null) {
-  if (!YM.test(String(ym))) return { sport: null, food: null }
+export function monthExtras(S, ym) {
+  if (!YM.test(String(ym))) return { sport: null }
   const { from, to } = monthRange(ym)
   const sport = activityTotals(S, from, to)
-  return { sport: sport.n ? sport : null, food: nutritionDays ? nutritionSummary(nutritionDays.filter(d => d.date >= from && d.date <= to), { from, to }) : null }
+  return { sport: sport.n ? sport : null }
 }
 
 /**
  * The cards for one month, the same model as the year's (lib/wrapped-cards.js wrappedCards), so the
  * stories and the share pictures draw them unchanged. Cards with nothing to say are left out.
- * `extras` is monthExtras: a sport card and a nutrition card before the summary, when there is one.
+ * `extras` is monthExtras: a sport card before the summary, when there is one.
  */
 export function monthCards(st, S, extras = null) {
   if (!st) return []
@@ -240,7 +238,7 @@ export function monthCards(st, S, extras = null) {
       lines: st.newExercises.slice(0, 3).map(id => exName(id)) })
   }
 
-  // Beyond the gym (gm-hooks): runs and matches, then what openNutrition says you ate.
+  // Beyond the gym (gm-hooks): runs and matches.
   const sport = extras?.sport
   if (sport) {
     const h = sport.min / 60
@@ -248,13 +246,6 @@ export function monthCards(st, S, extras = null) {
     cards.push({ id: 'sport', kicker: t('Beyond the gym'), big: nf(sport.n), num: sport.n, bigKind: 'number',
       title: t('Runs, rides and matches'),
       lines: [[t('{0} hours of it', nf(h, h < 10 ? 1 : 0)), km].filter(Boolean).join(' · '), t('Your legs remember every one.')] })
-  }
-  const food = extras?.food
-  if (food && food.protein != null) {
-    cards.push({ id: 'food', kicker: t('Fuel'), big: nf(food.protein), unit: 'g', num: food.protein, bigKind: 'number', title: t('Protein a day, on average'),
-      lines: [food.kcal != null ? t('{0} kcal a day', nf(food.kcal)) : null,
-        food.proteinMeals != null ? t('{0} protein meals a day', nf(food.proteinMeals, 1)) : null,
-        tn('{0} day logged in openNutrition', '{0} days logged in openNutrition', food.days)].filter(Boolean) })
   }
 
   const v = volumeParts(st.volume, st.unit)

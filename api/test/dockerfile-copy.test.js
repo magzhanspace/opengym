@@ -34,12 +34,6 @@ test('every root-level module server.js needs is on the Dockerfile COPY line', (
   for (const f of copied) assert.ok(fs.existsSync(path.join(API, f)), `${f} is copied but does not exist`);
 });
 
-test('the integrations directory is copied whole', () => {
-  const lines = read('Dockerfile').split('\n');
-  assert.ok(lines.some(l => /^COPY\s+integrations\s+\.\/integrations\s*$/.test(l)), 'COPY integrations ./integrations in api/Dockerfile');
-  assert.match(read('server.js'), /from '\.\/integrations\/index\.js'/);
-});
-
 // Every relative specifier a module imports, re-exports or loads with import('...').
 const relImports = src => [...src.matchAll(/(?:\bfrom\s+|\bimport\s*\(\s*|^\s*import\s+)['"](\.{1,2}\/[^'"]+)['"]/gm)].map(m => m[1]);
 
@@ -61,7 +55,7 @@ test('every local module and folder server.js reaches, at any depth, is copied i
       if (/\.m?js$/.test(rel)) queue.push(rel);
     }
   }
-  assert.ok(seen.has('integrations/index.js') && seen.has('shared/library.js'), 'the walk reaches into the folders');
+  assert.ok(seen.has('media.js'), 'the walk follows server.js imports');
   assert.deepEqual(outside, [], 'the image only holds api/, so nothing may import from outside it');
   const missing = [...seen].filter(f => {
     const top = f.split(path.sep)[0];

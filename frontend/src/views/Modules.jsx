@@ -36,12 +36,6 @@ function useConnections() {
     }
     if (user && !DEMO) {
       import('../lib/watch-relay.js').then(m => m.relayLinks()).then(links => { if (links.length) put({ watch: true }) }).catch(() => {})
-      if ((config?.integrations?.providers || []).includes('webhook')) {
-        api('/api/integrations').then(d => {
-          const n = (d?.connections || []).filter(c => c.provider === 'webhook' && !c.paused).length
-          if (n) put({ webhooks: n })
-        }).catch(() => {})
-      }
     }
     return () => { gone = true }
   }, [user, config]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -54,7 +48,6 @@ export function connectionNotes(ids, conn) {
   for (const id of ids) {
     if (id === 'health' && conn.health) out.push(t('{0} stops syncing while Health is off. Nothing is disconnected, and it catches up once Health is back.', conn.health))
     if (id === 'watch' && conn.watch) out.push(t('Your watch stops getting workouts while Watch is off. It stays paired.'))
-    if (id === 'integrations' && conn.webhooks) out.push(t('Your webhooks stop sending while Integrations is off. They stay set up.'))
   }
   return out
 }

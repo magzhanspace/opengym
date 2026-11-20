@@ -13,9 +13,7 @@ import { useUI } from '../store/useUI.js'
 import { useWrappedUI } from '../lib/wrapped-ui.js'
 import { yearStats, withYear, wrappedOf } from '../lib/wrapped.js'
 import { wrappedCards, layoutWrappedCard, drawWrappedCard } from '../lib/wrapped-cards.js'
-import { monthStats, monthCards, monthLabel, monthExtras, monthRange } from '../lib/month-story.js'
-import { useNutritionLink } from './SisterApps.jsx'
-import { daysIn } from '../lib/sister-nutrition.js'
+import { monthStats, monthCards, monthLabel, monthExtras } from '../lib/month-story.js'
 import { todayISO } from '../lib/format.js'
 import { cardPalette } from '../lib/card-draw.js'
 import { makeCanvas, toPng, currentAccent, isRtl } from '../lib/share-image.js'
@@ -109,11 +107,8 @@ export default function Wrapped() {
   const update = useStore(s => s.update)
   const lang = useLang()
   const st = useMemo(() => (month ? monthStats(S, month, todayISO()) : year ? yearStats(S, year) : null), [year, month, S.workouts, S.bodyweight, S.unit, S.weekStart, S.wrappedBody, S.exUnit]) // eslint-disable-line react-hooks/exhaustive-deps
-  // The month's runs and matches, and openNutrition's days when this device is linked (gm-hooks).
-  const mRange = month ? monthRange(month, todayISO()) : null
-  const food = useNutritionLink(mRange)
-  const foodDays = mRange && food && food.show.story !== false ? daysIn(food, mRange.from, mRange.to) : null
-  const extras = useMemo(() => (month ? monthExtras(S, month, foodDays) : null), [month, S.activities, S.unit, food?.at, food?.show?.story]) // eslint-disable-line react-hooks/exhaustive-deps
+  // The month's runs and matches (gm-hooks).
+  const extras = useMemo(() => (month ? monthExtras(S, month) : null), [month, S.activities, S.unit]) // eslint-disable-line react-hooks/exhaustive-deps
   const cards = useMemo(() => (month ? monthCards(st, S, extras) : wrappedCards(st, S)), [st, lang, extras]) // eslint-disable-line react-hooks/exhaustive-deps
   const open = month || year
   const label = month ? monthLabel(month) : String(year)
