@@ -26,7 +26,7 @@ export const PAGES = {
   watches: { title: 'Watches', icon: 'watch', tint: 'var(--grey)', mod: 'watch', kw: 'watch watches apple wear os wrist pair' },
   watch: { title: 'Apple Watch', icon: 'watch', tint: 'var(--grey)', mod: 'watch', parent: 'watches' },
   // Settings → Integrations (v1.4.4): the directory of what openGym talks to (views/Integrations.jsx).
-  integrations: { title: 'Integrations', icon: 'plug', tint: 'var(--indigo)', kw: 'integrations connect apps services webhook webhooks home assistant n8n ntfy node-red zapier automation garmin fitbit strava opennutrition nutrition calories sync api mcp' },
+  integrations: { title: 'Integrations', icon: 'plug', tint: 'var(--indigo)', kw: 'integrations connect apps services fitbit sync api mcp import hevy' },
   // The Android app: the Wear OS watch app is its own package next to it (views/WearSettings.jsx).
   wear: { title: 'Wear OS watch', icon: 'watch', tint: 'var(--grey)', mod: 'watch', parent: 'watches', kw: 'wear os wearos galaxy watch pixel watch samsung oneplus ticwatch fossil pair pairing connect sync wrist' },
   data: { title: 'Data & backup', icon: 'folder', tint: 'var(--blue)' },
@@ -36,10 +36,8 @@ export const PAGES = {
   // The live workout widget (components/LiveWidgetSettings.jsx, lib/live-glance.js, v1.4.5).
   live: { title: 'Live widget', icon: 'layout', tint: 'var(--green)', parent: 'workout', kw: 'live widget activity live activities lock screen dynamic island notification live update buttons customise customize personalise personalize rir weight reps heart rate calories next exercise rest off not showing try' },
   'live-custom': { title: 'Per exercise type', icon: 'slider', tint: 'var(--grey)', parent: 'live', kw: 'live widget per exercise type strength bands holds cardio carries details buttons' },
-  // Trainers and gyms (TRAINERS=on on the server, docs/TRAINERS.md): who sees what of your training.
   // Settings → Integrations → API tokens (docs/API_TOKENS.md): scoped tokens for MCP and scripts.
   'api-tokens': { title: 'API tokens', icon: 'key', tint: 'var(--purple)', parent: 'integrations', mod: 'integrations', kw: 'api token tokens key mcp claude chatgpt cursor assistant planner script access revoke' },
-  trainer: { title: 'Trainer & gym', icon: 'personCircle', tint: 'var(--acc)', parent: 'account', kw: 'trainer coach personal trainer gym studio share sharing consent privacy disconnect code qr' },
   // Phone app only (#614): the gyms that get you a nudge when you arrive, the search that adds one
   // and the editor for one of them.
   gym: { title: 'Gym reminder', icon: 'mapPin', tint: 'var(--green)', parent: 'reminders', kw: 'gym location arrive geofence remind start' },
@@ -75,9 +73,7 @@ export function pageVisible(page, ctx) {
   if (PAGES[page]?.mod && ctx.mod && !ctx.mod(PAGES[page].mod)) return false
   if (page === 'reminders') return !!(ctx.user || ctx.mobile)
   // openGym Offline (lib/build-caps.js) has no network: nothing that needs a server or a connection.
-  if (ctx.offline && (page === 'api-tokens' || page === 'trainer')) return false
-  // Only on a server that offers trainers, signed in: there is nobody to share with otherwise.
-  if (page === 'trainer') return !!ctx.trainers && !!ctx.user && !ctx.demo
+  if (ctx.offline && page === 'api-tokens') return false
   // Signed in to a server that offers scoped tokens (API_TOKENS, on unless switched off).
   if (page === 'api-tokens') return !!ctx.apiTokens && !!ctx.user && !ctx.demo
   // The phone apps' watch pages, together: there whenever one of them is.
@@ -107,7 +103,6 @@ const remind = c => !!c.mobile || !!c.pushOK
 const PUSH = 'Push notifications'
 // The words people use for each module (its row on Settings → Modules).
 const MODULE_KW = {
-  community: 'community library share shared server people upload others copy import',
   effort: 'effort rir rpe reps in reserve rating difficulty hard',
   plates: 'plates plate math calculator barbell load warm-up warmup ramp automatic',
   strength: 'strength level standards beginner intermediate advanced elite',
@@ -121,8 +116,6 @@ const MODULE_KW = {
 export const SEARCH = [
   // Modules
   ...MODULES.map(m => ({ page: 'modules', title: m.title, icon: m.icon, tint: m.tint,
-    // Community is a row only where the server has a library (views/Modules.jsx).
-    ...(m.id === 'community' ? { when: c => !!c.library } : {}),
     // Not built into openGym Offline at all (lib/build-caps.js).
     ...(OFFLINE_OFF_MODULES.includes(m.id) ? { net: true } : {}),
     get kw() { return MODULE_KW[m.id] + ' module turn on off hide' } })),
@@ -249,8 +242,6 @@ export const SEARCH = [
   { page: 'data', title: 'Export as spreadsheet (CSV)', icon: 'share', tint: 'var(--green)', kw: 'csv spreadsheet excel sheets export workouts sets body weight measurements' },
   { page: 'data', title: 'Auto-backup on changes', icon: 'folder', tint: 'var(--blue)', kw: 'auto backup automatic', when: c => c.mobile },
   { page: 'data', title: 'Backup folder', icon: 'folder', tint: 'var(--blue)', kw: 'auto backup folder location directory', when: c => c.mobile && c.android && c.autoBackup },
-  // The daily WebDAV backup (1.4.5, components/WebDavBackup.jsx): a row on the page, not in demo or Offline.
-  { page: 'data', title: 'Back up to WebDAV', net: true, icon: 'cloud', tint: 'var(--blue)', kw: 'webdav nextcloud owncloud cloud backup daily automatic remote server', when: c => !c.demo },
   { page: 'data', title: 'Import backup', icon: 'download', tint: 'var(--teal)', kw: 'import restore backup json zip' },
   { page: 'data', title: 'Import from another app', icon: 'download', tint: 'var(--teal)', kw: 'strong hevy fitnotes gymmane apple health csv import' },
   { page: 'data', title: 'Import from Hevy', net: true, icon: 'key', tint: 'var(--teal)', kw: 'hevy api import' },
@@ -262,13 +253,10 @@ export const SEARCH = [
   { page: 'integrations', title: 'Health Connect', icon: 'heart', tint: 'var(--red)', mod: 'health', kw: 'health connect android google fit heart rate watch', when: c => !c.mobile },
   // The Apple Watch's Zones page takes the max heart rate from the age (#1108): on the iPhone, with the Watch module on.
   { page: 'apple-health', title: 'Birth date, for heart-rate zones', icon: 'heart', tint: 'var(--orange)', mod: 'watch', kw: 'birth date age zones heart rate max watch', when: c => c.ios },
-  { page: 'integrations', title: 'Webhooks', net: true, icon: 'webhook', tint: 'var(--indigo)', mod: 'integrations', kw: 'webhook webhooks home assistant n8n ntfy node-red zapier ifttt automation notify', when: c => c.demo || !c.user || (c.integrations || []).includes('webhook') || !!c.user?.admin },
   { page: 'integrations', title: 'Hevy', net: true, icon: 'key', tint: 'var(--teal)', kw: 'hevy api key import', when: c => !c.demo },
   { page: 'integrations', title: 'Import a file', icon: 'download', tint: 'var(--teal)', kw: 'import strong fitnotes hevy csv gymmane apple health export file' },
   { page: 'integrations', title: 'Spreadsheet (CSV)', icon: 'share', tint: 'var(--green)', kw: 'csv spreadsheet excel export' },
   { page: 'integrations', title: 'MCP server', net: true, icon: 'plug', tint: 'var(--purple)', mod: 'integrations', kw: 'mcp claude desktop cursor llm agent ai model context protocol api' },
-  { page: 'integrations', title: 'WebDAV backup', net: true, icon: 'cloud', tint: 'var(--blue)', kw: 'webdav nextcloud owncloud cloud backup daily automatic', when: c => !c.demo },
-  { page: 'integrations', title: 'Calendar feed', net: true, icon: 'calendar', tint: 'var(--red)', mod: 'integrations', kw: 'calendar ics ical google outlook apple planned sessions feed subscribe', when: c => c.demo || !c.user || c.apiTokens },
   { page: 'integrations', mod: 'health', title: 'Garmin', icon: 'watch', tint: 'var(--grey)', kw: 'garmin fenix forerunner venu watch heart rate' },
   { page: 'integrations', mod: 'health', title: 'COROS', icon: 'watch', tint: 'var(--grey)', kw: 'coros watch heart rate' },
   { page: 'integrations', mod: 'health', title: 'Polar', icon: 'watch', tint: 'var(--grey)', kw: 'polar watch heart rate strap' },

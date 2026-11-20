@@ -1,4 +1,3 @@
-import { showsDashboard } from '../lib/trainer-api.js'
 import { recordHintsOn } from '../lib/set-records.js'
 import { setRecoveryHint } from '../lib/recovery-hint.js'
 import { useEffect, useRef, useState, forwardRef, useSyncExternalStore } from 'react'
@@ -26,7 +25,6 @@ import { REST_SOUND_IDS, restSoundOf } from '../lib/rest-sounds.js'
 import { setSlot, slotChoice, slotSound, toneFor, kindChoice, setKindSound, soundsOf, REST_KINDS } from '../lib/user-sounds.js'
 import OwnSounds from '../components/OwnSounds.jsx'
 import { confirmBackupImport } from '../components/backup-restore.js'
-import { WebDavRow } from '../components/WebDavBackup.jsx'
 import { StreakIconRows } from '../components/StreakIconPicker.jsx'
 import { StreakRuleRow, StreakExcuseRow } from '../components/StreakRule.jsx'
 import { PinnedBadges } from '../components/Streak.jsx'
@@ -71,7 +69,6 @@ import { AnimationQualityRow } from '../components/Animations.jsx'
 import { ServerSyncSection, KeptChangesRows, leaveServer, connectServer, passkeySignIn } from '../components/ServerSync.jsx'
 import { passwordOn, PasswordRow, openPasswordSignIn, openPasswordRegister } from '../components/PasswordAuth.jsx'
 import { usePasskeys, PasskeysRow, DeviceLinkRow, openDeviceLinkRedeem, PairSheet } from '../components/Passkeys.jsx'
-import { OidcRow } from '../components/OidcAccount.jsx'
 import { DeleteAccountRow } from '../components/DeleteAccount.jsx'
 import { warmupAutoOf } from '../lib/warmup-ramp.js'
 import { MACHINE_EQ, machinesSummary } from '../lib/machine-kinds.js'
@@ -88,8 +85,6 @@ import WatchSettingsPage from './WatchSettings.jsx'
 import WearSettingsPage from './WearSettings.jsx'
 import IntegrationsPage from './Integrations.jsx'
 import ApiTokensPage from './ApiTokens.jsx'
-import MyTrainerPage from './MyTrainer.jsx'
-import { libraryOn } from '../lib/shared-api.js'
 import ModulesPage from './Modules.jsx'
 import { isOn, presetOf } from '../lib/modules.js'
 import { presetCopy } from '../lib/modules-copy.js'
@@ -128,9 +123,8 @@ export function SettingsRoute() {
   // (Unknown counts as yes inside the phone app: the page itself then says there is no watch.)
   // The modules (lib/modules.js): a page of a module that is off goes back to the root too.
   const modules = useStore(s => s.S.modules), checkIn = useStore(s => s.S.checkIn)
-  const trainers = useStore(s => !!s.config?.trainers?.on)
   const apiTokens = useStore(s => !!s.config?.api_tokens)
-  const ctx = { user: useStore(s => s.user), mobile: MOBILE, offline: offlineBuild(), demo: DEMO, trainers, apiTokens, ios: MOBILE && platformNow() !== 'android', android: MOBILE && platformNow() !== 'ios', mod: id => isOn({ modules, checkIn }, id) }
+  const ctx = { user: useStore(s => s.user), mobile: MOBILE, offline: offlineBuild(), demo: DEMO, apiTokens, ios: MOBILE && platformNow() !== 'android', android: MOBILE && platformNow() !== 'ios', mod: id => isOn({ modules, checkIn }, id) }
   if (page && (!PAGES[page] || !pageVisible(PAGES[page].parent || page, ctx) || !pageVisible(page, ctx))) return <Navigate to="/settings" replace />
   return <Settings key={page || 'root'} page={page || null} find={loc.state?.find || null} via={loc.state?.via || null} entryKey={loc.key} />
 }
@@ -159,8 +153,6 @@ export default function Settings({ page = null, find = null, via = null, entryKe
   // Name-and-password sign-in, where the instance offers it (#118).
   const config = useStore(s => s.config)
   const pwOn = passwordOn(config)
-  // The server's community library (views/Community.jsx), where it has one and the module is on.
-  const community = useStore(st => libraryOn(st.config, st.user) && isOn(st.S, 'community'))
   // What the app is showing, which for a profile that never picked a language is worked out on
   // this device rather than stored (#303).
   const lang = effectiveLang(S, config)
@@ -456,10 +448,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
     pushOK: !MOBILE && pushSupported(), reminderOn: !!S.reminder?.on, nudge: !!S.reminder?.nudge,
     gymReminder,
     autoBackup: !!S.autoBackup, synced: !!sync, installTip: !MOBILE && !standalone(), androidWeb: IS_ANDROID, desktopWeb: !IS_ANDROID && !APPLE_UA,
-    integrations: config?.integrations?.providers || [],
-    trainers: !!config?.trainers?.on,
     apiTokens: !!config?.api_tokens,
-    library: libraryOn(config, user),
     rotation: scheduleModeOf(S) === 'rotation' && !externalQ,
     // Settings → Modules: which feature areas are on (pageVisible and the search ask it).
     mod: id => isOn(S, id),
@@ -559,7 +548,6 @@ export default function Settings({ page = null, find = null, via = null, entryKe
     watch: () => <WatchSettingsPage />,
     integrations: () => <IntegrationsPage android={android} ios={ios} />,
     'api-tokens': () => <ApiTokensPage />,
-    trainer: () => <MyTrainerPage />,
     // The phone's health store (#200, #544): its switches, moved here from Data & backup in 1.4.4.
     'apple-health': () => <HealthPage key="apple-health" S={S} toast={toast} android={false} />,
     'health-connect': () => <HealthPage key="health-connect" S={S} toast={toast} android />,
@@ -1139,7 +1127,6 @@ export default function Settings({ page = null, find = null, via = null, entryKe
         {/* One row per set for spreadsheets and other apps (#647); our own importer reads it back. */}
         <Row icon="share" iconTint="var(--green)" title={t('Export as spreadsheet (CSV)')} subtitle={t('Workouts, body weight and measurements')} accessory="chevron" onClick={csvExportSheet} tour="data-csv" />
         {/* A daily copy in a WebDAV folder of your own (#582), the same sheet as Integrations'. */}
-        {!DEMO && !offline && <WebDavRow />}
         {/* 14 is AUTO_BACKUP_KEEP in lib/mobile.js, written out because the Settings tests mock
             that module wholesale; mobile.autobackup.test.js pins the two together. */}
         {MOBILE && <Row icon="folder" iconTint="var(--blue)" title={t('Auto-backup on changes')} tour="data-auto"
@@ -1245,10 +1232,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
           Admin and Disconnect sit in the same block; a browser's account rows follow in their own. */}
       {user && !DEMO && <ServerSyncSection>
         {MOBILE && <>
-          {community && <Row icon="globe" iconTint="var(--blue)" title={t('Community')} subtitle={t('What people on this server shared')} accessory="chevron" onClick={() => nav('/community')} />}
           {user.admin && <Row icon="crown" iconTint="var(--indigo)" title={t('Admin dashboard')} accessory="chevron" onClick={() => nav('/admin')} />}
-          {pageVisible('trainer', ctx) && <Row icon="personCircle" iconTint="var(--acc)" title={t('Trainer & gym')} subtitle={t('Who sees what of your training')} accessory="chevron" onClick={() => nav('/settings/trainer')} />}
-          {pageVisible('trainer', ctx) && showsDashboard(config) && <Row icon="clipboard" iconTint="var(--orange)" title={t('Trainer dashboard')} subtitle={t('The people you train, and how they are doing')} accessory="chevron" onClick={() => nav('/trainer')} />}
           {/* A code to sign in on a computer (#551), behind the same proof as in a browser. */}
           <DeviceLinkRow state={passkeys.st} />
           <AccountIdRow id={user.id} />
@@ -1273,12 +1257,8 @@ export default function Settings({ page = null, find = null, via = null, entryKe
           <Row icon="rocket" iconTint="var(--indigo)" title={t('Self-host openGym')} subtitle={t('Passkey sign-in, sync across your devices, your own data.')} accessory="chevron"
             onClick={() => window.open(REPO, '_blank', 'noopener')} />
         </> : user ? <>
-          {community && <Row icon="globe" iconTint="var(--blue)" title={t('Community')} subtitle={t('What people on this server shared')} accessory="chevron" onClick={() => nav('/community')} />}
           {user.admin && <Row icon="crown" iconTint="var(--indigo)" title={t('Admin dashboard')} accessory="chevron" onClick={() => nav('/admin')} />}
-          {pageVisible('trainer', ctx) && <Row icon="personCircle" iconTint="var(--acc)" title={t('Trainer & gym')} subtitle={t('Who sees what of your training')} accessory="chevron" onClick={() => nav('/settings/trainer')} />}
-          {pageVisible('trainer', ctx) && showsDashboard(config) && <Row icon="clipboard" iconTint="var(--orange)" title={t('Trainer dashboard')} subtitle={t('The people you train, and how they are doing')} accessory="chevron" onClick={() => nav('/trainer')} />}
           <PasskeysRow state={passkeys.st} changed={credsChanged} />
-          <OidcRow state={passkeys.st} changed={credsChanged} />
           <DeviceLinkRow state={passkeys.st} />
           <Row icon="qr" iconTint="var(--blue)" title={t('Pair the mobile app')} subtitle={t('Connect the openGym app on your phone to this account.')} accessory="chevron"
             onClick={() => useUI.getState().openSheet(close => <PairSheet close={close} />)} />

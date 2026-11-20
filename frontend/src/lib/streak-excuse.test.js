@@ -5,7 +5,6 @@ import { streakInfo } from './streak.js'
 import { setExcuseCap, excuseCapOf, EXCUSE_DEFAULT } from './streak-rule.js'
 import { explainWeek, excuseLabel, excuseLine } from './streak-explain.js'
 import { streakWeeks } from './streak-explain.js'
-import { streakWeeks as serverStreak } from '../../../api/trainers/projections.js'
 
 const mondays = list => list.map(d => ({ d }))
 // Weekly workouts on Mondays of Sep/Oct 2026, with the weeks of 5 and 12 Oct missed.
@@ -26,8 +25,6 @@ describe('sick and travel weeks', () => {
     expect(info.current).toBe(6)
     expect(info.excused).toEqual(['2026-10-05', '2026-10-12'])
     expect(info.excuseLeft).toBe(EXCUSE_DEFAULT - 2)
-    // Same number for the trainer's member list.
-    expect(serverStreak(S, '2026-10-28')).toBe(6)
   })
 
   it('a rest-day note or a cleared note does not excuse', () => {

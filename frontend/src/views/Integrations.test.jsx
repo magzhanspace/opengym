@@ -84,14 +84,13 @@ const type = (input, v) => act(() => {
 })
 
 describe('the cards', () => {
-  it('a guest in a browser: the health stores live in the phone app, webhooks need a server, nothing fake to connect', async () => {
+  it('a guest in a browser: the health stores live in the phone app, MCP needs a server, nothing fake to connect', async () => {
     await mount()
-    expect([...host.querySelectorAll('.sect-t')].map(e => e.textContent)).toEqual(['Health & devices', 'Works with', 'Training apps', 'Backups & calendar', 'Automation', 'AI & API', 'Sister apps'])
+    expect([...host.querySelectorAll('.sect-t')].map(e => e.textContent)).toEqual(['Health & devices', 'Works with', 'Training apps', 'AI & API'])
     expect(pill('apple-health')).toBe('Not available on this device')
     expect(pill('health-connect')).toBe('Not available on this device')
     expect(action('apple-health')).toBeNull()
-    expect(pill('webhook')).toBe('Needs your server')
-    expect(action('webhook')).toBeNull()
+    expect(pill('mcp')).toBe('Needs your server')
     expect(card('coach')).toBeNull()
     // Works with: names only, each a way to the explanation, none a Connect button.
     const chips = [...host.querySelectorAll('.intg-chip')].map(b => b.textContent)
@@ -101,7 +100,7 @@ describe('the cards', () => {
     expect(sheetHost.textContent).toContain('Garmin saves to Apple Health on iPhone or Health Connect on Android.')
     expect(sheetHost.textContent).toContain('Install the openGym app on your phone to use this.')
     // Screen readers hear the name and the state in one go.
-    expect(card('webhook').querySelector('.intg-open').getAttribute('aria-label')).toBe('Webhooks, Needs your server')
+    expect(card('mcp').querySelector('.intg-open').getAttribute('aria-label')).toBe('MCP server, Needs your server')
   })
 
   it('on Android: Health Connect only, off until set up on its page; imports open their sheets', async () => {
@@ -133,111 +132,6 @@ describe('the cards', () => {
     expect(mocks.menu.title).toBe('Disconnect Apple Health?')
     expect(mocks.menu.items.map(i => i.label)).toEqual(['Stop, keep what it wrote', 'Stop and remove what it wrote'])
   })
-
-  it('signed in on a server without webhooks: no card, unless you run the place', async () => {
-    mocks.user = { id: 'u1' }
-    await mount()
-    expect(card('webhook')).toBeNull()
-    mocks.user = { id: 'u1', admin: true }
-    await mount()
-    expect(pill('webhook')).toBe('Off')
-    act(() => action('webhook').click())
-    await showSheet()
-    expect(sheetHost.textContent).toContain('INTEGRATIONS=webhook')
-  })
-})
-
-describe('webhooks', () => {
-  const conn = over => ({ id: 'c_1', provider: 'webhook', label: 'Home Assistant', events: ['workout.finished'], paused: false, status: 'connected', info: { url: 'https://ha.example.com/api/webhook/…7f3a' }, lastOk: Date.now() - 3600_000, lastError: null, failed: 0, ...over })
-  beforeEach(() => {
-    mocks.user = { id: 'u1', name: 'Dana' }
-    mocks.config = { integrations: { providers: ['webhook'] } }
-  })
-
-  it('connect: the URL is checked here first, then the server answers with the secret, shown once', async () => {
-    mocks.answers['/api/integrations'] = { providers: [{ id: 'webhook', max: 10 }], connections: [] }
-    mocks.answers['/api/integrations/connect'] = { connection: conn(), reveal: { secret: 'ogwh_abc123' } }
-    await mount()
-    expect(pill('webhook')).toBe('Off')
-    expect(action('webhook').textContent).toBe('Connect')
-    act(() => action('webhook').click())
-    await showSheet()
-    const [url, name] = sheetHost.querySelectorAll('input')
-    await type(url, 'http://192.168.1.5:8123/api/webhook/x')
-    await act(async () => { sheetBtn('Add webhook').click() })
-    expect(sheetHost.querySelector('[role="alert"]').textContent).toBe('It has to start with https://.')
-    expect(mocks.calls.some(c => c[0] === '/api/integrations/connect')).toBe(false)
-    // The problem sits under the URL it is about and is tied to it (Integrations pass, I8).
-    expect(url.getAttribute('aria-invalid')).toBe('true')
-    expect(url.getAttribute('aria-describedby')).toBe(sheetHost.querySelector('[role="alert"]').id)
-    expect(url.nextElementSibling.getAttribute('role')).toBe('alert')
-    expect(sheetHost.querySelector('label[for="intg-url"]').textContent).toBe('Webhook URL')
-    await type(url, 'https://ha.example.com/api/webhook/opengym-7f3a')
-    await type(name, 'Home Assistant')
-    // Records too, on top of the default.
-    act(() => [...sheetHost.querySelectorAll('.lrow')].find(r => r.textContent.includes('New personal record')).querySelector('[role="switch"]').click())
-    await act(async () => { sheetBtn('Add webhook').click() })
-    const sent = mocks.calls.find(c => c[0] === '/api/integrations/connect')[1]
-    expect(sent).toEqual({ provider: 'webhook', url: 'https://ha.example.com/api/webhook/opengym-7f3a', label: 'Home Assistant', events: ['workout.finished', 'workout.pr'] })
-    expect(sheetHost.querySelector('.intg-secret').textContent).toBe('ogwh_abc123')
-    expect(sheetHost.textContent).toContain('You will see it only now')
-  })
-
-  it('the server refusing a URL is said in plain words', async () => {
-    mocks.answers['/api/integrations'] = { providers: [{ id: 'webhook', max: 10 }], connections: [] }
-    mocks.answers['/api/integrations/connect'] = Object.assign(new Error('url points at a private address (your admin can allow the home network)'), { status: 400, code: 'url' })
-    await mount()
-    act(() => action('webhook').click())
-    await showSheet()
-    await type(sheetHost.querySelector('input'), 'https://10.0.0.5/hook')
-    await act(async () => { sheetBtn('Add webhook').click() })
-    expect(sheetHost.querySelector('[role="alert"]').textContent).toBe('Your server said no to that URL: url points at a private address (your admin can allow the home network)')
-  })
-
-  it('a webhook that needs attention: test, retry and disconnect from its sheet', async () => {
-    const broken = conn({ status: 'attention', failed: 2, lastError: { at: Date.now() - 60000, msg: 'The receiver answered 503.' } })
-    mocks.answers['/api/integrations'] = { providers: [{ id: 'webhook', max: 10 }], connections: [broken] }
-    mocks.answers['/api/integrations/retry'] = { requeued: 2, connection: conn() }
-    mocks.answers['/api/integrations/test'] = { ok: true, status: 204, connection: conn() }
-    mocks.answers['/api/integrations/disconnect'] = { ok: true }
-    await mount()
-    expect(pill('webhook')).toBe('Needs attention')
-    expect(action('webhook').textContent).toBe('Manage')
-    act(() => action('webhook').click())
-    await showSheet()
-    expect(sheetHost.textContent).toContain('ha.example.com/api/webhook/…7f3a')
-    act(() => [...sheetHost.querySelectorAll('.lrow')].find(r => r.textContent.includes('Home Assistant')).click())
-    await showSheet()
-    expect(sheetHost.textContent).toContain('The receiver answered 503.')
-    await act(async () => { sheetBtn('Retry').click() })
-    expect(mocks.calls.find(c => c[0] === '/api/integrations/retry')[1]).toEqual({ id: 'c_1' })
-    expect(mocks.toast).toHaveBeenCalledWith('Sending again')
-    expect(sheetHost.textContent).not.toContain('The receiver answered 503.')
-    await act(async () => { sheetBtn('Send test event').click() })
-    expect(mocks.toast).toHaveBeenCalledWith('Test event delivered')
-    // Disconnect is the last thing in the sheet, a red row in a group of its own (P4, P6).
-    const btns = [...sheetHost.querySelectorAll('button')]
-    expect(btns[btns.length - 1]).toBe(sheetBtn('Disconnect'))
-    expect(sheetBtn('Disconnect').closest('.intg-end')).toBeTruthy()
-    expect(sheetBtn('Disconnect').classList.contains('danger')).toBe(true)
-    act(() => sheetBtn('Disconnect').click())
-    expect(mocks.confirm.title).toBe('Disconnect this webhook?')
-    await act(async () => { await mocks.confirm.onConfirm() })
-    expect(mocks.calls.find(c => c[0] === '/api/integrations/disconnect')[1]).toEqual({ id: 'c_1' })
-    expect(mocks.toast).toHaveBeenCalledWith('Webhook removed')
-  })
-
-  it('switching the last event off is refused here, before it reaches the server', async () => {
-    mocks.answers['/api/integrations'] = { providers: [{ id: 'webhook', max: 10 }], connections: [conn()] }
-    await mount()
-    act(() => action('webhook').click())
-    await showSheet()
-    act(() => [...sheetHost.querySelectorAll('.lrow')].find(r => r.textContent.includes('Home Assistant')).click())
-    await showSheet()
-    act(() => [...sheetHost.querySelectorAll('.lrow')].find(r => r.textContent.includes('Workout finished')).querySelector('[role="switch"]').click())
-    expect(mocks.toast).toHaveBeenCalledWith('Pick at least one thing to send.')
-    expect(mocks.calls.some(c => c[0] === '/api/integrations/update')).toBe(false)
-  })
 })
 
 describe('the Settings search', () => {
@@ -245,39 +139,9 @@ describe('the Settings search', () => {
     const ctx = { user: null, mobile: false, demo: false }
     const tr = s => s
     expect(searchSettings('integrations', ctx, tr)[0]).toMatchObject({ page: 'integrations', isPage: true })
-    expect(searchSettings('home assistant', ctx, tr).map(h => h.title)).toContain('Webhooks')
     expect(searchSettings('garmin', ctx, tr).map(h => h.title)).toContain('Garmin')
-    expect(searchSettings('webhook', { user: { id: 'u' }, mobile: false, integrations: [] }, tr).map(h => h.title)).not.toContain('Webhooks')
     // On a phone the health store is its own page, found under Integrations.
     const phone = searchSettings('healthkit', { mobile: true, ios: true }, tr)
     expect(phone[0]).toMatchObject({ page: 'apple-health', trail: 'Settings' })
-  })
-
-  it('Strava (#478): connect goes to the sign-in, the sheet switches strength on, the way back says how it went', async () => {
-    mocks.user = { id: 'u1' }
-    mocks.config = { integrations: { providers: ['strava'] } }
-    mocks.answers['/api/integrations'] = { providers: [{ id: 'strava', kind: 'oauth', max: 1 }], connections: [] }
-    const assign = vi.fn()
-    const orig = window.location
-    Object.defineProperty(window, 'location', { configurable: true, value: { ...orig, assign } })
-    await mount()
-    expect(pill('strava')).toBe('Off')
-    act(() => action('strava').click())
-    expect(assign).toHaveBeenCalledWith('/api/integrations/oauth/start?provider=strava')
-    Object.defineProperty(window, 'location', { configurable: true, value: orig })
-    act(() => root.unmount()); root = createRoot(host)
-    const strava = { id: 'c_s', provider: 'strava', label: 'Ana Lift', info: { athlete: 'Ana Lift', strength: 'off' }, events: ['workout.finished'], status: 'connected', paused: false }
-    mocks.answers['/api/integrations'] = { providers: [{ id: 'strava', kind: 'oauth', max: 1 }], connections: [strava] }
-    mocks.answers['/api/integrations/update'] = b => ({ connection: { ...strava, info: { ...strava.info, strength: b.strength ? 'on' : 'off' } } })
-    mocks.search = '?intg=strava&connected=1'
-    await mount()
-    expect(mocks.toast).toHaveBeenCalledWith('Strava connected. Your next workout goes up by itself.')
-    expect(mocks.navs.at(-1)).toEqual(['/settings/integrations', { replace: true }])
-    expect(pill('strava')).toBe('Connected')
-    act(() => action('strava').click())
-    await showSheet()
-    expect(sheetHost.textContent).toContain('Ana Lift')
-    await act(async () => { sheetHost.querySelector('[aria-label="Strength workouts too"]').click() })
-    expect(mocks.calls.find(c => c[0] === '/api/integrations/update')[1]).toEqual({ id: 'c_s', strength: true })
   })
 })

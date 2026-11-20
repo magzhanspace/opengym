@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest'
 import { exMediaOf, setExMedia, clearExMedia, setExMediaShow, serverTakesExMedia } from './ex-media.js'
 import { referencedHashes, stateMediaRefs } from './media-refs.js'
 import { mergeStampedMap, STAMPED_MAPS } from './sync-merge.js'
-import { ownItems } from './shared-items.js'
 import { buildPlanBundle } from './plan-share.js'
 
 // Your own photo or video on a built-in exercise (#259, #534).
@@ -61,12 +60,9 @@ describe('kept and synced like every other file of yours', () => {
 })
 
 describe('private: never shared on its own', () => {
-  it('the community library offers none of it, and a plan file carries none of it', () => {
+  it('a plan file carries none of it', () => {
     const S = { routines: [{ id: 'r', name: 'A', ex: [{ id: '0025', sets: 3, reps: 8 }] }], customEx: [], workouts: [] }
     setExMedia(S, '0025', ref())
-    const types = ['exercise', 'plan', 'photo', 'formvideo', 'progress', 'sound', 'equipment', 'tip', 'look', 'measures']
-    const shared = JSON.stringify(types.flatMap(type => ownItems(S, type)))
-    expect(shared).not.toContain('a'.repeat(64))
     expect(JSON.stringify(buildPlanBundle(S, 'x'))).not.toContain('a'.repeat(64))
   })
 })

@@ -60,7 +60,7 @@ describe('modules', () => {
   })
 
   it('names what a change switches off', () => {
-    expect(turnedOff({}, presetModules('training')).sort()).toEqual(['body', 'community', 'health', 'integrations', 'motivation', 'strength', 'videos'])
+    expect(turnedOff({}, presetModules('training')).sort()).toEqual(['body', 'health', 'integrations', 'motivation', 'strength', 'videos'])
     expect(turnedOff({ modules: { body: false } }, { body: false, motivation: false })).toEqual(['motivation'])
   })
 })

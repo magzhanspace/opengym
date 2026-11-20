@@ -25,7 +25,7 @@ describe('openGym Offline', () => {
     const S = { modules: { integrations: true } }
     expect(isOn(S, 'integrations')).toBe(true)
     setOfflineBuild(true)
-    for (const id of ['integrations', 'community']) { expect(isOn(S, id)).toBe(false); expect(moduleBuilt(id)).toBe(false) }
+    for (const id of ['integrations']) { expect(isOn(S, id)).toBe(false); expect(moduleBuilt(id)).toBe(false) }
     expect(isOn(S, 'body')).toBe(true)
     expect(S.modules.integrations).toBe(true)
     // "Everything" still reads as everything here

@@ -11,7 +11,6 @@ import { MOBILE } from '../lib/mobile.js'
 import { DEMO } from '../lib/demo.js'
 import { platformNow } from '../lib/platform-now.js'
 import { api } from '../lib/api.js'
-import { libraryOn } from '../lib/shared-api.js'
 import { MODULES, GROUPS, PRESETS, isOn, presetOf, presetModules, applyPreset, setModule, turnedOff, moduleBuilt } from '../lib/modules.js'
 import { readWatchStatus } from '../lib/watch-settings.js'
 import { moduleCopy, groupCopy, presetCopy } from '../lib/modules-copy.js'
@@ -36,12 +35,6 @@ function useConnections() {
       if (readWatchStatus()) put({ watch: true })
     }
     if (user && !DEMO) {
-      if ((config?.integrations?.providers || []).includes('webhook')) {
-        api('/api/integrations').then(d => {
-          const n = (d?.connections || []).filter(c => c.provider === 'webhook' && !c.paused).length
-          if (n) put({ webhooks: n })
-        }).catch(() => {})
-      }
     }
     return () => { gone = true }
   }, [user, config]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -54,7 +47,6 @@ export function connectionNotes(ids, conn) {
   for (const id of ids) {
     if (id === 'health' && conn.health) out.push(t('{0} stops syncing while Health is off. Nothing is disconnected, and it catches up once Health is back.', conn.health))
     if (id === 'watch' && conn.watch) out.push(t('Your watch stops getting workouts while Watch is off. It stays paired.'))
-    if (id === 'integrations' && conn.webhooks) out.push(t('Your webhooks stop sending while Integrations is off. They stay set up.'))
   }
   return out
 }
@@ -92,10 +84,8 @@ export default function ModulesPage() {
     ...PRESETS.map(p => ({ value: p.id, label: pc[p.id][0], subtitle: pc[p.id][1] })),
     { value: 'custom', label: t('Custom'), subtitle: t('Your own mix. Flip the switches below.') },
   ]
-  // Community only where the server has a library (LIBRARY=on): elsewhere it would switch nothing.
-  const libOn = useStore(st => libraryOn(st.config, st.user))
-  // openGym Offline has no Integrations or Community (lib/build-caps.js): not offered at all.
-  const shown = MODULES.filter(m => moduleBuilt(m.id) && (m.id !== 'community' || libOn))
+  // openGym Offline has no Integrations (lib/build-caps.js): not offered at all.
+  const shown = MODULES.filter(m => moduleBuilt(m.id))
   return <div className="modules">
     <p className="sect-f modules-intro">{t('Switch off what you don’t use. Nothing gets deleted: switch it back on and it’s all still there.')}</p>
     <Section footer={preset === 'custom' ? t('{0} of {1} modules on.', shown.filter(m => isOn(S, m.id)).length, shown.length) : null}>

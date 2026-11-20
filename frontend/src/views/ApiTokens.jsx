@@ -5,7 +5,7 @@ import { t } from '../lib/i18n.js'
 import { copyText } from '../lib/clipboard.js'
 import { fmtAgo } from '../lib/format.js'
 import { listTokens, createToken, revokeToken, mcpAddress, tokenLine, TOKEN_CATEGORIES, TOKEN_DAYS, endsLabel } from '../lib/api-tokens.js'
-import { categoryLabel, levelLabel } from '../lib/sharing-api.js'
+import { categoryLabel, levelLabel } from '../lib/scope-labels.js'
 import { confirmSheet } from '../sheets.jsx'
 import { Section, Row, SelectRow, Button, TextField } from '../components/ui.jsx'
 

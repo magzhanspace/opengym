@@ -333,8 +333,6 @@ jobs:
         run: node scripts/catalogue/build.mjs --check
       - name: Media stay within 180 px (licence)
         run: node scripts/catalogue/check-media.mjs
-      - name: The community library blocks every catalogue file (licence, by checksum)
-        run: node scripts/catalogue/media-hashes.mjs --check
 
   # The community routines (opengym.ch/routines): every file checked the way the submit service
   # checks a submission, the site built once, and the tests of the build, filters and service.

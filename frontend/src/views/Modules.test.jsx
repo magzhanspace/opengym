@@ -95,29 +95,9 @@ describe('the Modules page', () => {
     expect(isOn(mocks.S, 'effort')).toBe(true)
   })
 
-  it('asks once before switching off a module that is connected, and pauses on yes', async () => {
-    mocks.user = { id: 'u' }
-    mocks.config = { integrations: { providers: ['webhook'] } }
-    mocks.webhooks = [{ provider: 'webhook' }]
-    mount()
-    await act(async () => {})
-    act(() => sw('Integrations').click())
-    expect(mocks.S.modules).toBeUndefined()
-    expect(mocks.confirms).toHaveLength(1)
-    expect(mocks.confirms[0].title).toBe('Switch off Integrations?')
-    act(() => mocks.confirms[0].onConfirm())
-    expect(isOn(mocks.S, 'integrations')).toBe(false)
-    // back on needs no question
-    mount()
-    await act(async () => {})
-    act(() => sw('Integrations').click())
-    expect(isOn(mocks.S, 'integrations')).toBe(true)
-    expect(mocks.confirms).toHaveLength(1)
-  })
-
   it('names what pauses for each connected module, and nothing for the rest', () => {
-    const notes = connectionNotes(['health', 'watch', 'integrations', 'body'], { health: 'Health Connect', watch: true, webhooks: 2 })
-    expect(notes).toHaveLength(3)
+    const notes = connectionNotes(['health', 'watch', 'integrations', 'body'], { health: 'Health Connect', watch: true })
+    expect(notes).toHaveLength(2)
     expect(notes[0]).toBe('Health Connect stops syncing while Health is off. Nothing is disconnected, and it catches up once Health is back.')
     expect(connectionNotes(['health', 'watch'], {})).toEqual([])
     for (const n of notes) expect(n).not.toMatch(/—/)
@@ -142,7 +122,7 @@ describe('Settings follows the modules', () => {
     for (const [q, title, mod] of [
       ['rir', 'Effort per set', 'effort'], ['weigh', 'Weigh in before workouts', 'body'], ['recap', 'Week and month recap', 'motivation'],
       ['challenges', 'Monthly challenges', 'motivation'], ['recovery', 'Recovery tips', 'health'],
-      ['webhook', 'Webhooks', 'integrations'], ['about you', 'About you', 'strength'],
+      ['about you', 'About you', 'strength'],
       ['warm-up', 'Automatic warm-ups', 'plates'],
     ]) {
       expect(has(q, web, title), title).toBe(true)

@@ -1,5 +1,4 @@
 import { create } from 'zustand'
-import { unlink as unlinkNutrition } from '../lib/sister-nutrition.js'
 import { api, setRemoteAuth } from '../lib/api.js'
 import { localTZ } from '../lib/format.js'
 import { t } from '../lib/i18n.js'
@@ -22,8 +21,7 @@ import { countChanges, syncFingerprint } from '../lib/sync-changes.js'
 import { saveWorkoutEdit, deleteEditedWorkout } from '../lib/session-edit.js'
 import { appBase } from '../lib/app-base.js'
 import { linkTokenFromSearch, stripLinkFromUrl } from '../lib/device-link.js'
-import { loadRemote, chooseLocal, forgetRemote, connect, connectWithProvider, normalizeServerUrl, renewToken } from '../lib/remote.js'
-import { takeOidcReturn } from '../lib/oidc.js'
+import { loadRemote, chooseLocal, forgetRemote, connect, normalizeServerUrl, renewToken } from '../lib/remote.js'
 import { loadCfAccess } from '../lib/cf-access.js'
 import { RTL_LANGS } from '../lib/i18n-core.js'
 import { DEFAULT_TEMPLATE_ID } from '../lib/structuralBalanceTemplates.js'
@@ -1112,10 +1110,6 @@ export const useStore = create((set, get) => {
     handedOver = false
     // Signed out, this device is nobody's: the sign-in screen is in the instance's language.
     persist(freshState(), false)
-    // The openNutrition link (lib/sister-nutrition.js) is this device's, but what it cached is what
-    // the signed-out person ate: on a shared device it must not show on the next account's Home,
-    // report or month story. Their token goes too; linking again is one code.
-    unlinkNutrition().catch(() => {})
     setSync({ offline: false, auth: false, lastError: null, pending: false, lastSynced: 0 })
     // On a phone the file is wiped with it, now rather than after the usual wait: a start in
     // between would open in local mode on the signed-out account's data, since that boot takes
@@ -2034,11 +2028,8 @@ export const useStore = create((set, get) => {
       if (!left.owed && !(await stashActive())) return { owed: true, count: 0, stashed: false }
       // The device is signed out either way. A request that did not get through leaves the cookie
       // behind, still valid, so the logout is owed until the server answers it (see boot).
-      let out = null
-      try { out = await api('/api/logout', { method: 'POST', body: '{}' }) } catch (e) { if (!MOBILE) logoutOwed(true) }
+      try { await api('/api/logout', { method: 'POST', body: '{}' }) } catch (e) { if (!MOBILE) logoutOwed(true) }
       await clearLocalSession()
-      // OIDC_LOGOUT: the provider's session ends too, in this browser (the phone has none of it).
-      if (!MOBILE && typeof out?.provider_logout === 'string' && /^https?:\/\//.test(out.provider_logout)) window.location.assign(out.provider_logout)
       return left.owed ? owedResult(left, { stashed: true }) : { owed: false }
     },
 
@@ -2054,12 +2045,6 @@ export const useStore = create((set, get) => {
     // account pairing again merges what the phone kept (adoptProfile).
     async connectToServer(url, code, ask) {
       const user = await connect(url, code)   // throws on a bad URL/expired code — caller shows it
-      await get().afterConnect(user, url, ask)
-    },
-    // Signed in with the server's identity provider from the phone (lib/oidc-app.js): from there on
-    // exactly what a pairing does.
-    async connectWithProvider(url, label, ask) {
-      const user = await connectWithProvider(url, label)
       await get().afterConnect(user, url, ask)
     },
     async afterConnect(user, url, ask) {
@@ -2243,9 +2228,6 @@ export const useStore = create((set, get) => {
         try { await api('/api/logout', { method: 'POST', body: '{}' }); logoutOwed(false) } catch { /* owed until it is answered */ }
         if (logoutOwed()) { finishBoot(); return }
       }
-      // Back from the identity provider (lib/oidc.js): a fresh sign-in is a sign-in like a
-      // passkey's, so this copy's question is asked (adoptProfile) before anything syncs.
-      const arrived = takeOidcReturn()?.ok === 'signed-in'
       try {
         // Nobody is signed in and the server has just said so (`signed_in` in /api/config, made
         // with the same cookie /api/me would read): asking anyway only earns the 401 every
@@ -2254,15 +2236,7 @@ export const useStore = create((set, get) => {
         if (cfg?.signed_in === false) throw Object.assign(new Error('not signed in'), { status: 401 })
         const me = await api('/api/me')
         if (!me.user?.id) throw Object.assign(new Error('no user'), { status: 200, code: 'bad-response' })
-        get().setUser(me.user, arrived ? { adopt: true } : undefined)
-        if (arrived) {
-          finishBoot()
-          const { askAddDeviceData } = await import('../sheets.jsx')
-          get().adoptProfile(askAddDeviceData)
-            .then(() => import('./useUI.js')).then(({ useUI }) => useUI.getState().toast(t('Welcome, {0}', me.user.name)))
-            .catch(() => {})
-          return
-        }
+        get().setUser(me.user)
         // Re-stamp the reminder's timezone on every load — keeps it correct if you're travelling,
         // without needing to revisit Settings.
         const restampTz = () => {

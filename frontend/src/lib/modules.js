@@ -39,8 +39,6 @@ export const MODULES = [
     desc: 'Streaks, challenges, badges, recaps and your year in openGym.' },
   { id: 'integrations', group: 'extras', icon: 'webhook', tint: 'var(--indigo)', title: 'Integrations',
     desc: 'Webhooks for Home Assistant and friends, and the MCP server.' },
-  { id: 'community', group: 'extras', icon: 'globe', tint: 'var(--blue)', title: 'Community',
-    desc: 'Exercises, plans and sounds people on your server shared, and a way to share yours.' },
 ]
 export const MODULE_IDS = MODULES.map(m => m.id)
 export const MODULE = Object.fromEntries(MODULES.map(m => [m.id, m]))

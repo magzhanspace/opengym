@@ -1,6 +1,5 @@
 import { Suspense, lazy, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { DEMO } from './lib/demo.js'
-import { useDailyWebdav } from './lib/use-daily-webdav.js'
 import { offlineBuild } from './lib/build-caps.js'
 import { hideBoot } from './lib/boot.js'
 import { HashRouter, Routes, Route, Navigate, useNavigate, useLocation, useNavigationType } from 'react-router-dom'
@@ -94,7 +93,6 @@ const Tools = lazyView(() => import('./views/Tools.jsx'))
 const Journal = lazyView(() => import('./views/Journal.jsx'))
 const ProgressPhotos = lazyView(() => import('./views/ProgressPhotos.jsx'))
 // The trainer dashboard (docs/TRAINERS.md): only for sessions that train someone or lead a gym.
-const Trainer = lazyView(() => import('./views/Trainer.jsx'))
 // The tabs and screens past Home (Stats, History, the Library, Settings, ...) as well: a start
 // only needs Home, and these are fetched right behind it the same way.
 const RoutineEdit = lazyView(() => import('./views/RoutineEdit.jsx'))
@@ -105,7 +103,6 @@ const History = lazyView(() => import('./views/History.jsx'))
 const Library = lazyView(() => import('./views/Library.jsx'))
 const Muscles = lazyView(() => import('./views/Muscles.jsx'))
 // The community library of the server (views/Community.jsx): only with LIBRARY=on and the module on.
-const Community = lazyView(() => import('./views/Community.jsx'))
 const SettingsRoute = lazyView(() => import('./views/Settings.jsx').then(m => ({ default: m.SettingsRoute })))
 let viewsPrefetched = false
 const prefetchViews = () => {
@@ -155,8 +152,6 @@ function Shell() {
   // Store apps: which animation packs this device has, and the one the chosen quality wants for
   // the figure shown (components/Animations.jsx). Nothing on the web.
   useAnimPacksBoot()
-  // Backup to WebDAV (#582): this device's daily copy, when one is set up (lib/webdav-run.js).
-  useDailyWebdav(ready && !DEMO && !offlineBuild())
   // A circuit's clock that was running before a reload carries on from where it is now.
   useEffect(() => { if (!ready) return; wireCircuit(); restoreCircuit() }, [ready])
   const isGuest = useStore(s => s.isGuest())
@@ -367,7 +362,6 @@ function Shell() {
       <Route path="/history" element={<History />} />
       <Route path="/library" element={<Library />} />
       <Route path="/muscles" element={<Muscles />} />
-      {isOn(S, 'community') && <Route path="/community" element={<Community />} />}
       <Route path="/structural-balance" element={<StructuralBalance />} />
       <Route path="/tools" element={<Tools />} />
       <Route path="/journal" element={<Journal />} />
@@ -383,8 +377,6 @@ function Shell() {
           none yet): a reload on /admin waits for the answer instead of bouncing to Home. */}
       <Route path="/admin" element={user?.admin ? <Admin /> : ready ? <Navigate to="/home" replace /> : null} />
       {/* The dashboard decides for itself once the config is in, so a deep link survives the boot. */}
-      {user && <Route path="/trainer" element={<Trainer />} />}
-      {user && <Route path="/trainer/m/:id" element={<Trainer />} />}
       <Route path="*" element={<Navigate to="/home" replace />} />
     </Routes>
   ))

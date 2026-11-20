@@ -132,7 +132,6 @@ const TAGS = {
   meta: { title: 'Meta', side: 'Health &amp; public config' },
   auth: { title: 'Auth', side: 'Passkeys &amp; sessions' },
   pairing: { title: 'Pairing', side: 'Connect the mobile app' },
-  oidc: { title: 'OIDC', side: 'Sign in with your identity provider' },
   watch: { title: 'Watch relay', side: 'Zepp OS watches' },
   password: { title: 'Password', side: 'Optional name &amp; password (PASSWORD_LOGIN)' },
   passkeys: { title: 'Passkeys', side: 'More passkeys &amp; device links' },
@@ -143,11 +142,8 @@ const TAGS = {
   // A tag missing from this map renders nowhere at all, silently, so every tag in the
   // spec needs a line here.
   coach: { title: 'AI Coach', side: 'Plans, reviews, debriefs' },
-  integrations: { title: 'Integrations', side: 'Webhooks (INTEGRATIONS)' },
   tokens: { title: 'Scoped tokens', side: 'API tokens and MCP' },
   mcp: { title: 'MCP connector', side: 'OAuth sign-in for Claude &amp; ChatGPT (MCP)' },
-  trainers: { title: 'Trainers', side: 'Studios, sharing &amp; consent (TRAINERS)' },
-  shared: { title: 'Community', side: 'The shared library (LIBRARY)' },
   admin: { title: 'Admin', side: 'Users, invites, audit log, Coach' }
 }
 

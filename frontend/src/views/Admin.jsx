@@ -10,8 +10,6 @@ import { pathBefore } from '../lib/nav.js'
 import { confirmSheet } from '../sheets.jsx'
 import Icon from '../components/Icon.jsx'
 import { Button } from '../components/ui.jsx'
-import AdminCommunity from './AdminCommunity.jsx'
-import AdminOidc from '../components/AdminOidc.jsx'
 import '../admin.css'
 
 // Admin-only operator dashboard (owner passkey + admin flag; guarded again server-side).
@@ -153,7 +151,6 @@ function UserDetail({ id, viewerOwner, onChanged, close }) {
       <div className="tile"><div className="l">Last sync</div><div className="v" style={{ fontSize: 'var(--fs-subhead)' }}>{rel(d.lastSync)}</div></div>
       {typeof d.bytes === 'number' && <div className="tile"><div className="l">On disk</div><div className="v" style={{ fontSize: 'var(--fs-subhead)' }}>{fmtBytes(d.bytes)}</div></div>}
     </div>
-    {d.roles && <TrainerRoles id={u.id} name={u.name} roles={d.roles} grants={d.grants} onChanged={onChanged} close={close} />}
     {viewerOwner && !u.owner && !u.disabled && <>
       <button className="btn" style={{ margin: '12px 0 4px' }}
         onClick={() => u.admin
@@ -212,98 +209,6 @@ function UserDetail({ id, viewerOwner, onChanged, close }) {
         <span className="small muted">{fmtVol(w.vol ?? workoutVolume(w), d.unit)}</span>
       </div>)}
     </div> : <div className="adm-empty">No workouts logged.</div>}
-  </>
-}
-
-// Trainers and gyms (TRAINERS=on): the roles a profile has, and the free-trainer switch.
-function TrainerRoles({ id, name, roles, grants, onChanged, close }) {
-  const toast = useUI(s => s.toast)
-  const setFree = free => api('/api/admin/user/trainer', { method: 'POST', body: JSON.stringify({ id, free }) })
-    .then(() => { toast(free ? name + ' can train people now' : name + ' is no longer a free trainer'); onChanged(); close() })
-    .catch(e => toast(e.message))
-  return <>
-    <div className="row" style={{ gap: 6, flexWrap: 'wrap', margin: '12px 0 4px' }}>
-      {roles.freeTrainer && <span className="adm-pill acc">free trainer</span>}
-      {roles.staff.map(s => <span key={s.gymId + s.role} className="adm-pill">{s.role === 'lead' ? 'gym lead' : 'trainer'}</span>)}
-      {roles.memberOf.length > 0 && <span className="adm-pill">member of {roles.memberOf.length} gym{roles.memberOf.length > 1 ? 's' : ''}</span>}
-      <span className="adm-pill">shares with {grants || 0}</span>
-    </div>
-    <button className="btn" style={{ margin: '8px 0 4px' }} onClick={() => roles.freeTrainer
-      ? confirmSheet({ title: 'Stop ' + name + ' training freely?', message: 'Their private members are paused at once. Gym trainer roles stay.', confirmText: 'Stop', danger: true, onConfirm: () => setFree(false) })
-      : setFree(true)}>{roles.freeTrainer ? 'Remove free trainer' : 'Allow as free trainer'}</button>
-    <div className="adm-hint">A free trainer works without a gym, like a personal trainer. People still decide what they share.</div>
-  </>
-}
-
-// Gyms (TRAINERS=on): create them, give the lead and trainer roles. Names and counts only: an
-// admin runs the place, the members decide who sees their training.
-function GymsCard({ users, tick }) {
-  const toast = useUI(s => s.toast)
-  const openSheet = useUI(s => s.openSheet)
-  const [d, setD] = useState(null)
-  const load = () => api('/api/admin/gyms').then(setD).catch(e => toast(e.message))
-  useEffect(() => { load() }, [tick])
-  const create = () => openSheet(close => <GymNewSheet close={close} done={load} />)
-  const assign = (g, role) => openSheet(close => <>
-    <h3>{role === 'lead' ? 'Add a gym lead' : 'Add a trainer'} to {g.name}</h3>
-    <div className="adm-lead">{role === 'lead'
-      ? 'A gym lead sees the trainers and the names of members who joined, and only what each member shares with the lead row.'
-      : 'A trainer sees only the members who connected to them, and only what each one shares.'}</div>
-    <div className="list">{users.filter(u => !u.disabled && !g.staff.some(s => s.userId === u.id && s.role === role)).map(u =>
-      <div key={u.id} className="item" onClick={() => api('/api/admin/gyms/staff', { method: 'POST', body: JSON.stringify({ gymId: g.id, userId: u.id, role }) })
-        .then(() => { toast(u.name + ' added'); close(); load() }).catch(e => toast(e.message))}>
-        <div className="grow"><div className="tt">{u.name}</div></div><Icon name="plus" className="chev" /></div>)}</div>
-  </>)
-  const remove = (g, s) => confirmSheet({
-    title: 'Take ' + s.name + '’s ' + (s.role === 'lead' ? 'gym lead' : 'trainer') + ' role?',
-    message: 'Whatever members shared through this role stops at once. It comes back if you give the role back.',
-    confirmText: 'Take it away', danger: true,
-    onConfirm: () => api('/api/admin/gyms/staff', { method: 'POST', body: JSON.stringify({ gymId: g.id, userId: s.userId, role: s.role, on: false }) })
-      .then(() => { toast('Role removed'); load() }).catch(e => toast(e.message)),
-  })
-  const toggle = g => confirmSheet({
-    title: (g.disabled ? 'Switch ' : 'Pause ') + g.name + '?',
-    message: g.disabled ? 'Its lead and trainers see what members share again.' : 'Its lead and trainers see nothing until you switch it back on. Nothing is deleted.',
-    confirmText: g.disabled ? 'Switch on' : 'Pause', danger: !g.disabled,
-    onConfirm: () => api('/api/admin/gyms/update', { method: 'POST', body: JSON.stringify({ id: g.id, disabled: !g.disabled }) })
-      .then(load).catch(e => toast(e.message)),
-  })
-  return <div className="card">
-    <div className="row between"><h2 style={{ margin: 0 }}>Gyms</h2>
-      <Button variant="primary" size="sm" onClick={create} icon="plus">New gym</Button></div>
-    <div className="adm-lead">Studios on this server, with their leads and trainers. Members connect with a trainer’s code and choose what each side sees; you never see that here.</div>
-    {d && !d.gyms.length && <div className="adm-empty">No gyms yet. A gym gives trainers a home and members a gym lead.</div>}
-    {(d?.gyms || []).map(g => <div key={g.id} style={{ padding: '10px 0', borderBottom: 'var(--hair) solid var(--sep)', opacity: g.disabled ? 0.6 : 1 }}>
-      <div className="row between"><div className="small" style={{ fontWeight: 600 }}>{g.name} {g.disabled && <span className="adm-pill bad">paused</span>}</div>
-        <span className="small muted">{g.counts.members} members</span></div>
-      {g.contact && <div className="dim" style={{ fontSize: 'var(--fs-caption2)' }}>{g.contact}</div>}
-      <div className="row" style={{ gap: 6, flexWrap: 'wrap', margin: '6px 0' }}>
-        {g.staff.map(s => <button key={s.userId + s.role} className="adm-pill" onClick={() => remove(g, s)} aria-label={'remove ' + s.name}>{s.name} · {s.role === 'lead' ? 'lead' : 'trainer'} ✕</button>)}
-      </div>
-      <div className="row" style={{ gap: 6, flexWrap: 'wrap' }}>
-        <button className="btn xs" onClick={() => assign(g, 'lead')}>Add lead</button>
-        <button className="btn xs" onClick={() => assign(g, 'trainer')}>Add trainer</button>
-        <button className="btn xs" onClick={() => toggle(g)}>{g.disabled ? 'Switch on' : 'Pause'}</button>
-      </div>
-    </div>)}
-    {d?.freeTrainers?.length > 0 && <div className="adm-hint" style={{ marginTop: 10 }}>Free trainers: {d.freeTrainers.map(f => f.name).join(', ')}</div>}
-  </div>
-}
-
-function GymNewSheet({ close, done }) {
-  const toast = useUI(s => s.toast)
-  const [name, setName] = useState('')
-  const [contact, setContact] = useState('')
-  const save = () => api('/api/admin/gyms/new', { method: 'POST', body: JSON.stringify({ name, contact }) })
-    .then(() => { toast(name.trim() + ' created'); close(); done() }).catch(e => toast(e.message))
-  return <>
-    <h3>New gym</h3>
-    <div className="adm-lead">Members see the name and the contact on the screen where they agree to share, so put who is responsible for their data and how to reach them.</div>
-    <input className="field" placeholder="Name, e.g. FitBox Bülach" value={name} maxLength={60} onChange={e => setName(e.target.value)} aria-label="gym name" />
-    <div style={{ height: 8 }} />
-    <input className="field" placeholder="Responsible, e.g. FitBox GmbH, privacy@fitbox.ch" value={contact} maxLength={200} onChange={e => setContact(e.target.value)} aria-label="data protection contact" />
-    <div style={{ height: 12 }} />
-    <Button variant="primary" disabled={!name.trim()} onClick={save}>Create gym</Button>
   </>
 }
 
@@ -418,7 +323,6 @@ export default function Admin() {
   const [invites, setInvites] = useState(null)
   const [inviteOnly, setInviteOnly] = useState(false)
   const [dataView, setDataView] = useState(false)
-  const [trainersOn, setTrainersOn] = useState(false)
   const [tick, setTick] = useState(0)          // the ↻ button; the activity log listens to it
 
   // A failed load, or an answer without a list, used to leave the page on "Loading…" for good —
@@ -428,7 +332,7 @@ export default function Admin() {
   const loadUsers = () => api('/api/admin/users')
     .then(d => {
       if (!Array.isArray(d?.users)) throw new Error('The server answered without a list of users.')
-      setUsers(d.users); setInviteOnly(!!d.invite_only); setDataView(!!d.data_view); setTrainersOn(!!d.trainers); setUsersErr(null)
+      setUsers(d.users); setInviteOnly(!!d.invite_only); setDataView(!!d.data_view); setUsersErr(null)
     })
     .catch(e => setUsersErr(e.message || 'Failed to load'))
   const loadInvites = () => api('/api/admin/invites').then(d => setInvites(d.invites)).catch(() => {})
@@ -486,13 +390,8 @@ export default function Admin() {
 
     <InvitesCard invites={invites} reload={loadInvites} inviteOnly={inviteOnly} />
 
-    {/* Sign-in with an identity provider; nothing without OIDC_ISSUER. */}
-    <AdminOidc />
 
-    {/* The community library's moderation (AdminCommunity.jsx); nothing without LIBRARY=on. */}
-    <AdminCommunity tick={tick} />
 
-    {trainersOn && <GymsCard users={users || []} tick={tick} />}
 
     <div className="card">
       <h2 style={{ margin: 0 }}>Users</h2>

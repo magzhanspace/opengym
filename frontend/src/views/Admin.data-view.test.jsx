@@ -1,7 +1,6 @@
 // @vitest-environment happy-dom
 // ADMIN_DATA_VIEW off (the default since 1.4.5): the drill-down shows counts and says honestly
-// where the data is, with no workout history and no "Download their data". And the Gyms card,
-// which shows only on a server with TRAINERS on.
+// where the data is, with no workout history and no "Download their data".
 import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -48,7 +47,7 @@ beforeEach(() => {
   mocks.sheets.length = 0
   mocks.posts.length = 0
   mocks.answers = {
-    '/api/admin/users': { users: [{ id: 'u1', name: 'Lea', workouts: 12, lastSync: null, disabled: false, live: { startedAt: 1 } }], invite_only: false, data_view: false, trainers: true },
+    '/api/admin/users': { users: [{ id: 'u1', name: 'Lea', workouts: 12, lastSync: null, disabled: false, live: { startedAt: 1 } }], invite_only: false, data_view: false },
     '/api/admin/invites': { invites: [] },
     '/api/admin/audit': { events: [], total: 0, retention: {}, enabled: true },
     '/api/admin/gyms': { gyms: [{ id: 'g1', name: 'FitBox', contact: 'privacy@fitbox.test', disabled: false, counts: { members: 4, leads: 1, trainers: 1 }, staff: [{ userId: 'u2', name: 'Marco', role: 'trainer' }] }], freeTrainers: [] },
@@ -71,7 +70,7 @@ describe('Admin without ADMIN_DATA_VIEW', () => {
     expect(page.textContent).not.toContain('undefined')
   })
 
-  it('the drill-down is counts, storage and roles, no history, no download', async () => {
+  it('the drill-down is counts and storage, no history, no download', async () => {
     const page = render(<Admin />)
     await settle()
     act(() => [...page.querySelectorAll('.item')].find(el => el.textContent.includes('Lea')).click())
@@ -84,32 +83,5 @@ describe('Admin without ADMIN_DATA_VIEW', () => {
     expect(text).not.toContain('Workout history')
     expect([...sheet.querySelectorAll('button')].map(b => b.textContent)).not.toContain('Download their data')
     expect(text).toContain('readable on disk, not in the app')
-    expect(text).toContain('member of 1 gym')
-    const allow = [...sheet.querySelectorAll('button')].find(b => b.textContent === 'Allow as free trainer')
-    act(() => allow.click())
-    await settle()
-    expect(mocks.posts).toContainEqual(['/api/admin/user/trainer', { id: 'u1', free: true }])
-  })
-})
-
-describe('Gyms card', () => {
-  it('lists gyms with staff and counts, and adds a trainer', async () => {
-    const page = render(<Admin />)
-    await settle()
-    expect(page.textContent).toContain('FitBox')
-    expect(page.textContent).toContain('4 members')
-    expect(page.textContent).toContain('Marco · trainer')
-    act(() => [...page.querySelectorAll('button')].find(b => b.textContent === 'Add trainer').click())
-    const sheet = render(mocks.sheets[mocks.sheets.length - 1](() => {}))
-    act(() => [...sheet.querySelectorAll('.item')].find(el => el.textContent.includes('Lea')).click())
-    await settle()
-    expect(mocks.posts).toContainEqual(['/api/admin/gyms/staff', { gymId: 'g1', userId: 'u1', role: 'trainer' }])
-  })
-
-  it('is not there without TRAINERS', async () => {
-    mocks.answers['/api/admin/users'].trainers = false
-    const page = render(<Admin />)
-    await settle()
-    expect(page.textContent).not.toContain('New gym')
   })
 })

@@ -404,21 +404,6 @@ function activitiesHTML(R, unit) {
   return `<div class="cards">${cards.join('')}</div><div class="note-line">${esc(by.join('   '))}</div>`
 }
 
-// What you ate over the range, from openNutrition (lib/sister-nutrition.js nutritionSummary).
-function nutritionHTML(R) {
-  const N = R.nutrition
-  const sub = s => (s ? `<div class="c-s">${esc(s)}</div>` : '')
-  const cards = [
-    card(t('Energy a day'), N.kcal != null ? `${esc(fmtNum(N.kcal))}<small>kcal</small>` : '–', sub(N.kcalTarget ? t('Target {0}', fmtNum(N.kcalTarget) + ' kcal') : '')),
-    card(t('Protein a day'), N.protein != null ? `${esc(fmtNum(N.protein))}<small>g</small>` : '–', sub(N.proteinTarget ? t('Target {0}', fmtNum(N.proteinTarget) + ' g') : '')),
-    ...(N.proteinMeals != null ? [card(t('Protein meals a day'), esc(fmtNum(N.proteinMeals)))] : []),
-    card(t('Days logged'), esc(N.of ? `${fmtNum(N.days)} / ${fmtNum(N.of)}` : fmtNum(N.days)),
-      sub(N.proteinHit != null ? t('Protein target hit on {0}', `${fmtNum(N.proteinHit)}/${fmtNum(N.proteinDays)}`) : '')),
-  ]
-  const notes = [t('From openNutrition. Averages count only the days you logged.'), N.partial ? t('Some days had foods without numbers, so their totals are a little low.') : ''].filter(Boolean)
-  return `<div class="cards">${cards.join('')}</div><div class="note-line">${esc(notes.join(' '))}</div>`
-}
-
 function musclesHTML(R, m) {
   const list = R.muscles.worked
   if (!list.length) return `<div class="keep panel"><h3 class="sec-h">${esc(t('Sets per muscle'))}</h3><p class="none">${esc(t('No muscle work in this period.'))}</p></div>`
@@ -482,11 +467,11 @@ function workoutListItem(S, w, unit, speedUnit, m, id, lead = '') {
  * calendar, muscles, estimated 1RM of the top lifts, body weight), and the lists (new bests,
  * every workout with its sets).
  */
-export function reportPrintHTML(S, { range = '4w', from, to, owner = '', probe = false, today, nutrition = null } = {}) {
+export function reportPrintHTML(S, { range = '4w', from, to, owner = '', probe = false, today } = {}) {
   const m = probeMarks(probe)
   const unit = S.unit || 'kg'
   const speedUnit = speedUnitOf(S)
-  const R = reportData(S, { range, from, to, today, nutrition })
+  const R = reportData(S, { range, from, to, today })
   const r = R.range
   // A section: its heading travels with its first block, which stays whole on a page.
   const section = (id, title, html) => `<div class="keep panel">${m.s(id)}${m.h(id)}<h3 class="sec-h">${esc(title)}</h3>${html}${m.e(id)}</div>`
@@ -513,9 +498,8 @@ export function reportPrintHTML(S, { range = '4w', from, to, owner = '', probe =
     parts.push(section('bw', t('Body weight'), lineChartSVG(pts, { from: t0, to: t1, labels: [[t0, fmtDate(r.from)], [t1, fmtDate(r.to)]] })
       + `<div class="note-line">${esc(unit)} · ${esc(tn('{0} weigh-in', '{0} weigh-ins', R.bodyweight.length))}</div>`))
   }
-  // Beyond the gym (gm-hooks): runs and matches, and what openNutrition says you ate.
+  // Beyond the gym (gm-hooks): runs and matches.
   if (R.activities?.n) parts.push(section('sport', t('Runs, rides and matches'), activitiesHTML(R, unit)))
-  if (R.nutrition) parts.push(section('food', t('Nutrition'), nutritionHTML(R)))
   // A long list may run over a page: its rows never split and its header row repeats. The heading
   // stays with the first rows (break-after: avoid, and the probe checks it).
   if (R.prs.length) parts.push(`<div class="panel list">${prsHTML(R, unit, m)}</div>`)

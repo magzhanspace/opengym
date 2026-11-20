@@ -36,7 +36,7 @@ async function startServer(t) {
   }));
   const child = spawn(process.execPath, ['server.js'], {
     cwd: API, stdio: ['ignore', 'pipe', 'pipe'],
-    // The drill-down and the live row with their contents: ADMIN_DATA_VIEW on (off is server-trainers.test.js).
+    // The drill-down and the live row with their contents: ADMIN_DATA_VIEW on.
     env: { ...process.env, PORT: '0', DATA_DIR: dataDir, ORIGIN: 'http://localhost:8080', RP_ID: 'localhost', ADMIN_DATA_VIEW: 'on' }
   });
   const h = { api: '', log: '', dataDir };

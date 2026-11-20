@@ -7,8 +7,6 @@ import { t, tn } from '../lib/i18n.js'
 import { todayISO, fmtDate } from '../lib/format.js'
 import { reportRange, inRange } from '../lib/report.js'
 import { printReport } from '../lib/report-print.js'
-import { useNutritionLink } from './SisterApps.jsx'
-import { daysIn } from '../lib/sister-nutrition.js'
 import { Button, Segmented, Row } from './ui.jsx'
 import DateField from './DateField.jsx'
 
@@ -20,14 +18,10 @@ export function ReportSheet({ close }) {
   const [to, setTo] = useState(today)
   const r = reportRange(range, { from, to, today })
   const count = inRange(S, r).length
-  // openNutrition, when this device is linked and the report is allowed to show it: the days are
-  // fetched while the sheet is open (printing has to start from the tap, it cannot wait on the network).
-  const food = useNutritionLink({ from: r.from, to: r.to })
-  const withFood = !!food && food.show.report !== false
   const make = () => {
     const owner = useStore.getState().user?.name || ''
     close()
-    printReport(S, { range, from: r.from, to: r.to, owner, nutrition: withFood ? daysIn(food, r.from, r.to) : null })
+    printReport(S, { range, from: r.from, to: r.to, owner })
   }
   return <>
     <h3>{t('Performance report')}</h3>
@@ -48,7 +42,6 @@ export function ReportSheet({ close }) {
     </div>}
     <div className="small dim" style={{ margin: '10px 2px 14px' }} data-report-summary>
       {(r.from === r.to ? fmtDate(r.from, true, true) : fmtDate(r.from, false, true) + ' – ' + fmtDate(r.to, false, true)) + ' · ' + tn('{0} workout', '{0} workouts', count)}
-      {withFood && <><br />{t('With your nutrition from openNutrition.')}</>}
     </div>
     <Button variant="primary" icon="note" onClick={make}>{t('Create PDF')}</Button>
   </>

@@ -3,7 +3,7 @@
 import { api, appBase, remoteAuth } from './api.js'
 import { t } from './i18n.js'
 import { fmtDate } from './format.js'
-import { categoryLabel } from './sharing-api.js'
+import { categoryLabel } from './scope-labels.js'
 
 export const TOKEN_CATEGORIES = [
   { id: 'workouts', max: 'apply' }, { id: 'plans', max: 'apply' }, { id: 'bodyweight', max: 'apply' },
@@ -41,10 +41,5 @@ export const endsLabel = (exp, now = Date.now()) => {
   return fmtDate(iso, false, d.getFullYear() !== new Date(now).getFullYear())
 }
 
-// The calendar feed (api/integrations/calendar.js, docs/CALENDAR.md): a private ICS address of the
-// plan, made of a token of its own kind. Settings → Integrations → Calendar feed.
-export const getCalendar = () => api('/api/calendar')
-export const setCalendar = ({ done, renew = false }) => api('/api/calendar', { method: 'POST', body: JSON.stringify({ done: !!done, ...(renew ? { renew: true } : {}) }) })
-export const stopCalendar = () => api('/api/calendar/revoke', { method: 'POST', body: '{}' })
 /** The address a calendar app opens straight away: the same feed as webcal://. */
 export const webcalUrl = url => String(url || '').replace(/^https?:\/\//, 'webcal://')

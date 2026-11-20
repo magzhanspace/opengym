@@ -14,7 +14,6 @@ export const moduleCopy = () => ({
   health: [t('Health'), t('Apple Health or Health Connect, heart rate and recovery tips.')],
   motivation: [t('Motivation'), t('Streaks, challenges, badges, recaps and your year in openGym.')],
   integrations: [t('Integrations'), t('Webhooks for Home Assistant and friends, and the MCP server.')],
-  community: [t('Community'), t('Exercises, plans and sounds people on your server shared, and a way to share yours.')],
 })
 
 export const groupCopy = () => ({
