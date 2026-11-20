@@ -3,7 +3,7 @@
 import { api, appBase, remoteAuth } from './api.js'
 import { t } from './i18n.js'
 import { fmtDate } from './format.js'
-import { categoryLabel } from './sharing-api.js'
+import { categoryLabel } from './scope-labels.js'
 
 export const TOKEN_CATEGORIES = [
   { id: 'workouts', max: 'apply' }, { id: 'plans', max: 'apply' }, { id: 'bodyweight', max: 'apply' },

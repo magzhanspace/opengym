@@ -44,10 +44,8 @@ export const PAGES = {
   'live-custom': { title: 'Per exercise type', icon: 'slider', tint: 'var(--grey)', parent: 'live', kw: 'live widget per exercise type strength bands holds cardio carries details buttons' },
   // How the spoken cues sound (components/VoiceSettings.jsx, v1.4.5).
   voice: { title: 'Voice', icon: 'chat', tint: 'var(--teal)', parent: 'alerts', kw: 'voice voices speak speech tts spoken cues style hype drill sergeant calm deadpan lines clip record recording microphone pitch speed speaker person accent male female' },
-  // Trainers and gyms (TRAINERS=on on the server, docs/TRAINERS.md): who sees what of your training.
   // Settings → Integrations → API tokens (docs/API_TOKENS.md): scoped tokens for MCP and scripts.
   'api-tokens': { title: 'API tokens', icon: 'key', tint: 'var(--purple)', parent: 'integrations', mod: 'integrations', kw: 'api token tokens key mcp claude chatgpt cursor assistant planner script access revoke' },
-  trainer: { title: 'Trainer & gym', icon: 'personCircle', tint: 'var(--acc)', parent: 'account', kw: 'trainer coach personal trainer gym studio share sharing consent privacy disconnect code qr' },
   // Phone app only (#614): the gyms that get you a nudge when you arrive, the search that adds one
   // and the editor for one of them.
   gym: { title: 'Gym reminder', icon: 'mapPin', tint: 'var(--green)', parent: 'reminders', kw: 'gym location arrive geofence remind start' },
@@ -87,9 +85,7 @@ export function pageVisible(page, ctx) {
   // The phone app's network log: there only (a browser has its own developer tools for that).
   if (page === 'network') return !!ctx.mobile
   // openGym Offline (lib/build-caps.js) has no network: nothing that needs a server or a connection.
-  if (ctx.offline && (page === 'zepp' || page === 'api-tokens' || page === 'trainer')) return false
-  // Only on a server that offers trainers, signed in: there is nobody to share with otherwise.
-  if (page === 'trainer') return !!ctx.trainers && !!ctx.user && !ctx.demo
+  if (ctx.offline && (page === 'zepp' || page === 'api-tokens')) return false
   // Signed in to a server that offers scoped tokens (API_TOKENS, on unless switched off).
   if (page === 'api-tokens') return !!ctx.apiTokens && !!ctx.user && !ctx.demo
   // The phone apps' watch pages, together: there whenever one of them is.

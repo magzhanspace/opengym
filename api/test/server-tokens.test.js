@@ -75,10 +75,6 @@ test('made with a session, shown once, listed without the secret, refused withou
   // The activity log says so, never with the token.
   assert.match(fs.readFileSync(path.join(h.dataDir, 'audit.log'), 'utf8'), /auth\.token\.create/);
   assert.ok(!fs.readFileSync(path.join(h.dataDir, 'audit.log'), 'utf8').includes(made.body.token.slice(4)));
-  // And the sharing log of the profile.
-  const share = JSON.parse(fs.readFileSync(path.join(h.dataDir, 'share', 'u_t_1.json'), 'utf8'));
-  assert.equal(share.log.at(-1).ev, 'token.create');
-  assert.equal(share.log.at(-1).peer.name, 'Claude');
 });
 
 test('a token is no session: every other route refuses it', async t => {
@@ -145,10 +141,6 @@ test('reads only its categories, writes only its keys, over the exact revision, 
   assert.equal(stale.status, 409);
   assert.equal(stale.body.rev, 4);
   assert.equal('coach' in stale.body.state, false);
-  // The sharing log shows the write and the look.
-  const log = JSON.parse(fs.readFileSync(path.join(h.dataDir, 'share', 'u_t_1.json'), 'utf8')).log;
-  assert.ok(log.some(e => e.ev === 'token.write' && e.cat === 'plans'));
-  assert.ok(log.some(e => e.ev === 'access' && e.actor.kind === 'token' && e.cat === 'workouts'));
 });
 
 test('revoke, sign out everywhere, a disabled and a deleted account all end a token', async t => {

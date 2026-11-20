@@ -146,7 +146,6 @@ const TAGS = {
   integrations: { title: 'Integrations', side: 'Webhooks (INTEGRATIONS)' },
   tokens: { title: 'Scoped tokens', side: 'API tokens and MCP' },
   mcp: { title: 'MCP connector', side: 'OAuth sign-in for Claude &amp; ChatGPT (MCP)' },
-  trainers: { title: 'Trainers', side: 'Studios, sharing &amp; consent (TRAINERS)' },
   admin: { title: 'Admin', side: 'Users, invites, audit log, Coach' }
 }
 

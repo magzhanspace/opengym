@@ -41,17 +41,8 @@ import { buildIcs } from './integrations/calendar.js';
 import { deriveKey, seal as sealText, open as openSealed } from './integrations/crypto.js';
 import { excusedOn, nudgeFor, nudgeWindowOpen, toneOf } from './nudge.js';
 import { wrappedPushYear, wrappedSummary, wrappedPushOwed, wrappedPush } from './wrapped.js';
-import { createOrgStore } from './trainers/org-store.js';
-import { trainerRoutes } from './trainers/routes.js';
-import { dashboardRoutes } from './trainers/dashboard-routes.js';
-import { createNotify } from './trainers/notify.js';
-import { OrgError } from './trainers/org-store.js';
-import { nutritionSourceFrom } from './sources/nutrition.js';
-import { createPermissions } from './permissions.js';
-import { createShareLog } from './share-log.js';
-import { createToken, findToken, touchToken, listTokens, revokeTokens, scopedState, mergeScoped, readCategories, ScopeError, TOKEN_CATEGORIES, TOKEN_DAYS, DEFAULT_DAYS, TOKEN_PREFIX } from './tokens.js';
+import { createToken, findToken, touchToken, listTokens, revokeTokens, scopedState, mergeScoped, ScopeError, TOKEN_CATEGORIES, TOKEN_DAYS, DEFAULT_DAYS, TOKEN_PREFIX } from './tokens.js';
 import * as oauth from './oauth.js';
-import { createBudgets, createCodeGuard } from './budgets.js';
 import { oidcConfig } from './oidc/config.js';
 import { createProvider } from './oidc/provider.js';
 import { oidcRoutes } from './oidc/routes.js';
@@ -91,14 +82,8 @@ const ALLOW_GUEST = !/^(0|false|no|off)$/i.test(process.env.ALLOW_GUEST || '');
 // every account that opts in, so an instance has to ask for it. While it is off every password
 // route answers 404 and the app shows none of it; hashes already stored stay where they are.
 const PASSWORD_LOGIN = /^(1|true|yes|on)$/i.test(process.env.PASSWORD_LOGIN || '');
-// Trainers, gym leads and studios (docs/TRAINERS.md). Off by default: with it off every
-// /api/sharing, /api/trainer and /api/admin/gyms route answers 404 and the app shows nothing.
-const TRAINERS = /^(1|true|yes|on)$/i.test(process.env.TRAINERS || '');
-// How a gym lead gets to see a member: 'row' (own consent row, default), 'mirror' or 'none'
-// (api/trainers/scopes.js LEAD_MODES).
-const TRAINERS_LEAD_ACCESS = process.env.TRAINERS_LEAD_ACCESS || 'row';
 // Whether the admin dashboard shows a member's workouts and weigh-ins (1.4.5: off by default).
-// Off, admins see counts only; on, every look is in the activity log and the member's sharing log.
+// Off, admins see counts only; on, every look is in the activity log.
 const ADMIN_DATA_VIEW = /^(1|true|yes|on)$/i.test(process.env.ADMIN_DATA_VIEW || '');
 // Sign in with an identity provider (#130, docs/SELF_HOSTING.md): on once OIDC_ISSUER and
 // OIDC_CLIENT_ID are set. OIDC_ONLY makes the provider the one way in (admins keep their passkeys).
@@ -200,16 +185,6 @@ function ownerId() {
   return db.users.find(isAdmin)?.id || null;
 }
 const isOwner = user => !!user && isAdmin(user) && user.id === ownerId();
-// Studios, roles and grants (org.json), each member's sharing log (share/<uid>.json), and the one
-// check every trainer, gym and library route asks (permissions.js).
-const org = createOrgStore({ file: path.join(DATA, 'org.json'), leadMode: TRAINERS_LEAD_ACCESS });
-const shareLog = createShareLog({ dir: path.join(DATA, 'share'), keepDays: Math.max(0, +(process.env.SHARE_LOG_DAYS || 365) || 0) });
-const perms = createPermissions({
-  org, userById: id => db.users.find(u => u.id === id) || null, isAdmin, isOwner,
-  flags: () => ({ trainers: TRAINERS, adminDataView: ADMIN_DATA_VIEW })
-});
-const budgets = createBudgets();
-const codeGuard = createCodeGuard();
 // 0600: db.json holds passkey credential material. It used to be covered by a blanket 0700 on
 // the whole directory; now that the directory stays traversable, the file carries its own mode.
 // Once the new version is on disk, a second copy of it goes to db.json.bak, the same durable
@@ -481,35 +456,6 @@ function readStateCached(uid) {
   return S;
 }
 
-// A write the server makes into a profile on someone's behalf: a trainer's change, a suggestion the
-// member took, the member's Undo of a trainer change (trainers/ops.js). The same steps as PUT
-// /api/data, synchronous from read to rename so nothing can write in between: `fn(next, t)` changes
-// a copy of the stored document and stamps what it changed at `t` (a time later than every stamp in
-// it, so the change wins the member's devices' merge like one from a second device), then stampPut
-// joins the records and the document goes in one revision further. The devices see the new revision
-// on their next check (every half minute) and merge it. `skipIf(result)` true leaves the file alone.
-// A profile with no document on the server yet is refused: there is nothing of theirs to merge into.
-function writeStateAs(uid, fn, { skipIf = null } = {}) {
-  const cur = readStateStrict(uid);
-  if (cur === UNREADABLE) throw new OrgError(503, 'state-unreadable', 'that profile cannot be read right now');
-  if (!cur) throw new OrgError(409, 'not-synced', 'they have not synced this profile with the server yet');
-  const next = JSON.parse(JSON.stringify(cur));
-  const t = Math.max(Date.now(), highestStamp(cur) + 1);
-  const result = fn(next, t);
-  if (skipIf && skipIf(result)) return result;
-  stampPut(cur, next, { stamped: true, now: t });
-  const curRev = cur._rev || 0;
-  next._rev = curRev + 1;
-  next._ts = t;
-  next._wids = [...(Array.isArray(cur._wids) ? cur._wids : []), ...(cur._wid ? [cur._wid] : [])].filter(x => typeof x === 'string').slice(-WID_KEEP);
-  next._wid = crypto.randomBytes(8).toString('hex');
-  delete next.active;
-  atomicWrite(stateFile(uid), JSON.stringify(next));
-  stateCache.delete(uid);
-  if (MEDIA_ON) { try { MEDIA.noteState(uid, next); } catch (e) { console.error('media noteState', e); } }
-  try { integrations.onStateWrite(uid, cur, next); } catch (e) { console.error('integrations onStateWrite', e); }
-  return result;
-}
 // The write every route that replaces a profile's document ends in: PUT /api/data, and a scoped
 // token's PUT /api/token/data (tokens.js). `cur` is the stored document, `state` the one to store
 // (mutated), `overRead` whether the writer sent the revision it read and it is the current one.
@@ -1278,24 +1224,6 @@ const MCP_ON = /^(1|true|yes|on)$/i.test(process.env.MCP || '');
 const TOKEN_READS = createWindow({ max: Math.max(1, +(process.env.TOKEN_READS_PER_MIN || 120) || 120), windowMs: 60000 });
 const TOKEN_WRITES = createWindow({ max: Math.max(1, +(process.env.TOKEN_WRITES_PER_HOUR || 60) || 60), windowMs: 3600000 });
 setInterval(() => { TOKEN_READS.sweep(); TOKEN_WRITES.sweep(); }, 60000).unref();
-const tokenActor = row => ({ kind: 'token', id: row.id, name: row.name });
-function logToken(uid, ev, row) {
-  try { shareLog.append(uid, { ev, actor: { kind: 'self', id: uid, name: '' }, peer: tokenActor(row), msg: Object.entries(row.scopes || {}).filter(([, v]) => v !== 'off').map(([k, v]) => k + ':' + v).join(' ') }); }
-  catch (e) { console.error('share log', e.message); }
-}
-// A look is noted once a day per token and category: the log folds them per day anyway, and a
-// client reads before every tool call.
-const tokenLooks = new Set();
-function noteTokenRead(t) {
-  const day = new Date().toISOString().slice(0, 10);
-  for (const cat of readCategories(t.row.scopes)) {
-    const k = `${t.row.id}|${cat}|${day}`;
-    if (tokenLooks.has(k)) continue;
-    if (tokenLooks.size > 20000) tokenLooks.clear();
-    tokenLooks.add(k);
-    try { shareLog.noteAccess(t.user.id, tokenActor(t.row), cat); } catch (e) { console.error('share log', e.message); }
-  }
-}
 // The token a request carries, and its profile, or null after answering 401 (or 429). Only the
 // token routes ask this: a token is never a session.
 function tokenAuth(req, res) {
@@ -1579,12 +1507,6 @@ function removeAccount(u) {
   try { MEDIA.removeUser(u.id); } catch (e) { console.error('media: could not remove uploads of', u.id, e.message); }
   // Their integrations: connections, sealed secrets and anything still waiting to be sent.
   try { integrations.removeUser(u.id); } catch (e) { console.error('integrations: could not remove', u.id, e.message); }
-  // Their grants, consents, roles and sharing log; as a trainer their name leaves members' logs.
-  try {
-    const members = org.removeUser(u.id);
-    shareLog.remove(u.id);
-    shareLog.anonymize(members, u.id);
-  } catch (e) { console.error('org: could not remove', u.id, e.message); }
   saveDb();
 }
 
@@ -2324,20 +2246,6 @@ function dataWritable() {
   return ok;
 }
 
-// The trainer feature's routes (docs/TRAINERS.md): roles and consent (trainers/routes.js) and the
-// dashboard on top of it (trainers/dashboard-routes.js), sharing one guard and one sharing log.
-const NUTRITION = nutritionSourceFrom(process.env);
-const trainerNotify = createNotify({ log: shareLog, sendPush: (uid, p) => sendPush(uid, p), langOf: uid => readStateCached(uid)?.lang || 'en' });
-const trainerRolesOf = uid => {
-  const r = org.rolesOf(uid);
-  return { trainer: r.freeTrainer || r.staff.some(x => x.role === 'trainer' && org.activeGym(x.gymId)), lead: r.staff.some(x => x.role === 'lead' && org.activeGym(x.gymId)) };
-};
-const trainerApi = trainerRoutes({
-  json, readBody, readSession, requireAdmin, isAdmin, audit, origin: ORIGIN,
-  userById: id => db.users.find(u => u.id === id) || null,
-  addressOf: req => limitAddress(req),
-  org, perms, log: shareLog, budgets, codeGuard, on: () => TRAINERS, notify: trainerNotify, nutrition: NUTRITION
-});
 // OIDC (#130): its own burst budget per address, and wrong states, tokens or codes count
 // toward the same address pause the other sign-in routes use.
 const OIDC_BURST = createWindow({ max: 30, windowMs: 60000 });
@@ -2349,7 +2257,7 @@ if (OIDC.enabled) {
     db: () => db, sessionCookie, makeSession, claimFirstAdmin, isAdmin, nameTaken, normalizeEmail,
     inviteOnly: INVITE_ONLY, proveOwner, otherWaysIn: u => passkeyCount(u) + (passwordWayIn(u) ? 1 : 0),
     cookieValues,
-    syncRoles: TRAINERS ? (uid, roles) => org.syncClaimRoles(uid, roles) : null,
+    syncRoles: null,
     throttle: req => { const a = limitAddress(req); return OIDC_BURST.take(a) || ADDR_FAILS.retryAfter('oidc|' + a); },
     strike: req => strikeAddress(req, 'oidc')
   });
@@ -2362,8 +2270,6 @@ const oidcOnlyRefused = (res, user) => {
   return true;
 };
 const OIDC_ONLY_SIGNUPS = new Set(['POST /api/register/options', 'POST /api/register/verify', 'POST /api/register/password']);
-// Offers to stay with a trainer privately run out after 30 days even if nobody opens the app.
-if (TRAINERS) { const offerSweep = setInterval(() => { try { org.expireOffers(); } catch (e) { console.error('org offers', e.message); } }, 3600000); offerSweep.unref?.(); }
 
 /* ---------- the MCP connector's OAuth (oauth.js) ---------- */
 const APP_BASE = String(process.env.BASE_PATH || '').replace(/\/+$/, '');
@@ -2468,7 +2374,6 @@ function oauthRoutes() {
         if (!r.ok) return json(res, r.status, { error: r.error, code: 'expired' });
         saveDb();
         audit(req, 'auth.token.create', { user, msg: made.row.name });
-        logToken(user.id, 'token.create', made.row);
         json(res, 200, { redirect: r.redirect });
       } catch (e) { if (e instanceof ScopeError) return json(res, e.status, { error: e.message, code: e.code }); throw e; }
     },
@@ -2497,7 +2402,7 @@ function oauthRoutes() {
       const form = await readForm(req);
       const row = oauth.revocable(db, form.get('token') || '', v => findToken(db, v, userById));
       if (row) {
-        for (const r of revokeTokens(db, row.userId, row.id)) logToken(row.userId, 'token.end', r);
+        revokeTokens(db, row.userId, row.id);
         saveDb();
       }
       res.writeHead(200, { 'Cache-Control': 'no-store' }); res.end();
@@ -2538,11 +2443,7 @@ const routes = {
       ...(MEDIA_ON ? { media: mediaConfig(MEDIA_LIMITS) } : {}),
       // Which integrations this server offers (only to a session). Absent
       // with INTEGRATIONS unset, which is how the app knows to show the server cards as off.
-      ...(readSession(req) && integrations.publicConfig() ? { integrations: integrations.publicConfig() } : {}),
-      // Trainers and studios (docs/TRAINERS.md): only to a session and only when on, so the app
-      // shows no trace of the feature anywhere else.
-      // `roles` decides whether the app shows the trainer dashboard; every route checks again anyway.
-      ...(TRAINERS && readSession(req) ? { trainers: { on: true, leadAccess: org.leadMode, roles: trainerRolesOf(readSession(req).id) } } : {})
+      ...(readSession(req) && integrations.publicConfig() ? { integrations: integrations.publicConfig() } : {})
     });
   },
 
@@ -2727,7 +2628,7 @@ const routes = {
     oidcApi?.forget(user.id);
     // Every scoped token ends with the sessions (its version would stop matching anyway); gone
     // from the list too, so Settings shows what still works.
-    for (const r of revokeTokens(db, user.id)) logToken(user.id, 'token.end', r);
+    revokeTokens(db, user.id);
     saveDb();
     audit(req, 'auth.logout.all', { user });
     json(res, 200, { ok: true }, { 'Set-Cookie': clearCookie });
@@ -2923,7 +2824,6 @@ const routes = {
       catch (e) { if (e instanceof ScopeError) return json(res, e.status, { error: e.message, code: e.code }); throw e; }
       saveDb();
       audit(req, 'auth.token.create', { user, msg: made.row.name });
-      logToken(user.id, 'token.create', made.row);
       json(res, 200, { token: made.token, tokens: listTokens(db, user), id: made.row.id });
     },
     'POST /api/tokens/revoke': async (req, res) => {
@@ -2934,7 +2834,6 @@ const routes = {
       if (gone.length) {
         saveDb();
         audit(req, 'auth.token.revoke', { user, msg: gone.length === 1 ? gone[0].name : `${gone.length} tokens` });
-        for (const r of gone) logToken(user.id, 'token.end', r);
       }
       json(res, 200, { ok: true, revoked: gone.length, tokens: listTokens(db, user) });
     },
@@ -2971,8 +2870,6 @@ const routes = {
       made.row.seal = sealText(CAL_KEY, made.token, 'calendar:' + made.row.id);
       saveDb();
       audit(req, 'auth.token.create', { user, msg: made.row.name });
-      for (const r of gone) logToken(user.id, 'token.end', r);
-      logToken(user.id, 'token.create', made.row);
       json(res, 200, calView(user));
     },
     'POST /api/calendar/revoke': async (req, res) => {
@@ -2983,7 +2880,6 @@ const routes = {
       if (gone.length) {
         saveDb();
         audit(req, 'auth.token.revoke', { user, msg: gone[0].name });
-        logToken(user.id, 'token.end', gone[0]);
       }
       json(res, 200, { on: false });
     },
@@ -3016,7 +2912,6 @@ const routes = {
       const t = tokenAuth(req, res); if (!t) return;
       const state = readStateStrict(t.user.id);
       if (state === UNREADABLE) { console.error('state file unreadable for', t.user.id); return json(res, 503, { error: 'state unreadable' }); }
-      noteTokenRead(t);
       json(res, 200, { state: state ? scopedState(state, t.row.scopes) : null, rev: state?._rev || 0, ...(state?._wid ? { wid: state._wid } : {}) });
     },
     'GET /api/token/data/rev': async (req, res) => {
@@ -3055,9 +2950,6 @@ const routes = {
       const done = commitState(t.user.id, cur, next, { overRead: true, stamped: false });
       if (done.status === 200) {
         audit(req, 'token.write', { user: t.user, msg: `${t.row.name}: ${merged.touched.join(', ')}` });
-        for (const cat of merged.touched) {
-          try { shareLog.append(t.user.id, { ev: 'token.write', actor: tokenActor(t.row), cat }); } catch (e) { console.error('share log', e.message); }
-        }
       }
       json(res, done.status, done.body);
     },
@@ -3328,12 +3220,11 @@ const routes = {
       };
     });
     if (view) audit(req, 'admin.data-view', { user: admin, msg: 'user list' });
-    json(res, 200, { users, invite_only: INVITE_ONLY, data_view: view, ...(TRAINERS ? { trainers: true } : {}), ...(PASSWORD_LOGIN ? { password_login: true } : {}), now: Date.now() });
+    json(res, 200, { users, invite_only: INVITE_ONLY, data_view: view, ...(PASSWORD_LOGIN ? { password_login: true } : {}), now: Date.now() });
   },
 
-  // Drill-down for one user. Without ADMIN_DATA_VIEW: counts, storage and roles, never a workout
-  // or a weigh-in. With it: the full workout history and body-weight log as before 1.4.5, and the
-  // look is written to the activity log and to the member's own sharing log.
+  // Drill-down for one user. Without ADMIN_DATA_VIEW: counts and storage, never a workout or a
+  // weigh-in. With it: the full workout history and body-weight log, and the look is in the activity log.
   'GET /api/admin/user': async (req, res) => {
     const admin = requireAdmin(req, res); if (!admin) return;
     const id = new URL(req.url, 'http://x').searchParams.get('id');
@@ -3359,18 +3250,10 @@ const routes = {
         workouts: records(S.workouts).length, bodyweight: records(S.bodyweight).length,
         measurements: records(S.measurements).length, routines: records(S.routines).length
       },
-      ...(TRAINERS ? { roles: org.rolesOf(u.id), grants: org.get().grants.filter(g => g.memberId === u.id && g.status === 'active').length } : {}),
       data_view: false
     };
-    const may = perms.can(admin, 'admin:data-view', { memberId: u.id });
-    if (!may.ok) return json(res, 200, base);
-    const wait = budgets.take('data.admin', admin.id);
-    if (wait) return json(res, 429, { error: 'slow down a little', code: 'rate-limited', retryAfter: wait }, { 'Retry-After': String(wait) });
+    if (!ADMIN_DATA_VIEW) return json(res, 200, base);
     audit(req, 'admin.data-view', { user: admin, target: u });
-    if (u.id !== admin.id) {
-      try { shareLog.append(u.id, { ev: 'data.admin-view', actor: { kind: 'admin', id: admin.id, name: admin.name } }); }
-      catch (e) { console.error('share log', e.message); }
-    }
     json(res, 200, {
       ...base,
       data_view: true,
@@ -3549,17 +3432,6 @@ const routes = {
   // integrations/routes.js, handed the same helpers. With INTEGRATIONS unset they answer an empty
   // list (GET) or 404 "off", so the routes exist on every server and the app can tell.
   ...integrationRoutes({ json, readBody, readSession, hub: integrations, audit, origin: ORIGIN }),
-
-  /* ---------- trainers, gym leads, studios ---------- */
-  // trainers/routes.js. Every decision about another profile is permissions.js; with TRAINERS
-  // off the routes answer 404 'trainers-off'.
-  ...trainerApi.routes,
-  ...dashboardRoutes({
-    json, readBody, audit, origin: ORIGIN, userById: id => db.users.find(u => u.id === id) || null,
-    org, perms, log: shareLog, budgets, notify: trainerNotify, nutrition: NUTRITION, helpers: trainerApi.helpers,
-    state: { read: uid => readStateCached(uid), write: writeStateAs },
-    media: MEDIA_ON ? { file: (uid, hash) => MEDIA.file(uid, hash), send: sendMediaFile } : null
-  }),
 
   /* ---------- photos & videos ---------- */
   // Absent, not refusing, when MEDIA_UPLOADS=0: a 404 is what a server from before the feature
