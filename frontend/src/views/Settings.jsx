@@ -13,7 +13,6 @@ import { formulaOf, FORMULA_NAMES } from '../lib/onerm.js'
 import { copyText } from '../lib/clipboard.js'
 import { useUI } from '../store/useUI.js'
 import { activeGym, gymLabel, switchGym } from '../lib/gym-inventory.js'
-import { startTour, TUTORIALS, TUTORIAL_COPY, tutorialDone } from '../lib/tour.js'
 import { ACCENTS, ACCENT_NAMES, todayISO, localTZ, weekStartOf, MONDAY, SUNDAY, fmtPlate } from '../lib/format.js'
 import { inventoryFor, ownsPlates } from '../lib/plates.js'
 import { BAR_TYPES, ownBarDefault } from '../lib/bar.js'
@@ -144,7 +143,6 @@ export function SettingsRoute() {
 }
 
 // The tutorials' rows in About & updates.
-const TUTORIAL_ICON = { plan: 'calendar', custom: 'plusCircle', edit: 'pencil', backup: 'folder' }
 
 // "Mon" / "Sun" in the app's language, for the Plan & schedule row's preview.
 const shortWeekday = day => {
@@ -1232,19 +1230,6 @@ export default function Settings({ page = null, find = null, via = null, entryKe
       {MOBILE && <Section>
         <NetworkLogRow />
       </Section>}
-      {/* Tutorials (components/Tour.jsx): the tour from the top, and the four short guided runs
-          its closing card offers. Not over a running workout: the tour's practice session and the
-          tutorials' copies would have to stand in for the real one. */}
-      <Section title={t('Tutorials')}>
-        <Row icon="lightbulb" iconTint="var(--yellow)" title={t('Show the tour again')} subtitle={t('A one-minute walk around the app')} accessory="chevron"
-          onClick={() => (useStore.getState().S.active ? toast(t('Finish your workout first, then the tour is all yours.')) : startTour())} />
-        {TUTORIALS.map(f => {
-          const [title, sub] = TUTORIAL_COPY[f]()
-          return <Row key={f} icon={TUTORIAL_ICON[f]} iconTint="var(--yellow)" title={title} subtitle={sub} accessory="chevron"
-            value={tutorialDone(f) ? t('Done') : null}
-            onClick={() => (useStore.getState().S.active ? toast(t('Finish your workout first, then the tour is all yours.')) : startTour(null, f))} />
-        })}
-      </Section>
       {/* Support: the project's own donation pages, and on the iPhone a straight line to writing a
           review. Plain links, no pop-up asking for anything (App Store 5.6.1). The Google Play build
           shows only its rating link: Play's payments policy wants Play billing for anything paid

@@ -12,7 +12,6 @@
 import { MOBILE } from './mobile.js'
 import { useUI } from '../store/useUI.js'
 import { t } from './i18n.js'
-import { tourBack } from './tour.js'
 
 // How long a first back press stays armed as "press again to exit" (the toast shows 2.2s).
 export const EXIT_WINDOW = 2000
@@ -73,8 +72,7 @@ export async function initBackButton() {
       goBack: () => window.history.back(),
       exit: () => App.exitApp(),
     })
-    // The app tour takes a back press first: it closes (lib/tour.js).
-    const sub = await App.addListener('backButton', ev => (tourBack() ? 'tour' : overlayTakesBack() ? 'overlay' : handler(ev)))
+    const sub = await App.addListener('backButton', ev => (overlayTakesBack() ? 'overlay' : handler(ev)))
     return () => sub.remove()
   } catch (e) {
     return () => {}   // no plugin (older install): leave back to the default behaviour
