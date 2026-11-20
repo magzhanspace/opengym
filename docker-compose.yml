@@ -2,9 +2,9 @@ name: opengym
 
 services:
   # Passkey auth + per-user data (Node, no framework).
-  # image: prebuilt (docker compose pull). build: from source (docker compose up --build).
+  # Built from this fork on the server: docker compose build && docker compose up -d.
   api:
-    image: ghcr.io/duartesantos8/opengym-api:latest
+    image: opengym-api:${OPENGYM_TAG:-local}
     build:
       context: ./api
     restart: unless-stopped
@@ -25,7 +25,7 @@ services:
   # Builds the React frontend (multi-stage) and serves it, proxying /api → api
   # and the exercise animations, which are part of the image. Single origin for passkeys.
   web:
-    image: ghcr.io/duartesantos8/opengym-web:latest
+    image: opengym-web:${OPENGYM_TAG:-local}
     build:
       context: .
       dockerfile: web/Dockerfile
@@ -67,7 +67,7 @@ services:
   # each request's own token. docs/MCP_REMOTE.md.
   mcp:
     profiles: [mcp]
-    image: ghcr.io/duartesantos8/opengym-mcp:latest
+    image: opengym-mcp:${OPENGYM_TAG:-local}
     build:
       context: .
       dockerfile: mcp/Dockerfile
