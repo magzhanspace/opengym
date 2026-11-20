@@ -1,7 +1,6 @@
 import { describe, expect, test } from 'vitest'
 import { voiceClipsOf, addVoiceClip, removeVoiceClip, pickClip, allVoiceClips, CLIPS_PER_MOMENT } from './voice-clips.js'
 import { soundsOf, addSound } from './user-sounds.js'
-import { ownItems } from './shared-items.js'
 
 const m = c => ({ kind: 'audio', hash: c.repeat(64), mime: 'audio/wav', size: 1000, width: 1, height: 1, dur: 1.5 })
 
@@ -28,10 +27,5 @@ describe('voice clips', () => {
   })
   test('a clip that is not audio is not a clip', () => {
     expect(voiceClipsOf({ sounds: [{ id: 'v', m: { ...m('a'), kind: 'image' }, voice: 'record' }] }, 'record')).toEqual([])
-  })
-  test('never offered to the community library', () => {
-    const S = { sounds: [{ id: 'x', name: 'Gong', m: m('a') }, { id: 'v', name: 'My mate', m: m('b'), voice: 'record' }] }
-    const items = ownItems(S, 'sound')
-    expect(items.map(i => i.title)).toEqual(['Gong'])
   })
 })

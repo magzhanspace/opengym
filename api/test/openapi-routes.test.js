@@ -39,8 +39,6 @@ function specOperations(yaml) {
 test('every route the server registers is in openapi.yaml, and nothing else is', () => {
   const routes = new Set([
     ...routeKeys(read(path.join(API, 'server.js'))),
-    ...routeKeys(read(path.join(API, 'library', 'routes.js'))),
-    ...routeKeys(read(path.join(API, 'library', 'moderation.js'))),
     ...routeKeys(read(path.join(API, 'integrations', 'routes.js'))),
     ...routeKeys(read(path.join(API, 'oidc', 'routes.js'))),
     ...routeKeys(read(path.join(API, 'trainers', 'routes.js'))),

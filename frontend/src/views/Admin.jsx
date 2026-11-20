@@ -10,7 +10,6 @@ import { pathBefore } from '../lib/nav.js'
 import { confirmSheet } from '../sheets.jsx'
 import Icon from '../components/Icon.jsx'
 import { Button } from '../components/ui.jsx'
-import AdminCommunity from './AdminCommunity.jsx'
 import AdminOidc from '../components/AdminOidc.jsx'
 import '../admin.css'
 
@@ -489,8 +488,6 @@ export default function Admin() {
     {/* Sign-in with an identity provider; nothing without OIDC_ISSUER. */}
     <AdminOidc />
 
-    {/* The community library's moderation (AdminCommunity.jsx); nothing without LIBRARY=on. */}
-    <AdminCommunity tick={tick} />
 
     {trainersOn && <GymsCard users={users || []} tick={tick} />}
 

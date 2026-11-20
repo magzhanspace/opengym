@@ -52,10 +52,6 @@ import { createShareLog } from './share-log.js';
 import { createToken, findToken, touchToken, listTokens, revokeTokens, scopedState, mergeScoped, readCategories, ScopeError, TOKEN_CATEGORIES, TOKEN_DAYS, DEFAULT_DAYS, TOKEN_PREFIX } from './tokens.js';
 import * as oauth from './oauth.js';
 import { createBudgets, createCodeGuard } from './budgets.js';
-import { libraryConfig, publicLibraryConfig } from './library/config.js';
-import { createLibraryStore } from './library/store.js';
-import { libraryRoutes } from './library/routes.js';
-import { currentConsent } from './consent.js';
 import { oidcConfig } from './oidc/config.js';
 import { createProvider } from './oidc/provider.js';
 import { oidcRoutes } from './oidc/routes.js';
@@ -104,9 +100,6 @@ const TRAINERS_LEAD_ACCESS = process.env.TRAINERS_LEAD_ACCESS || 'row';
 // Whether the admin dashboard shows a member's workouts and weigh-ins (1.4.5: off by default).
 // Off, admins see counts only; on, every look is in the activity log and the member's sharing log.
 const ADMIN_DATA_VIEW = /^(1|true|yes|on)$/i.test(process.env.ADMIN_DATA_VIEW || '');
-// The community library (docs/dev/SHARED-LIBRARY-API.md): LIBRARY=on, off by default. SHARING=off
-// still closes it. Read once; library/config.js has every SHARE_* switch.
-const LIBRARY = libraryConfig(process.env);
 // Sign in with an identity provider (#130, docs/SELF_HOSTING.md): on once OIDC_ISSUER and
 // OIDC_CLIENT_ID are set. OIDC_ONLY makes the provider the one way in (admins keep their passkeys).
 const OIDC = oidcConfig(process.env, { origin: ORIGIN });
@@ -213,7 +206,7 @@ const org = createOrgStore({ file: path.join(DATA, 'org.json'), leadMode: TRAINE
 const shareLog = createShareLog({ dir: path.join(DATA, 'share'), keepDays: Math.max(0, +(process.env.SHARE_LOG_DAYS || 365) || 0) });
 const perms = createPermissions({
   org, userById: id => db.users.find(u => u.id === id) || null, isAdmin, isOwner,
-  flags: () => ({ trainers: TRAINERS, adminDataView: ADMIN_DATA_VIEW, sharing: LIBRARY.on })
+  flags: () => ({ trainers: TRAINERS, adminDataView: ADMIN_DATA_VIEW })
 });
 const budgets = createBudgets();
 const codeGuard = createCodeGuard();
@@ -1592,8 +1585,6 @@ function removeAccount(u) {
     shareLog.remove(u.id);
     shareLog.anonymize(members, u.id);
   } catch (e) { console.error('org: could not remove', u.id, e.message); }
-  // What they shared with the server stops being shared; copies others took stay theirs.
-  try { library.removeUser(u.id); } catch (e) { console.error('library: could not withdraw items of', u.id, e.message); }
   saveDb();
 }
 
@@ -2301,20 +2292,6 @@ const mediaRoutes = {
   }
 };
 
-/* ---------- the community library (library/) ---------- */
-// Items people chose to share with everyone on this server, their files apart from uploads/,
-// and the blocklist (removed files plus every built-in catalogue file, by hash).
-const libStore = createLibraryStore({ dir: path.join(DATA, 'shared') });
-const library = libraryRoutes({
-  json, readBody, readSession, requireAdmin, isAdmin, audit, saveDb, origin: ORIGIN,
-  userById: id => db.users.find(u => u.id === id) || null,
-  perms, budgets, log: shareLog, media: MEDIA, store: libStore, cfg: LIBRARY, sendFile: sendMediaFile
-});
-if (LIBRARY.on) {
-  const sweepShared = () => { try { const r = libStore.sweep({ graceDays: LIBRARY.graceDays }); if (r.removed) console.log(`library: swept ${r.removed} unshared file(s)`); } catch (e) { console.error('library: sweep failed', e.message); } };
-  setInterval(sweepShared, 3600000).unref();
-}
-
 /* ---------- routes ---------- */
 // A health check that only proves the port answers is the one that lies on the day it matters:
 // a full disk, or a bind mount that came back read-only, leaves every write path in here broken
@@ -2559,8 +2536,6 @@ const routes = {
       // Public like the two flags above: the caps are not a secret, and the absence of the
       // block is how the app knows this server does not take photos and videos at all.
       ...(MEDIA_ON ? { media: mediaConfig(MEDIA_LIMITS) } : {}),
-      // The community library: only to a session and only with LIBRARY=on.
-      ...(LIBRARY.on && readSession(req) ? { shared: publicLibraryConfig(LIBRARY, currentConsent('library')) } : {}),
       // Which integrations this server offers (only to a session). Absent
       // with INTEGRATIONS unset, which is how the app knows to show the server cards as off.
       ...(readSession(req) && integrations.publicConfig() ? { integrations: integrations.publicConfig() } : {}),
@@ -3586,10 +3561,6 @@ const routes = {
     media: MEDIA_ON ? { file: (uid, hash) => MEDIA.file(uid, hash), send: sendMediaFile } : null
   }),
 
-  /* ---------- the community library ---------- */
-  // library/routes.js and library/moderation.js; with LIBRARY off they answer 404 'sharing-off'.
-  ...library.routes,
-
   /* ---------- photos & videos ---------- */
   // Absent, not refusing, when MEDIA_UPLOADS=0: a 404 is what a server from before the feature
   // answers, and the client already treats that as "this server does not store them".
@@ -3665,15 +3636,8 @@ const server = http.createServer(async (req, res) => {
   // above stays a plain lookup, and so csrfOk and the catch-all see one name for every file.
   const mm = /^\/api\/media\/([0-9a-f]{64})$/.exec(url.pathname);
   if (mm) { key = req.method + ' /api/media/{hash}'; req.mediaHash = mm[1]; }
-  // The library's templates, the same way: an item id, a shared file, a person to ban.
-  const lm = /^\/api\/shared\/media\/([0-9a-f]{64})$/.exec(url.pathname);
-  if (lm) { key = req.method + ' /api/shared/media/{hash}'; req.mediaHash = lm[1]; }
-  const li = /^\/api\/(admin\/)?shared\/(s_[a-z2-7]{16})(\/import|\/report)?$/.exec(url.pathname);
-  if (li && !(li[1] && li[3])) { key = `${req.method} /api/${li[1] || ''}shared/{id}${li[3] || ''}`; req.itemId = li[2]; }
   const lc = /^\/api\/calendar\/(ogt_[A-Za-z0-9_-]{43})\.ics$/.exec(url.pathname);
   if (lc) { key = req.method + ' /api/calendar/{token}.ics'; req.calToken = lc[1]; }
-  const lu = /^\/api\/admin\/users\/([A-Za-z0-9_-]{1,64})\/sharing$/.exec(url.pathname);
-  if (lu) { key = req.method + ' /api/admin/users/{uid}/sharing'; req.targetUid = lu[1]; }
   const handler = routes[key];
   if (!handler) return json(res, 404, { error: 'not found' });
   if (OIDC_ONLY_SIGNUPS.has(key) && oidcOnlyRefused(res, null)) return;
