@@ -250,7 +250,7 @@ jobs:
       - name: Generated API docs are current
         run: node scripts/build-api-docs.mjs --check
       - name: Coach core loads in plain node
-        run: node api/scripts/check-core-loadable.mjs
+        run: node api/scripts/check-shared-loadable.mjs
       - name: Stats
         if: always()
         run: >

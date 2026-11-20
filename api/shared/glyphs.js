@@ -1,12 +1,11 @@
-// A routine's icon, as the Coach reads and writes it (#311).
+// A routine's icon, as an imported plan carries it (#311).
 //
-// A routine's `emoji` holds an icon key now ('figureStrength'), a legacy emoji only on old state —
-// and the model copies whichever it sees in the plan. It is stored in the routine and sent back
-// to the model with the plan on every later job, so it is not free text: an icon key a routine
-// can hold, or a legacy emoji made of pictographs and their joiners only — no letter, digit or
-// tag character in any script, so no words fit through. Anything else becomes the default icon.
+// A routine's `emoji` holds an icon key now ('figureStrength'), a legacy emoji only on old state.
+// It is not free text: an icon key a routine can hold, or a legacy emoji made of pictographs and
+// their joiners only, no letter, digit or tag character in any script, so no words fit through.
+// Anything else becomes the default icon.
 //
-// The keys are the app's (frontend/src/lib/glyphs.js); coach-parity.test.js holds the two lists
+// The keys are the app's (frontend/src/lib/glyphs.js); glyphs-parity.test.js holds the two lists
 // together, so a round trip through a plan never resets an icon the app shows.
 
 // What the picker offers today.

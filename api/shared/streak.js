@@ -1,7 +1,7 @@
 /* The week streak, the one walk: the app (frontend/src/lib/streak.js, lib/streak-rule.js) and the
  * server (trainers/projections.js, the trainer's member list) both count with this file, so a
- * trainer never sees a number the member's own phone does not. It lives in coach/core because
- * that is the folder every build already shares with the frontend. Pure, no node or DOM imports.
+ * trainer never sees a number the member's own phone does not. It lives in api/shared because
+ * that is the folder every build shares with the frontend. Pure, no node or DOM imports.
  *
  * The rules (lib/streak.js has the long version): a trained week adds one, every 4th trained week
  * of a run earns a freeze up to what the rule keeps, a missed week spends a freeze or starts the

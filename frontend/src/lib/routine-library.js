@@ -1,21 +1,17 @@
-// The Coach's routines library in the app (api/shared/routine-library.js, docs/ROUTINES_LIBRARY.md):
-// the built-in starter plans plus the community index at a configurable address (the instance's
-// `coach.routinesUrl`, else opengym.ch), fetched by the app, cached for a day, and simply absent
-// when it cannot be read. A question to the Coach carries the few entries that match it.
-import { builtinIndex, normalizeIndex, searchRoutines, compactEntry, entryToBundle, DEFAULT_INDEX_URL } from '../../../api/shared/routine-library.js'
+// The routines library in the app (api/shared/routine-library.js, docs/ROUTINES_LIBRARY.md): the
+// built-in starter plans plus the community index at opengym.ch, fetched by the app, cached for a
+// day, and simply absent when it cannot be read.
+import { builtinIndex, normalizeIndex, entryToBundle, DEFAULT_INDEX_URL } from '../../../api/shared/routine-library.js'
 import { validatePlan } from '../../../api/shared/validate.js'
 import { nativeFetch } from './capacitor-fetch.js'
-import { useStore } from '../store/useStore.js'
 
 const CACHE = 'og_routines_index_v1'
 const TTL_MS = 24 * 3600000
 let memo = null
 
-/** The index address in force: the server's, '' or 'off' for none, else the default. */
-export function indexUrl(config = useStore.getState().config) {
-  const set = config?.coach?.routinesUrl
-  if (set === 'off' || set === '') return null
-  return typeof set === 'string' && /^https:\/\//.test(set) ? set : DEFAULT_INDEX_URL
+/** The index address in force. */
+export function indexUrl() {
+  return DEFAULT_INDEX_URL
 }
 
 const store = () => { try { return globalThis.localStorage || null } catch { return null } }
@@ -48,12 +44,6 @@ export async function communityEntries({ url = indexUrl(), fetchImpl = nativeFet
 }
 
 export const allEntries = async opts => [...builtinIndex(), ...(await communityEntries(opts))]
-
-/** The entries a question goes along with, in the shape the Coach reads (compactEntry). */
-export async function routineHits(S, text, opts) {
-  const equipment = S?.coach?.profile?.equipment || []
-  return searchRoutines(await allEntries(opts), { text, equipment, limit: 6 }).map(compactEntry)
-}
 
 /** One entry as a plan bundle the plan import screen takes, or null. */
 export async function importBundle(id, opts) {

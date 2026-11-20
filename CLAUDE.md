@@ -21,7 +21,7 @@ frontend/   React 19 + Vite app (src/views, src/components, src/store, src/lib, 
             watch protocol as the Apple Watch (lib/watch-sync.js). garmin/ is the Garmin Connect IQ
             watch app (Monkey C; docs/GARMIN.md), on a cut-down snapshot (lib/garmin-snapshot.js).
 api/        Backend: server.js (plain node:http) plus small testable modules beside it.
-            coach/ is the optional AI coach; coach/core/ is shared with the phone apps.
+            shared/ holds the code the frontend imports too (streaks, starter plans, plan validation).
             openapi.yaml documents every route.
 web/        Multi-stage Dockerfile (builds frontend, adds catalogue/media, serves with nginx) and
             nginx.conf.template (serves the app, proxies /api).
@@ -55,7 +55,7 @@ cd mcp && npm test
 # Checks CI runs besides the suites (run `npm ci` in the repo root once, for js-yaml)
 cd frontend && node scripts/check-locales.mjs && node scripts/check-source-strings.mjs --strict
 node scripts/catalogue/build.mjs --check
-node scripts/build-coach-assets.mjs --check
+node scripts/build-shared-assets.mjs --check
 node scripts/build-api-docs.mjs --check
 
 # Builds
@@ -89,7 +89,7 @@ machine, never in CI (see "Exercise media" below and docs/APP_STORES.md).
   - `recovery.js` / `recovery-view.js`: the fatigue and muscle-recovery model.
   - `warmup-ramp.js` (+ `warmup-snap.js`): automatic warm-ups by load, a slot's own warm-up rows,
     rounded to the active gym (plates.js dropGrid); history.js rerampWarmups keeps them aimed.
-  - `coach-adapt.js`: applies the Coach's changes to the workout in progress (the `adapt` job).
+  - `session-adapt.js`: applies changes to the workout in progress (the go-lighter daily form).
   - `workout-model.js`, `supersetFlow.js`: the in-session workout state machine.
   - `sync-merge.js`: the field-by-field merge behind the 409 retry (see "Sync" below).
   - `exercises.js` / `exercises-data.js`: the exercise library (5,632 catalogue exercises plus
@@ -147,8 +147,8 @@ together: `lib/sync-merge.js` and `api/sync-stamps.js` (parity test), `lib/glyph
 `api/shared/glyphs.js` (parity test), `lib/nudge.js` and `api/nudge.js`, `lib/queue.js` and
 `api/queue.js` (mirrored test cases only, nothing compares the code), and the workout card's
 button moves in `android/.../WorkoutCard.java` and `LiveActivityTick` in
-`ios/App/App/WorkoutActivity.swift` (each has its own tests). The other way round,
-`lib/coach-local.js` imports `api/coach/core/` directly so the phones run the same coach pipeline.
+`ios/App/App/WorkoutActivity.swift` (each has its own tests). The other way round, the
+frontend imports `api/shared/` directly (streaks, starter plans, the routines library, validatePlan).
 
 ### MCP server (`mcp/src`)
 

@@ -37,7 +37,7 @@ const isNum = v => typeof v === 'number' && Number.isFinite(v);
 const isInt = (v, lo, hi) => Number.isInteger(v) && v >= lo && v <= hi;
 const clampStr = (v, n) => String(v == null ? '' : v).slice(0, n);
 // Prose over the limit (a why, a summary, a note): cut at the last sentence (failing that, word) boundary and mark the cut with
-// an ellipsis, so the lifter never reads a coach's text that stops mid-word.
+// an ellipsis, so the lifter never reads a note that stops mid-word.
 const clampText = (v, n) => {
   const s = String(v == null ? '' : v);
   if (s.length <= n) return s;
@@ -64,9 +64,9 @@ export { ROUTINE_GLYPHS } from './glyphs.js';
 
 const ODD_PER_SIDE = where =>
   `${where} is a per-side exercise, so reps are the total across both sides and must be an even number`;
-// The longest plan note the Coach may write on an exercise: a cue or two, not an essay.
+// The longest plan note an exercise may carry: a cue or two, not an essay.
 export const NOTE_TIP_MAX = 300;
-export const MAX_COACH_BACKUPS = 3;
+export const MAX_PLAN_BACKUPS = 3;
 function backupsOf(list, selfId, ctx) {
   if (!Array.isArray(list)) return [];
   const out = [];
@@ -75,7 +75,7 @@ function backupsOf(list, selfId, ctx) {
     const id = libraryHas(raw) ? raw : asLibraryId(raw);
     if (!libraryHas(id) || id === selfId || out.includes(id) || offEquipment(ctx, id)) continue;
     out.push(id);
-    if (out.length >= MAX_COACH_BACKUPS) break;
+    if (out.length >= MAX_PLAN_BACKUPS) break;
   }
   return out;
 }
@@ -160,7 +160,7 @@ export function validatePlan(data, ctx = {}) {
       if (isNum(e.inc) && e.inc > 0 && e.inc <= MAX_INC) clean.inc = e.inc;
       if (isInt(e.repsMin, 1, 100)) clean.repsMin = e.repsMin;
       // The ceiling that makes bodyweight progression terminate (upstream #33): reaching it
-      // adds a set and restarts the reps. Without it the Coach can neither see nor prescribe
+      // adds a set and restarts the reps. Without it a plan can neither show nor prescribe
       // how a push-up is meant to get harder.
       if (isInt(e.repsMax, 1, 100)) clean.repsMax = e.repsMax;
       // Triple progression's set ceiling (frontend/src/lib/progression.js tripleSetsOf).
@@ -250,7 +250,7 @@ export function validatePlan(data, ctx = {}) {
     ok: true,
     bundle: {
       opengym_plan: 1,
-      name: clampStr(data.name || 'Coach plan', 40),
+      name: clampStr(data.name || 'Plan', 40),
       summary: clampText(data.summary || '', 4000),
       basedOn: clampText(data.basedOn || '', 1500),
       week, routines, customEx

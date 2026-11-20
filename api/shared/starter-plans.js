@@ -1,5 +1,5 @@
 /* The starter plans as data, shared by the app's plan chooser (frontend/src/lib/starter.js) and
- * the Coach's routines library (core/routine-library.js), so both offer exactly the same plans.
+ * the routines library (routine-library.js), so both offer exactly the same plans.
  *
  * A routine is [key, name, glyph, [[exerciseId, sets, reps], …]]; a timed exercise (a plank, a
  * hang) is [exerciseId, sets, seconds, 'time'] (#964). The key is what a plan's schedule points

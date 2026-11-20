@@ -1,11 +1,11 @@
-/* The routines library the Coach can search and import from (coach-146).
+/* The routines library the app can search and import from.
  *
  * Sources plug in as indexes of one small JSON format (docs/ROUTINES_LIBRARY.md): the built-in
  * starter plans today, the opengym.ch community routines when that index exists (read from a
  * configurable URL by the app, never by the server). Every entry is normalised here, field by
  * field, and only catalogue exercise ids survive, so whatever an index says, an import is a plan
  * the app can run. Searching is plain word matching: small, deterministic, the same on every
- * runtime, and it only decides which few entries the model gets to see. */
+ * runtime. */
 import { LIB_BY_ID } from './library.js';
 import { STARTER_PLANS } from './starter-plans.js';
 
@@ -161,7 +161,7 @@ export function compactEntry(e) {
   };
 }
 
-/** The import as a Coach plan bundle (what validatePlan and applyCreatedPlan take). */
+/** The import as a plan bundle (what validatePlan and applyCreatedPlan take). */
 export function entryToBundle(e) {
   const routines = e.sessions.map((s, i) => ({
     id: 'r' + i, name: s.name, emoji: 'figureStrength',

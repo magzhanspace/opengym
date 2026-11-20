@@ -2301,9 +2301,6 @@ body.no-tabbar #timer.countin{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
   background:var(--bg-el);
 }
 :root[data-theme="light"] .picker-search{background:var(--bg)}
-/* The swap picker's way to the Coach (#1003): full width above the lists, the accent on its icon. */
-.picker-coach{width:100%;margin:0 0 10px}
-.picker-coach .icn{color:var(--acc-ink)}
 /* Per gym (#988): the brand field under its label, full width inside the grouped row. */
 .gym-brand-row .lrow-m{gap:6px}
 .gym-brand-row .field{width:100%;background:var(--surface-3)}
@@ -2631,8 +2628,8 @@ body.no-tabbar #timer.countin{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
 .mrow .bar i{display:block;height:100%;background:var(--acc);border-radius:3px}
 .mrow .v{font-size:var(--fs-caption);color:var(--label-2);min-width:52px;text-align: end;flex:none}
 /* The Week view's "done/planned · %" (#573): wider than a set count, and as wide on every row, so
-   the bars line up the way they do in 30d, 90d and All. coach.css has a `.cmp` of its own (the
-   Coach's comparison rows) with a rule line and padding, loaded on every page: reset both here. */
+   the bars line up the way they do in 30d, 90d and All. A `.cmp` elsewhere may carry a rule line
+   and padding: reset both here. */
 .mrow .v.cmp{min-width:92px;font-variant-numeric:tabular-nums;white-space:nowrap;border-top:none;padding:0}
 /* Selected-muscle fatigue detail: the legend's three bands as one bar, the value above
    its marker, the 0–100% endpoints under it and each zone named beneath itself. Ready is
