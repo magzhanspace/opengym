@@ -199,13 +199,6 @@ const LANGS = {
   },
 }
 
-test('every curated language still ships a name pack, and every pack is enabled', () => {
-  for (const lang of Object.keys(LANGS)) expect(EXERCISE_NAME_LANGS, lang).toContain(lang)
-  for (const path of Object.keys(packs)) {
-    const lang = path.match(/([^/]+)\.js$/)[1]
-    expect(EXERCISE_NAME_LANGS, path).toContain(lang)
-  }
-})
 
 // The movement rule, pinned on both of its directions. The catalogue slipped on the curl side
 // (issue #631); the mirror guards the reverse slip in a future batch: an extension translated as
@@ -327,13 +320,3 @@ for (const lang of EXERCISE_NAME_LANGS) {
 
 // de-CH derives from the German pack by replacing ß with ss, so the base pack must be the ß one
 // or the Swiss locale derives nothing. A name written with ss there would pass every other test.
-test('de-CH derives the Swiss spelling from the German pack', () => {
-  const de = packs['../exercise-names/de.js']
-  const withSharpS = Object.entries(de).filter(([, name]) => name.includes('ß'))
-  expect(withSharpS.length).toBeGreaterThan(0)
-  const swiss = derivePack('de-CH', de)
-  for (const [id, name] of withSharpS) {
-    expect(swiss[id], id).toBe(name.replaceAll('ß', 'ss'))
-    expect(swiss[id], id).not.toContain('ß')
-  }
-})

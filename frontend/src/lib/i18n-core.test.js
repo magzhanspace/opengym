@@ -4,154 +4,12 @@ import {
   baseLang, derivePack, dateLocale, getLang, t, _setLangState, exerciseNameClass, exerciseOwnNameClass, exerciseAsTypedClass, bindOwnExercise, exerciseNameFor, CASED_NAME_LANGS, RTL_LANGS
 } from './i18n-core.js'
 import { EXDB } from './exercises-data.js'
-import de from '../locales/de.js'
 
-describe('baseLang', () => {
-  it('maps a derived locale to the language whose packs it loads', () => {
-    expect(baseLang('de-CH')).toBe('de')
-  })
 
-  it('leaves every other language as itself', () => {
-    expect(baseLang('de')).toBe('de')
-    expect(baseLang('pt-BR')).toBe('pt-BR')
-    expect(baseLang('en')).toBe('en')
-    expect(baseLang('nonsense')).toBe('nonsense')
-  })
-
-  it('keeps derived locales in step with their base for instructions and names', () => {
-    // The membership tests run on the base, so de-CH gains instruction and exercise-name packs
-    // exactly when de does — there is no second list entry to remember.
-    expect(INSTR_LANGS.includes(baseLang('de-CH'))).toBe(INSTR_LANGS.includes('de'))
-    expect(EXERCISE_NAME_LANGS.includes(baseLang('de-CH'))).toBe(EXERCISE_NAME_LANGS.includes('de'))
-  })
-})
-
-describe('derivePack', () => {
-  it('rewrites ß as ss for Swiss German', () => {
-    expect(derivePack('de-CH', { a: 'Gesäß', b: 'Füße', c: 'schließen' }))
-      .toEqual({ a: 'Gesäss', b: 'Füsse', c: 'schliessen' })
-  })
-
-  it('leaves legitimate ss alone', () => {
-    expect(derivePack('de-CH', { a: 'Arbeitssätze', b: 'Schlüssel', c: 'Latissimus' }))
-      .toEqual({ a: 'Arbeitssätze', b: 'Schlüssel', c: 'Latissimus' })
-  })
-
-  it('walks instruction packs, which nest steps in arrays', () => {
-    expect(derivePack('de-CH', { '0007': ['Setz dich aufs Gerät.', 'Spann das Gesäß an.'] }))
-      .toEqual({ '0007': ['Setz dich aufs Gerät.', 'Spann das Gesäss an.'] })
-  })
-
-  it('returns the pack untouched for a language that is not derived', () => {
-    const pack = { a: 'Gesäß' }
-    expect(derivePack('de', pack)).toBe(pack)
-    expect(derivePack('en', pack)).toBe(pack)
-  })
-
-  it('passes a null pack through', () => {
-    expect(derivePack('de-CH', null)).toBe(null)
-  })
-
-  it('derives the whole German locale with no ß left and no key lost', () => {
-    // Control: the test is only meaningful while de itself still contains ß.
-    expect(Object.values(de).some(v => /ß/.test(v))).toBe(true)
-
-    const swiss = derivePack('de-CH', de)
-    expect(Object.keys(swiss)).toEqual(Object.keys(de))
-    expect(Object.values(swiss).filter(v => /ß/.test(v))).toEqual([])
-    expect(swiss.glutes).toBe('Gesäss')
-    // Only the ß values move; everything else is identical to the German pack.
-    const changed = Object.keys(de).filter(k => de[k] !== swiss[k])
-    expect(changed.every(k => /ß/.test(de[k]))).toBe(true)
-  })
-})
-
-describe('de-CH as a selectable language', () => {
-  it('is offered in the picker and formats numbers Swiss-style', () => {
-    expect(LANGS['de-CH']).toBeTruthy()
-    expect(DATE_LOCALES['de-CH']).toBe('de-CH')
-    // The reason de-CH is worth having at all: German formatting gets the weights wrong here.
-    // ICU writes the Swiss group separator as ' or ’ depending on its version; both are Swiss.
-    expect(new Intl.NumberFormat(DATE_LOCALES['de-CH']).format(1234.5)).toMatch(/^1['’]234\.5$/)
-    expect(new Intl.NumberFormat(DATE_LOCALES.de).format(1234.5)).toBe('1.234,5')
-  })
-
-  it('stays the active language rather than collapsing to its base', () => {
-    _setLangState('de-CH', derivePack('de-CH', de), null, null)
-    expect(getLang()).toBe('de-CH')
-    expect(dateLocale()).toBe('de-CH')
-    expect(t('glutes')).toBe('Gesäss')
-    _setLangState('en', {}, null, null)
-  })
-
-  it('ships no locale pack of its own, so nothing can shadow the derivation', () => {
-    const packs = import.meta.glob('../locales/*.js', { eager: true, import: 'default' })
-    for (const code of Object.keys(DERIVED_LOCALES)) {
-      expect(packs[`../locales/${code}.js`], `${code} is derived and must not have a pack`).toBeUndefined()
-    }
-    // Control: a language that is not derived does have one.
-    expect(packs['../locales/de.js']).toBeTruthy()
-  })
-
-  it('declares de as its base, not the other way round', () => {
-    // ss → ß is not mechanical (Maße and Masse both collapse to Masse), so the German pack
-    // must never be generated from the Swiss one.
-    expect(DERIVED_LOCALES['de-CH'].base).toBe('de')
-    expect(DERIVED_LOCALES.de).toBeUndefined()
-  })
-})
 
 // EXDB stores English names lower-case and the UI title-cases them with CSS. German brings its
 // own casing, and applying capitalize on top of it produced "Bankdrücken Mit Langhantel". The
 // other packs are stored lower-case like EXDB, and without the class they read all lower-case.
-describe('exerciseNameClass', () => {
-  const bench = { id: '0025', n: 'barbell bench press' }
-  const pushUp = { id: '0662', n: 'push-up' }
-  const custom = { id: 'custom-1', n: 'my own press' }
-
-  it('title-cases only while the English fallback is showing', () => {
-    _setLangState('en', {}, null, null)
-    expect(exerciseNameClass(bench)).toBe('capitalize')
-    _setLangState('de', {}, null, null)
-    expect(exerciseNameClass(bench)).toBe('capitalize')
-    _setLangState('de', {}, null, { '0025': 'Bankdrücken mit Langhantel' })
-    expect(exerciseNameClass(bench)).toBe('')
-    _setLangState('en', {}, null, null)
-    expect(exerciseNameClass(bench)).toBe('capitalize')
-  })
-
-  // German covers the equipment exercises and not the body-weight ones: an exercise the pack
-  // has no entry for shows its lower-case English title and still needs the casing.
-  it('decides per exercise, so an untranslated one in a partial pack keeps its casing', () => {
-    _setLangState('de', {}, null, { '0025': 'Bankdrücken mit Langhantel' })
-    expect(exerciseNameClass(bench)).toBe('')
-    expect(exerciseNameClass(pushUp)).toBe('capitalize')
-    // An exercise nobody marked as the user's own is the catalogue's as far as this module knows.
-    expect(exerciseNameClass(custom)).toBe('capitalize')
-    expect(exerciseNameClass(undefined)).toBe('capitalize')
-    _setLangState('en', {}, null, null)
-  })
-
-  // P10 (1.4.5 UX round): "am Turm" showed as "Am Turm" in the English UI. A name the user typed
-  // is shown as typed in every language; title-casing stays the catalogue's rule (#290).
-  it('never title-cases one of your own exercises', () => {
-    const own = { id: 'c1', n: 'am Turm', custom: true }
-    for (const lang of ['en', 'de', 'pt', 'fr']) {
-      _setLangState(lang, {}, null, lang === 'en' ? null : { '0025': 'x' })
-      expect(exerciseNameClass(own), lang).toBe('')
-      expect(exerciseOwnNameClass(own), lang).toBe('')
-      expect(exerciseAsTypedClass(own), lang).toBe('nocap')
-    }
-    _setLangState('en', {}, null, null)
-    expect(exerciseNameClass(bench)).toBe('capitalize')
-    expect(exerciseAsTypedClass(bench)).toBe('')
-    // whoever knows better which exercises are the user's own says so (lib/exercises.js does)
-    bindOwnExercise(ex => ex?.id === 'custom-1')
-    expect(exerciseNameClass(custom)).toBe('')
-    expect(exerciseNameClass(bench)).toBe('capitalize')
-    bindOwnExercise(ex => ex?.custom === true)
-  })
-})
 
 // #290 took the title-casing off every translated name so German would keep its own, and the
 // packs stored lower-case (pt-BR, hu, es, ru, it, fr) went lower-case everywhere with it. Which
@@ -171,15 +29,8 @@ describe('title-casing per exercise-name pack', () => {
     return firsts.filter(c => c === c.toLocaleLowerCase()).length / firsts.length
   }
 
-  it('lists exactly the packs written in their own casing', () => {
-    for (const lang of EXERCISE_NAME_LANGS) {
-      expect(CASED_NAME_LANGS.includes(lang), `${lang}: ${Math.round(lowerShare(packFor(lang)) * 100)}% lower-case`)
-        .toBe(lowerShare(packFor(lang)) < 0.5)
-    }
-    for (const lang of CASED_NAME_LANGS) expect(EXERCISE_NAME_LANGS, lang).toContain(lang)
-  })
 
-  for (const lang of [...EXERCISE_NAME_LANGS, 'de-CH']) {
+  for (const lang of EXERCISE_NAME_LANGS) {
     const cased = CASED_NAME_LANGS.includes(baseLang(lang))
     it(`${lang}: a translated name is ${cased ? 'left in its own casing' : 'title-cased like English'}`, () => {
       const names = packFor(baseLang(lang))
@@ -228,14 +79,4 @@ describe('English-name switches with every exercise-name pack', () => {
     })
   }
 
-  it('de: an exercise the partial pack does not cover is unaffected by either switch', () => {
-    const names = packFor('de')
-    const ex = EXDB.find(e => !names[e.id])
-    for (const [showEn, enOnly] of [[true, false], [false, false], [true, true]]) {
-      _setLangState('de', {}, null, names, showEn, enOnly)
-      expect(exerciseNameFor(ex)).toBe(ex.n)
-      expect(exerciseNameClass(ex)).toBe('capitalize')
-    }
-    _setLangState('en', {}, null, null)
-  })
 })

@@ -109,9 +109,10 @@ push. The app is deployed as a PWA on gym.magjan.dev (hermes); the iOS shell is 
 - **`sheets.jsx`**: the bottom sheets (exercise picker, exercise config, workout detail, plan
   import...). It is large; a new sheet can go into `components/` as its own file.
 - **`components/`**: shared UI (charts, modals, timers, media).
-- **`locales/`**: one i18n pack per language, keyed by the English string (`lib/i18n.js`,
-  `i18n-core.js`). A new `t()` string goes into every pack; pt-BR inherits from pt and has a
-  fingerprint test (`scripts/pt-br-inheritance-fingerprint.mjs`).
+- **`locales/`**: this fork ships English (the source: keys are the English strings, no pack)
+  and Russian (`ru.js`) only (`lib/i18n.js`, `i18n-core.js` LANGS). A new `t()` string goes into
+  `ru.js`. A profile saved with another language opens in English. Exercise names and steps come
+  from `catalogue/i18n/ru.json` through `scripts/catalogue/build.mjs`.
 
 ### API (`api/server.js`)
 

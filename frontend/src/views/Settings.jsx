@@ -1100,7 +1100,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
 
     about: () => <>
       {/* The web app updates together with its server; the iPhone shell, if built, by its store. */}
-      <Section footer={MOBILE ? (offline ? t('openGym Offline never checks for updates, it can’t. New versions come from wherever you got this one.') : null) : t('The web app updates together with your server. The Android app installs its own updates from here.')}>
+      <Section footer={MOBILE ? (offline ? t('openGym Offline never checks for updates, it can’t. New versions come from wherever you got this one.') : null) : t('The web app updates together with your server.')}>
         <Row icon="info" iconTint="var(--grey)" title={t('Version')} value={'v' + __APP_VERSION__}
           subtitle={offline ? t('openGym Offline, no internet permission') : undefined} />
       </Section>

@@ -70,9 +70,8 @@ export function dueKind(keys) {
   return photos && measure ? 'both' : photos ? 'photos' : measure ? 'measure' : null;
 }
 
-// de-CH is de with ß written ss, as in the frontend (lib/i18n-core.js DERIVED_LOCALES).
+// A language without a pack (this fork ships en and ru) reads English.
 function copyFor(lang) {
-  if (lang === 'de-CH') return Object.fromEntries(Object.entries(CHECKIN_COPY.de).map(([k, v]) => [k, v.replace(/ß/g, 'ss')]));
   return CHECKIN_COPY[lang] || CHECKIN_COPY.en;
 }
 

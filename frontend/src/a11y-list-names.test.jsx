@@ -30,25 +30,6 @@ describe('nameIn: the thing first, then the control', () => {
     expect(nameIn('Set 2', '')).toBe('Set 2')
     expect(nameIn(undefined, undefined)).toBe('')
   })
-  it('uses the language’s own colon', () => {
-    _setLangState('fr', pack('fr'), null, null)
-    expect(nameIn('Série 2', 'Répétitions')).toBe('Série 2 : Répétitions')
-    _setLangState('zh', pack('zh'), null, null)
-    expect(nameIn('第 2 组', '次数')).toBe('第 2 组：次数')
-  })
-  it('isolates the inserted name in a right-to-left language, and leaves it alone elsewhere', () => {
-    expect(said('Barbell Curl')).toBe('Barbell Curl')
-    expect(said(null)).toBe('')
-    for (const code of ['ar', 'fa']) {
-      _setLangState(code, pack(code), null, null)
-      // A Latin name is a left-to-right run of its own, so it cannot turn the words around it.
-      expect(said('Barbell Curl')).toBe(LRI + 'Barbell Curl' + PDI)
-      expect(said('تمرين')).toBe(FSI + 'تمرين' + PDI)
-      const name = nameIn('Barbell Curl', 'More')
-      expect(name.startsWith(LRI + 'Barbell Curl' + PDI)).toBe(true)
-      expect(name.endsWith('More')).toBe(true)
-    }
-  })
 })
 
 describe('the sentences the names are built from', () => {
@@ -59,7 +40,7 @@ describe('the sentences the names are built from', () => {
     'Decrease', 'Increase', 'Done', 'Remove', 'Delete', 'Copy set', 'Details', 'Edit', 'More', 'Plan', 'Unpair', 'Superset {0} / {1}', 'Body part', 'Exercise type', 'Weight stack', 'Estimated 1RM']
   const real = Object.keys(LANGS).filter(c => c !== 'en' && !DERIVED_LOCALES[c])
   it('are in every language pack, placeholders intact', () => {
-    expect(real).toHaveLength(25)
+    expect(real).toHaveLength(1)
     const marks = s => [...String(s).matchAll(/\{\d+\}/g)].map(m => m[0]).sort().join(' ')
     for (const code of real) {
       for (const key of KEYS) {

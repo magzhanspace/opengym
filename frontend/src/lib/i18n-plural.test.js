@@ -1,9 +1,6 @@
 import { describe, it, expect, afterEach } from 'vitest'
 import { t, tn, _setLangState } from './i18n-core.js'
 import ru from '../locales/ru.js'
-import de from '../locales/de.js'
-import uk from '../locales/uk.js'
-import pl from '../locales/pl.js'
 import { readFileSync, readdirSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -34,12 +31,6 @@ describe('tn() — plural forms from the pack', () => {
     expect(tn('{0} exercise', '{0} exercises', 0)).toBe('0 exercises')
   })
 
-  it('leaves a pack that answers with a plain string exactly as it was', () => {
-    // German has two forms and says so with ordinary strings; nothing about it changes.
-    _setLangState('de', de, null, null)
-    expect(tn('{0} exercise', '{0} exercises', 1)).toBe(de['{0} exercise'].replace('{0}', 1))
-    expect(tn('{0} exercise', '{0} exercises', 7)).toBe(de['{0} exercises'].replace('{0}', 7))
-  })
 
   it('picks Russian one / few / many by the CLDR rule, not by n === 1', () => {
     _setLangState('ru', ru, null, null)
@@ -85,25 +76,5 @@ describe('tn() — plural forms from the pack', () => {
     expect(t('{0} exercises', 2)).toBe('2 упражнения')
   })
 
-  it('gives every tn() key real one / few / many forms in ru, uk and pl (#365)', () => {
-    const keys = tnKeys()
-    expect(keys.length).toBeGreaterThan(20)
-    for (const [lang, pack] of [['ru', ru], ['uk', uk], ['pl', pl]]) {
-      for (const k of keys) {
-        expect(typeof pack[k], `${lang}: ${k}`).toBe('object')
-        expect(Object.keys(pack[k]), `${lang}: ${k}`).toEqual(expect.arrayContaining(['one', 'few', 'many']))
-      }
-    }
-  })
 
-  it('says "3 treningi" in Polish and "3 дні" in Ukrainian', () => {
-    _setLangState('pl', pl, null, null)
-    expect(tn('{0} workout', '{0} workouts', 3)).toBe('3 treningi')
-    expect(tn('{0} workout', '{0} workouts', 5)).toBe('5 treningów')
-    expect(tn('{0} workout', '{0} workouts', 22)).toBe('22 treningi')
-    expect(tn('{0} workout total', '{0} workouts total', 3)).toBe('łącznie 3 treningi')
-    _setLangState('uk', uk, null, null)
-    expect(tn('{0} day a week', '{0} days a week', 3)).toBe('3 дні на тиждень')
-    expect(tn('{0} day a week', '{0} days a week', 5)).toBe('5 днів на тиждень')
-  })
 })

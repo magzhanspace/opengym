@@ -15,10 +15,7 @@ describe('the separator a number field shows', () => {
   })
 
   it.each([
-    ['en', '.'], ['de', ','], ['ru', ','], ['fr', ','], ['uk', ','], ['pt-BR', ','], ['sv', ','],
-    // Swiss German writes 72.5; Arabic, Persian and Bengali run on Latin digits with a point in
-    // the app's text (the nu-latn locales in DATE_LOCALES), so their fields stay as they were.
-    ['de-CH', '.'], ['ar', '.'], ['fa', '.'], ['bn', '.'], ['hi', '.'], ['zh', '.'],
+    ['en', '.'], ['ru', ','],
   ])('%s uses "%s"', (lang, sep) => {
     _setLangState(lang, {}, null, null)
     expect(decimalSeparator()).toBe(sep)
@@ -28,7 +25,7 @@ describe('the separator a number field shows', () => {
   })
 
   it('never puts a grouping sign into a field, and leaves anything that is not a number alone', () => {
-    _setLangState('de', {}, null, null)
+    _setLangState('ru', {}, null, null)
     expect(localiseNumber('12345.5')).toBe('12345,5')
     expect(localiseNumber('')).toBe('')
     expect(localiseNumber(null)).toBe('')
@@ -44,7 +41,7 @@ describe('the separator a number field shows', () => {
 })
 
 describe('what a number field reads back', () => {
-  const LANGS = ['en', 'de', 'ru', 'fr', 'ar']
+  const LANGS = ['en', 'ru']
   it.each(LANGS)('%s: typed "," and "." both mean the decimal separator', lang => {
     _setLangState(lang, {}, null, null)
     for (const typed of ['7', '72', '72,', '72.', '72,5', '72.5', '0,25', '.5', ',5']) {

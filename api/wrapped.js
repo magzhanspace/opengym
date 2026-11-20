@@ -54,14 +54,8 @@ export function wrappedPushOwed(user, sum, year) {
   return sum.years.includes(year);
 }
 
-// de-CH is de with ß written ss, as in the frontend (lib/i18n-core.js DERIVED_LOCALES).
-const copyFor = lang => {
-  if (lang === 'de-CH') {
-    const de = WRAPPED_COPY.de || WRAPPED_COPY.en;
-    return { title: de.title.replace(/ß/g, 'ss'), body: de.body.replace(/ß/g, 'ss') };
-  }
-  return WRAPPED_COPY[lang] || WRAPPED_COPY.en;
-};
+// A language without a pack (this fork ships en and ru) reads English.
+const copyFor = lang => WRAPPED_COPY[lang] || WRAPPED_COPY.en;
 /** The push itself: a fixed title and body with the year in, nothing from the profile. */
 export function wrappedPush(lang, year) {
   const c = copyFor(lang);

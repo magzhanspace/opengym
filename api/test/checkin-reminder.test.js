@@ -45,10 +45,10 @@ test('settings keep their defaults and drop junk', () => {
     { on: true, time: '07:30', items: { hips: { every: 90 } } });
 });
 
-test('the push speaks the profile language, de-CH without ß', () => {
+test('the push speaks the profile language, a removed one in English', () => {
   assert.equal(checkinPush('en', 'photos').tag, 'checkin');
   assert.ok(checkinPush('xx', 'both').body.length > 0);
-  assert.ok(!/ß/.test(checkinPush('de-CH', 'measure').body + checkinPush('de-CH', 'measure').title));
+  assert.equal(checkinPush('de-CH', 'measure').body, checkinPush('en', 'measure').body);
 });
 
 test('api/checkin-copy.js matches the frontend strings (node scripts/build-checkin-copy.mjs)', async t => {
