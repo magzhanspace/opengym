@@ -1,0 +1,16 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["V7YCX65M9R.dev.magjan.gym"],
+        "components": [
+          { "/": "/r", "comment": "A shared routine opens in the iPhone app; every other page stays in the browser." },
+          { "/": "/r/*" }
+        ]
+      }
+    ]
+  },
+  "webcredentials": {
+    "apps": ["V7YCX65M9R.dev.magjan.gym"]
+  }
+}

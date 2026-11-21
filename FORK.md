@@ -120,8 +120,9 @@ DuarteSantos8/openGym; вливать оттуда больше не плани�
   Garmin, NFC, поиск зала через Apple Maps, OIDC, нативную печать, смену иконки, Siri. Сервер по
   умолчанию — `https://gym.magjan.dev` (вход парой: код из «Pair the mobile app» в браузере;
   passkey внутри приложения не работает — страница живёт на `capacitor://localhost`).
-  Подпись ручная, через Individual-аккаунт Наримана (мы App Manager): Team ID вписать в
-  `ios/App/Signing.xcconfig` (или `OPENGYM_TEAM_ID`), профили и выгрузка —
+  Подпись ручная, через Individual-аккаунт Наримана (мы App Manager): Team ID `V7YCX65M9R` стоит в
+  `ios/App/Signing.xcconfig` (переопределяется `OPENGYM_TEAM_ID`), сертификат «Apple Distribution:
+  Nariman Nogaibayev» в связке ключей этого Mac (до 2027-11-21), профили и выгрузка —
   `frontend/scripts/ios-testflight.sh`, файл `apple-app-site-association` для сайта —
   `frontend/scripts/ios-aasa.sh`. Подробно: docs/MOBILE.md, «This fork».
 

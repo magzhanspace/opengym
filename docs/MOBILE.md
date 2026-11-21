@@ -38,8 +38,8 @@ Languages: English and Russian only.
 `applinks:gym.magjan.dev` and `webcredentials:gym.magjan.dev`. Widgets: App Groups only. No push.
 The associated domains only work once `https://gym.magjan.dev/.well-known/apple-app-site-association`
 is served: `frontend/scripts/ios-aasa.sh` writes it from `web/well-known/apple-app-site-association.template`
-with the Team ID, nginx serves it as JSON (`web/nginx.conf.template`), then commit and deploy the web
-image. Only `/r` links open the app; every other page stays in the browser. Passkeys inside the app
+with the Team ID into `frontend/public/.well-known/` (done for V7YCX65M9R and committed), nginx serves
+it as JSON (`web/nginx.conf.template`) once the web image is deployed. Only `/r` links open the app; every other page stays in the browser. Passkeys inside the app
 are not wired up: the app's page runs at `capacitor://localhost`, which is not `gym.magjan.dev`, so
 the app pairs with a code instead.
 
@@ -52,15 +52,16 @@ cd ios/App && xcodebuild -workspace App.xcworkspace -scheme App -sdk iphonesimul
 ```
 
 **Signing and TestFlight.** Signing is manual. The team, a friend's Individual Apple Developer
-account, signs with an Apple Distribution certificate made from a CSR on this Mac (private key in
-the login keychain) and two App Store Connect provisioning profiles, one for `dev.magjan.gym` and
+account (Team ID V7YCX65M9R), signs with the certificate "Apple Distribution: Nariman Nogaibayev
+(V7YCX65M9R)", made from a CSR on this Mac (private key in the login keychain, valid until
+2027-11-21), and two App Store Connect provisioning profiles, one for `dev.magjan.gym` and
 one for `dev.magjan.gym.widgets`. The project reads `OPENGYM_TEAM_ID`, `OPENGYM_APP_PROFILE` and
 `OPENGYM_WIDGETS_PROFILE` from `frontend/ios/App/Signing.xcconfig` (the one place for the Team ID);
 the environment wins over it. `frontend/ios/App/ExportOptions.plist` is the export (method
 app-store-connect, manual). Then:
 
 ```bash
-OPENGYM_TEAM_ID=… OPENGYM_APP_PROFILE='…' OPENGYM_WIDGETS_PROFILE='…' \
+OPENGYM_APP_PROFILE='…' OPENGYM_WIDGETS_PROFILE='…' \
 ASC_APPLE_ID=… ASC_APP_PASSWORD=… frontend/scripts/ios-testflight.sh
 ```
 
