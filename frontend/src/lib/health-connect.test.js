@@ -78,7 +78,7 @@ describe('sessionType', () => {
 // Each name has its own type on the native side; a name it does not know is filed as "other".
 describe('the native tables', () => {
   const src = f => readFileSync(new URL(f, import.meta.url), 'utf8')
-  it.each([['../../ios/App/App/AppleHealthPlugin.swift'], ['../../ios/App/Watch/WorkoutManager.swift']])('%s knows every type', f => {
+  it.each([['../../ios/App/App/AppleHealthPlugin.swift']])('%s knows every type', f => {
     const s = src(f)
     for (const name of SESSION_TYPES) expect(s).toContain(`"${name}": .`)
   })

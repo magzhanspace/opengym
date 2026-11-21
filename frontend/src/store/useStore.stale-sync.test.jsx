@@ -204,6 +204,9 @@ describe('a pull answered after another account signed in', () => {
     await flush()
     const revA = call('GET', '/api/data/rev')
     expect(revA).toBeTruthy()
+    // B's sync stamps lastSynced with Date.now(): on a fast machine it lands in the same
+    // millisecond as A's, and the check below could not tell them apart.
+    await new Promise(r => setTimeout(r, 5))
     const b = await switchToB()
     await b.settle()
     const lastSynced = useStore.getState().sync.lastSynced

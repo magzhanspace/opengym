@@ -12,7 +12,6 @@ import { DEMO } from '../lib/demo.js'
 import { platformNow } from '../lib/platform-now.js'
 import { api } from '../lib/api.js'
 import { MODULES, GROUPS, PRESETS, isOn, presetOf, presetModules, applyPreset, setModule, turnedOff, moduleBuilt } from '../lib/modules.js'
-import { readWatchStatus } from '../lib/watch-settings.js'
 import { moduleCopy, groupCopy, presetCopy } from '../lib/modules-copy.js'
 import { confirmSheet } from '../sheets.jsx'
 import { Section, Row, SelectRow, Switch } from '../components/ui.jsx'
@@ -31,8 +30,6 @@ function useConnections() {
       import('../lib/health-sync.js').then(m => m.loadHealth()).then(h => {
         if (h && (h.on || h.readHr || h.readWeight || h.readBody || h.readVitals)) put({ health: platformNow() === 'android' ? 'Health Connect' : 'Apple Health' })
       }).catch(() => {})
-      // An Apple Watch that has reported in.
-      if (readWatchStatus()) put({ watch: true })
     }
     if (user && !DEMO) {
     }
@@ -46,7 +43,6 @@ export function connectionNotes(ids, conn) {
   const out = []
   for (const id of ids) {
     if (id === 'health' && conn.health) out.push(t('{0} stops syncing while Health is off. Nothing is disconnected, and it catches up once Health is back.', conn.health))
-    if (id === 'watch' && conn.watch) out.push(t('Your watch stops getting workouts while Watch is off. It stays paired.'))
   }
   return out
 }

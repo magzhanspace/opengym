@@ -18,8 +18,8 @@ vi.mock('@capacitor/core', () => ({
 
 import {
   createPlaceSearch, createTypeahead, createReverse, placeOf, photonPlaceOf, rankPlaces, isFitness, kindOf,
-  googleMapsUrl, appleMapsUrl, findPlaces, placeOfPick, addressAt, searchSource, nativeComplete, fmtDistance,
-  MIN_GAP_MS, PHOTON_GAP_MS, _resetGymPlaces,
+  googleMapsUrl, appleMapsUrl, findPlaces, placeOfPick, addressAt, fmtDistance,
+  MIN_GAP_MS, PHOTON_GAP_MS,
 } from './gym-places.js'
 
 const row = (o = {}) => ({ place_id: 1, lat: '47.1', lon: '8.2', name: 'Iron Temple', display_name: 'Iron Temple, Gym St 1, Zürich, Switzerland', category: 'leisure', type: 'fitness_centre', address: { road: 'Gym St', house_number: '1', postcode: '8000', city: 'Zürich' }, ...o })
@@ -201,53 +201,5 @@ describe('the address of a spot', () => {
     expect(fetcher).toHaveBeenCalledTimes(1)
     const offline = createReverse({ fetcher: async () => { throw new Error('offline') } })
     expect(await offline({ lat: 1, lng: 1 })).toBe('')
-  })
-})
-
-describe('the iPhone: Apple\'s search', () => {
-  beforeEach(() => { _resetGymPlaces(); cap.platform = 'ios'; cap.available = true; cap.calls = [] })
-
-  it('type-ahead rows from MapKit, gyms marked; the place comes with the pick', async () => {
-    cap.complete = async () => ({ results: [{ id: '4', title: 'Iron Temple', subtitle: 'Zürich', fitness: true }, { id: '5', title: 'Iron Street', subtitle: 'Bern', fitness: false }] })
-    cap.resolve = async () => ({ name: 'Iron Temple', address: 'Gym St 1, 8000 Zürich', lat: 47.1, lng: 8.2, fitness: true })
-    expect(await searchSource()).toBe('apple')
-    const rows = await findPlaces(' iron ', { near: { lat: 47, lng: 8 } })
-    expect(cap.calls[0]).toEqual(['complete', { query: 'iron', lat: 47, lng: 8 }])
-    expect(rows.map(r => [r.name, r.address, r.kind, r.distance])).toEqual([['Iron Temple', 'Zürich', 'gym', null], ['Iron Street', 'Bern', null, null]])
-    const picked = await placeOfPick(rows[0])
-    expect(cap.calls.at(-1)).toEqual(['resolve', { id: '4' }])
-    expect(picked).toMatchObject({ name: 'Iron Temple', address: 'Gym St 1, 8000 Zürich', lat: 47.1, lng: 8.2 })
-  })
-  it('an answer overtaken by a newer question: null (the page drops it)', async () => {
-    cap.complete = async () => ({ stale: true, results: [] })
-    expect(await findPlaces('iron')).toBe(null)
-  })
-  it('Apple has no place for a row: null', async () => {
-    cap.resolve = async () => ({})
-    expect(await placeOfPick({ id: 'a:1', ref: '1', name: 'X', apple: true, lat: null, lng: null })).toBe(null)
-  })
-  it('the address of a spot from Apple', async () => {
-    cap.reverse = async () => ({ address: 'Side St 9, 8000 Zürich' })
-    expect(await addressAt({ lat: 47, lng: 8 })).toBe('Side St 9, 8000 Zürich')
-  })
-  it('build 45 (only the old picker, UNIMPLEMENTED): OpenStreetMap from then on', async () => {
-    cap.complete = async () => { const e = new Error('"GymMapPicker.complete()" is not implemented on ios'); e.code = 'UNIMPLEMENTED'; throw e }
-    const suggest = vi.fn(async () => [{ id: 'o', name: 'OSM Gym', lat: 47.01, lng: 8, fitness: true }])
-    const rows = await findPlaces('iron', { near: { lat: 47, lng: 8 }, suggest })
-    expect(suggest).toHaveBeenCalledWith('iron', { near: { lat: 47, lng: 8 } })
-    expect(rows[0].distance).toBeGreaterThan(1000)
-    expect(rows[0].distance).toBeLessThan(1200)
-    expect(await searchSource()).toBe('osm')
-    expect(await nativeComplete('iron')).toBe(undefined)
-  })
-  it('Android, or no plugin: OpenStreetMap', async () => {
-    cap.platform = 'android'
-    expect(await searchSource()).toBe('osm')
-    _resetGymPlaces(); cap.platform = 'ios'; cap.available = false
-    expect(await searchSource()).toBe('osm')
-    const suggest = vi.fn(async () => [])
-    await findPlaces('iron', { suggest })
-    expect(suggest).toHaveBeenCalled()
-    expect(cap.calls).toEqual([])
   })
 })

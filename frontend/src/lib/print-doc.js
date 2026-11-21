@@ -215,6 +215,8 @@ function printInFrame(html) {
  */
 export function printDocument(html, name) {
   if (MOBILE) return printHtml(html, name || 'openGym', printOptions()).catch(err => {
+    // This fork's iPhone app has no Print plugin: the page's own print (window.print) instead.
+    if (err?.code === 'UNIMPLEMENTED' || /not implemented/i.test(String(err?.message || err))) { printInFrame(html); return }
     // A dismissed sheet stays quiet. A phone with no print service at all (#991) says so: the
     // store comes in through a dynamic import, since plain Node tests load this file too.
     if (err?.code !== 'no-service') return

@@ -153,15 +153,6 @@ describe('the root', () => {
     expect(host.querySelector('.sp-acct .lrow-t').textContent).toBe('This phone')
   })
 
-  // #1105: one Watches row on the phones; the web has only Zepp, so its row stays on the root.
-  it('groups the watches on a phone', () => {
-    const phone = { mobile: true, ios: true, android: false }
-    expect(pageVisible('watches', phone)).toBe(true)
-    expect(pageVisible('watches', { ...phone, mod: id => id !== 'watch' })).toBe(false)
-    expect(pageVisible('watches', { user: { id: 'u' } })).toBe(false)
-    expect(pageTrail('watch')).toBe('Watches › Apple Watch')
-  })
-
   it('a row opens its page; the card opens Account', () => {
     mocks.MOBILE = true
     mount()

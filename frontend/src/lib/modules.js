@@ -29,8 +29,6 @@ export const MODULES = [
     desc: 'Beginner to Elite for your main lifts, measured against your body weight.' },
   { id: 'videos', group: 'training', icon: 'camera', tint: 'var(--teal)', title: 'Form videos',
     desc: 'Film a set and watch it back right under the row.' },
-  { id: 'watch', group: 'training', icon: 'watch', tint: 'var(--grey)', title: 'Watch',
-    desc: 'Log sets from your wrist on an Apple Watch, Wear OS, Garmin or Zepp watch.' },
   { id: 'body', group: 'body', icon: 'scale', tint: 'var(--teal)', title: 'Body',
     desc: 'Weigh-ins, measurements, progress photos and your weight goal.' },
   { id: 'health', group: 'body', icon: 'heart', tint: 'var(--red)', title: 'Health',
@@ -50,7 +48,7 @@ export const GROUPS = [
 ]
 
 /* The presets, smallest first. Each names the modules it turns on; every other one is off. */
-const TRAINING = ['effort', 'plates', 'watch']
+const TRAINING = ['effort', 'plates']
 export const PRESETS = [
   { id: 'training', title: 'Just training', desc: 'Log, plan, progress. Nothing else on the screen.', on: TRAINING },
   { id: 'body', title: 'Training and body', desc: 'Plus weigh-ins, measurements, photos and your health apps.', on: [...TRAINING, 'strength', 'body', 'health'] },

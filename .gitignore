@@ -11,6 +11,8 @@ data/
 
 # Build output / deps
 frontend/dist/
+# frontend/scripts/ios-testflight.sh: the archive, the export options and the .ipa
+frontend/build/
 node_modules/
 *.log
 .DS_Store

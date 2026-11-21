@@ -15,10 +15,10 @@ import { setKnownBands } from './lib/bands.js'
 import { buzzAsAlarm } from './lib/rest-alert.js'
 import { setNav, notePath, keyBefore, navToWorkout, nav } from './lib/nav.js'
 import { onGymReminderOpen, readGymConfig, readGymLeft, onGymLeft } from './lib/gym-reminder.js'
-import { startForgotten, keepGoing } from './lib/forgotten-phone.js'
+import { startForgotten } from './lib/forgotten-phone.js'
 import { openForgottenPrompt } from './components/ForgottenPrompt.jsx'
 import { autoGymHere } from './lib/gym-auto.js'
-import { workoutVolume, pickedExerciseConfig } from './lib/history.js'
+import { workoutVolume } from './lib/history.js'
 import { setSystemAccent, setSystemBarsLight } from './lib/system-bars.js'
 import { applyProfileSteps, profileStep } from './lib/weight-step.js'
 import { stepPlaces } from './lib/progression.js'
@@ -26,17 +26,14 @@ import { applyOrientation } from './lib/orientation.js'
 import { initBackButton } from './lib/back.js'
 import { installEdgeSwipeBack, BACK_PREVIEW_EVENT } from './lib/edge-swipe-back.js'
 import { pageMotion } from './lib/page-motion.js'
-import { startWatchSync, bindWatchAppActions, patchSetIn, watchStatus, watchClaimed, onWatchClaim, markDiscarded, notePhoneOpen, ensureWatchSet } from './lib/watch-sync.js'
-import { buildSessionEntry } from './lib/session-start.js'
-import { EXIDX } from './lib/exercises.js'
+import { watchStatus, watchClaimed, onWatchClaim, markDiscarded, notePhoneOpen } from './lib/watch-sync.js'
 import { readWatchPrefs, readWatchStatus } from './lib/watch-settings.js'
 import { startPhoneWorkout } from './lib/phone-workout.js'
 import { stampWorkout } from './lib/sync-merge.js'
-import { logWeighIn } from './lib/bodyweight.js'
 import { startWidgetSync } from './lib/widgets.js'
 import { startWidgetActions } from './lib/widget-logger.js'
 import { startWidgetLinks } from './lib/widget-links.js'
-import { startVoice, todayRoutineIds } from './lib/voice.js'
+import { todayRoutineIds } from './lib/voice.js'
 import { startLiveActivitySync, requestLiveFinish } from './lib/live-activity.js'
 import CircuitPlayer from './components/CircuitPlayer.jsx'
 import { useCircuit, wireCircuit, restoreCircuit } from './store/useCircuit.js'
@@ -46,7 +43,7 @@ import { installChipDrag } from './lib/hchips.js'
 import { syncPushSubscription } from './lib/push.js'
 import { MOBILE, nativePlatform } from './lib/mobile.js'
 import { isOn } from './lib/modules.js'
-import { exitWorkoutEdit, startFlow, beginWorkout, bwSheet, finishWorkoutNow, confirmSheet } from './sheets.jsx'
+import { exitWorkoutEdit, startFlow, bwSheet, finishWorkoutNow, confirmSheet } from './sheets.jsx'
 import { BrandMark } from './components/BrandLogo.jsx'
 import TabBar from './components/TabBar.jsx'
 import { startOrPreview, startPickerSheet } from './components/StartSheets.jsx'
@@ -452,42 +449,6 @@ export default function App() {
   }, [])
   // iOS: swipe from the left edge for the page's own back button (lib/edge-swipe-back.js)
   useEffect(() => installEdgeSwipeBack(), [])
-  // iPhone app with an Apple Watch, Android with Wear OS: the running workout goes to the watch,
-  // its ticks come back (lib/watch-sync.js). Without a paired watch, nothing is sent.
-  useEffect(() => {
-    let stop = null, gone = false
-    if (MOBILE) startWatchSync({ useStore, useUI }).then(fn => { if (gone) fn(); else stop = fn })
-    // A session started on the watch starts here as the phone's Start does, with the watch's id
-    // and start time, and no weigh-in question (the lifter is at the watch, not here).
-    const unbind = bindWatchAppActions({
-      start: (ids, { bw = null, ...opts } = {}) => beginWorkout(ids, bw, opts),
-      // The watch's weigh-in: logged as the phone's check-in logs one (today's replaces today's).
-      weighIn: ({ w, at }) => useStore.getState().update(s => { logWeighIn(s, w, at) }),
-      // The watch removed its copies of deleted workouts from Apple Health: the phone's removal
-      // runs again, finds them gone and stops retrying them.
-      healthDeleted: () => { import('./lib/health-sync.js').then(m => m.syncHealth(useStore.getState().S)).catch(() => {}) },
-      patchSet: (where, fields, opts = {}) => useStore.getState().update(s => {
-        patchSetIn(s, where, fields, stampWorkout, { ...opts, recount: w => { w.vol = workoutVolume(w) } })
-      }),
-      // A set from the watch for a row the running workout does not have (the exercise taken out
-      // here meanwhile, a routine changed since the watch last heard): the workout gets the row with
-      // the set in it, the exercise built as adding it by hand builds it. Not for an exercise this phone does not know.
-      ensureSet: (where, fields) => {
-        let ok = false
-        useStore.getState().update(s => {
-          ok = ensureWatchSet(s, where, exId => (EXIDX[exId] ? buildSessionEntry(s, exId, pickedExerciseConfig(exId, undefined, s), null, null) : null), fields)
-        })
-        return ok
-      },
-      // A set the watch's set menu added or took out (lib/watch-sync.js addWatchSet, removeWatchSet).
-      edit: fn => { let ok = false; useStore.getState().update(s => { ok = !!fn(s) }); return ok },
-      // "Keep going" on a watch's "Still training?": the phone stops asking too (lib/forgotten-phone.js).
-      stillHere: at => keepGoing(at),
-      // Ticks from the watch are the workout screen's to apply: it opens, and drains the queue.
-      openWorkout: () => { if (!String(window.location.hash || '').startsWith('#/workout')) navToWorkout() },
-    })
-    return () => { gone = true; stop?.(); unbind() }
-  }, [])
   // Settings → Workout → Forgotten workouts (lib/forgotten-phone.js): "Still training?" after a
   // quiet spell, "Looks like you left the gym" from the gym reminder, and the finish nobody answered.
   useEffect(() => {
@@ -545,14 +506,6 @@ export default function App() {
     if (!MOBILE) return
     let stop = null, gone = false
     startWidgetLinks({ getS: () => useStore.getState().S, nav, navToWorkout, startFlow, bwSheet, todayIds: todayRoutineIds, finishSheet: requestLiveFinish })
-      .then(fn => { if (gone) fn(); else stop = fn }).catch(() => {})
-    return () => { gone = true; stop?.() }
-  }, [])
-  // iPhone app: weigh-ins Siri logged while the app was closed (lib/voice.js), brought in once.
-  useEffect(() => {
-    if (!MOBILE) return
-    let stop = null, gone = false
-    startVoice({ useStore, toast: msg => useUI.getState().toast(msg) })
       .then(fn => { if (gone) fn(); else stop = fn }).catch(() => {})
     return () => { gone = true; stop?.() }
   }, [])

@@ -78,9 +78,13 @@ export const installedBases = (s = state) =>
 // Registered once and handed out inside an object: a Capacitor plugin proxy answers `then` with
 // a native call that never settles, so a promise resolved with the bare proxy hangs (#42).
 let pluginP = null
+// This fork's iPhone app has no animation packs (no Apple-hosted packs, no downloader, FORK.md):
+// with no AnimationPacks plugin in the app there is no native side to ask, and every built-in
+// animation is the 180 px one in the app.
 const packsPlugin = () => pluginP || (pluginP = (async () => {
   if (!MOBILE) return null
   const { registerPlugin, Capacitor } = await import('@capacitor/core')
+  if (typeof Capacitor.isPluginAvailable === 'function' && !Capacitor.isPluginAvailable('AnimationPacks')) return null
   return { Packs: registerPlugin('AnimationPacks'), toUrl: p => Capacitor.convertFileSrc(p) }
 })().catch(() => null))
 

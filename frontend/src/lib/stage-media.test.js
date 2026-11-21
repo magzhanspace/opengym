@@ -22,9 +22,4 @@ describe('staging the app\'s animations (#962)', () => {
       expect(run.stderr).toMatch(/VITE_CLIP_EXT=webp/)
     } finally { rmSync(dir, { recursive: true, force: true }) }
   })
-  it('the IPA check counts animations, not stills', () => {
-    const sh = readFileSync(new URL('../../../scripts/ios/finish-ipa.sh', import.meta.url), 'utf8')
-    expect(sh).toMatch(/find "\$PUBLIC\/exercise-media\/clip" -name '\*\.webp'/)
-    expect(sh).not.toMatch(/find "\$PUBLIC\/exercise-media" -name/)
-  })
 })

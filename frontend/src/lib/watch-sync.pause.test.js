@@ -2,8 +2,6 @@
 // #976: a workout paused on the phone tells the watch when, so its clock stands still; a running
 // one sends nothing new, so an older watch reads the snapshot exactly as before.
 import { beforeEach, expect, it } from 'vitest'
-import { readFileSync } from 'node:fs'
-import { resolve } from 'node:path'
 import { buildSnapshot, _resetWatchSync } from './watch-sync.js'
 
 const S = pausedAt => ({
@@ -13,12 +11,7 @@ const S = pausedAt => ({
 })
 beforeEach(() => { localStorage.clear(); _resetWatchSync() })
 
-it('sends pausedAt only while paused, and the watch stands its clock on it', () => {
+it('sends pausedAt only while paused', () => {
   expect(buildSnapshot(S(5000)).active.pausedAt).toBe(5000)
   expect('pausedAt' in buildSnapshot(S()).active).toBe(false)
-  const model = readFileSync(resolve('ios/App/WatchCore/Sources/WatchCore/Model.swift'), 'utf8')
-  expect(model).toMatch(/struct ActiveWorkout[\s\S]*?var pausedAt: Double\? = nil[\s\S]*?\n\}/)
-  // The Metrics page beside the set (1.4.5 redesign) carries the workout clock.
-  const app = readFileSync(resolve('ios/App/Watch/SideScreens.swift'), 'utf8')
-  expect(app).toContain('pauseTime: store.workoutPausedAt')
 })

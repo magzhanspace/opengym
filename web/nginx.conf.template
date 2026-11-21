@@ -116,6 +116,16 @@ server {
         proxy_set_header X-Forwarded-For $remote_addr;
         proxy_set_header X-Forwarded-Proto $scheme;
     }
+    # The iPhone app's associated domains (passkeys and links, docs/MOBILE.md): Apple fetches this
+    # from the host's root, as JSON, without a redirect. The file is frontend/public/.well-known/
+    # apple-app-site-association, written by frontend/scripts/ios-aasa.sh once the Team ID is known;
+    # until then this answers 404.
+    location = /.well-known/apple-app-site-association {
+        default_type application/json;
+        try_files /.well-known/apple-app-site-association =404;
+        add_header Cache-Control "no-cache";
+        add_header X-Content-Type-Options "nosniff" always;
+    }
     location @mcp_off {
         default_type application/json;
         add_header Cache-Control "no-store" always;

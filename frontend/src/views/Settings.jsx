@@ -3,8 +3,7 @@ import { setRecoveryHint } from '../lib/recovery-hint.js'
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { useNavigate, useParams, useLocation, Navigate } from 'react-router-dom'
 import { useStore, DEF, hasData } from '../store/useStore.js'
-import { readWatchPrefs, writeWatchPrefs } from '../lib/watch-settings.js'
-import { healthStatus, loadHealth, enableHealth, disableHealth, openHealthConnect, onHealthChange, enableRead, disableRead, allowBirthDate } from '../lib/health-sync.js'
+import { healthStatus, loadHealth, enableHealth, disableHealth, openHealthConnect, onHealthChange, enableRead, disableRead } from '../lib/health-sync.js'
 import { phoneSessionSupported } from '../lib/phone-workout.js'
 import { workoutControls } from '../lib/workout-controls.js'
 import { speedUnitOf } from '../lib/speed.js'
@@ -61,8 +60,6 @@ import Icon from '../components/Icon.jsx'
 import { durationSheet } from '../components/DurationWheel.jsx'
 import { showsConnection, showsLocalLine } from '../components/SyncBanner.jsx'
 import BackupFolderRow, { useBackupFolder, autoBackupSubtitle } from '../components/BackupFolderRow.jsx'
-import AppIconRow from '../components/AppIconRow.jsx'
-import { AnimationQualityRow } from '../components/Animations.jsx'
 import { ServerSyncSection, KeptChangesRows, leaveServer, connectServer, passkeySignIn } from '../components/ServerSync.jsx'
 import { passwordOn, PasswordRow, openPasswordSignIn, openPasswordRegister } from '../components/PasswordAuth.jsx'
 import { usePasskeys, PasskeysRow, DeviceLinkRow, openDeviceLinkRedeem, PairSheet } from '../components/Passkeys.jsx'
@@ -75,10 +72,9 @@ import { liveOff } from '../lib/live-activity.js'
 import ForgottenRows from '../components/ForgottenRows.jsx'
 import { POLICIES_FOR, POLICY_NAME, POLICY_DESC, profileRule } from '../lib/progression.js'
 import { STEPS, profileStep, stepOverrides, applyStepToAll, fmtStepLabel } from '../lib/weight-step.js'
-import { PAGES, ROOT_GROUPS, WATCH_PAGES, pageVisible, onRoot, searchSettings, pageTrail } from './settings-pages.js'
+import { PAGES, ROOT_GROUPS, pageVisible, onRoot, searchSettings, pageTrail } from './settings-pages.js'
 import { platformNow } from '../lib/platform-now.js'
 import { pathBefore } from '../lib/nav.js'
-import WatchSettingsPage from './WatchSettings.jsx'
 import IntegrationsPage from './Integrations.jsx'
 import ApiTokensPage from './ApiTokens.jsx'
 import ModulesPage from './Modules.jsx'
@@ -89,7 +85,6 @@ import { csvExportSheet } from '../components/CsvExportSheet.jsx'
 import GymReminderPage, { GymEditPage, GymFindPage } from './GymReminder.jsx'
 import { readGymConfig } from '../lib/gym-reminder.js'
 import { dailyModeOf, settleAll } from '../lib/weigh-ins.js'
-import { voiceShortcutsSheet, voiceRowTitle } from '../components/VoiceShortcuts.jsx'
 import { readOrientation, setOrientation } from '../lib/orientation.js'
 import { AvatarFace, AvatarSection } from '../components/Avatar.jsx'
 import { useOfflineBuild } from '../lib/use-offline-build.js'
@@ -380,7 +375,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
   /* ---------------- what the pages and the search need to know about this device ---------------- */
   const canVibrate = vibrateSupported()
   const ctx = {
-    user, mobile: MOBILE, offline, android, ios: MOBILE && ios, appIcons: MOBILE && !!platformNow(), demo: DEMO, wakeOK, hasMedia, pwOn, webauthn: webauthnOK(),
+    user, mobile: MOBILE, offline, android, ios: MOBILE && ios, demo: DEMO, wakeOK, hasMedia, pwOn, webauthn: webauthnOK(),
     sound: !!S.sound, playOnSilent: playOnSilentSupported(), canVibrate, vibrate: S.vibrate !== false,
     recordHints: recordHintsOn(S),
     profiles: (S.equipProfiles || []).length > 0, nameLang: EXERCISE_NAME_LANGS.includes(baseLang(lang)),
@@ -411,8 +406,6 @@ export default function Settings({ page = null, find = null, via = null, entryKe
     data: () => '',
     integrations: () => '',
     about: () => 'v' + __APP_VERSION__,
-    watch: () => '',
-    wear: () => '',
   }
 
   const open = id => nav('/settings/' + id)
@@ -482,9 +475,6 @@ export default function Settings({ page = null, find = null, via = null, entryKe
 
   const pages = {
     modules: () => <ModulesPage />,
-    watches: () => <Section>{WATCH_PAGES.filter(id => pageVisible(id, ctx)).map(id => <Row key={id} icon={PAGES[id].icon} iconTint={PAGES[id].tint}
-      title={t(PAGES[id].title)} accessory="chevron" onClick={() => open(id)} />)}</Section>,
-    watch: () => <WatchSettingsPage />,
     integrations: () => <IntegrationsPage android={android} ios={ios} />,
     'api-tokens': () => <ApiTokensPage />,
     // The phone's health store (#200, #544): its switches, moved here from Data & backup in 1.4.4.
@@ -637,9 +627,6 @@ export default function Settings({ page = null, find = null, via = null, entryKe
             value={S.gifSize === 'mini' || S.gifSize === 'off' ? S.gifSize : 'full'}
             onChange={v => update(s => { s.gifSize = v })} />
         </Row>
-        {/* Store apps: how sharp the animations are, from packs this device downloads. Per device,
-            never synced: the profile is not touched (components/Animations.jsx). */}
-        <AnimationQualityRow />
       </Section>
       {/* A workout left running (lib/forgotten-workout.js): the phone apps ask and end it, and tell the watches. */}
       {MOBILE && <ForgottenRows mobile />}
@@ -991,8 +978,6 @@ export default function Settings({ page = null, find = null, via = null, entryKe
         </Row>}
         {/* Motion and text size (lib/display-prefs.js): this device only, like the app icon. */}
         <DisplayRows />
-        {/* The home-screen icon: the phone's own, not synced; in the phone app only. */}
-        {MOBILE && platformNow() && <AppIconRow />}
         {/* How the muscle map is drawn. The exercise drawings follow it until they are set below. */}
         <Row icon="figureStrength" iconTint="var(--teal)" title={t('Body diagram')}>
           <Segmented
@@ -1017,9 +1002,6 @@ export default function Settings({ page = null, find = null, via = null, entryKe
       </Section>
       <Section title={t('On Home')}>
         {/* The gym check-in's own switch moved to Settings → Modules (1.4.4, lib/modules.js). */}
-        {/* Siri & Shortcuts / Assistant (components/VoiceShortcuts.jsx): the phone app only. */}
-        {MOBILE && platformNow() && <Row icon="chat" iconTint="var(--purple)" title={voiceRowTitle()}
-          subtitle={platformNow() === 'android' ? t('Start a workout or log your weight from the app icon.') : t('Start a workout or log your weight by voice.')} accessory="chevron" onClick={voiceShortcutsSheet} />}
         {/* The Home summary is optional; hiding it leaves weight logging, history and Stats intact. */}
         {on('body') && <Row icon="scale" iconTint="var(--green)" title={t('Body weight')}
           subtitle={t('Show the body weight card on Home.')}>
@@ -1898,7 +1880,6 @@ function HealthConnectCard({ S, toast, android, page = false }) {
   const [busy, setBusy] = useState(false)
   // iOS 26+: AirPods that measure the heart rate fill each set's when no Apple Watch does (#818).
   const [airpods, setAirpods] = useState(false)
-  const [zones, setZones] = useState(() => readWatchPrefs().show.zones)
   useEffect(() => {
     let gone = false
     Promise.all([healthStatus(), loadHealth()]).then(([s, f]) => { if (!gone) { setSt(s); setH(f) } }).catch(() => {})
@@ -2004,15 +1985,6 @@ function HealthConnectCard({ S, toast, android, page = false }) {
         subtitle={t('Strava, your watch, Runna and friends: their sessions show in your calendar and tire the right muscles. No sets, no volume.')}>
         <Switch checked={!!h.readSport} disabled={busy} onChange={toggleRead('sport')} />
       </Row>
-      {/* The Apple Watch's Zones page: max heart rate from the age, a watch setting (show.zones).
-          On asks Apple Health (the watch app shares this app's permissions), or opens it once answered. */}
-      {ios && isOn(S, 'watch') && <Row icon="heart" iconTint="var(--orange)" title={t('Birth date, for heart-rate zones')}
-        subtitle={t('Your Apple Watch works out your heart-rate zones from your age. Allow Date of Birth, or change it later in Apple Health.')}>
-        <Switch aria-label={t('Birth date, for heart-rate zones')} checked={zones} disabled={busy} onChange={v => {
-          setZones(writeWatchPrefs({ show: { zones: v } }).show.zones)
-          if (v) allowBirthDate().catch(() => {})
-        }} />
-      </Row>}
       {reading && h.readError === 'permission' && <Row icon="warning" iconTint="var(--orange)"
         title={t('Permission withdrawn. Tap to allow again')} accessory="chevron"
         onClick={() => toggleRead(h.readHr ? 'hr' : h.readWeight ? 'weight' : h.readBody ? 'body' : h.readVitals ? 'vitals' : 'sport')(true)} />}

@@ -75,7 +75,7 @@ describe('the Modules page', () => {
     mount()
     expect(sw('Motivation').getAttribute('aria-checked')).toBe('false')
     expect(row('Start from').querySelector('.lrow-v').textContent).toBe('Custom')
-    expect(host.textContent).toContain('8 of 9 modules on.')
+    expect(host.textContent).toContain('7 of 8 modules on.')
     act(() => sw('Motivation').click())
     expect(isOn(mocks.S, 'motivation')).toBe(true)
   })
@@ -96,10 +96,10 @@ describe('the Modules page', () => {
   })
 
   it('names what pauses for each connected module, and nothing for the rest', () => {
-    const notes = connectionNotes(['health', 'watch', 'integrations', 'body'], { health: 'Health Connect', watch: true })
-    expect(notes).toHaveLength(2)
+    const notes = connectionNotes(['health', 'integrations', 'body'], { health: 'Health Connect' })
+    expect(notes).toHaveLength(1)
     expect(notes[0]).toBe('Health Connect stops syncing while Health is off. Nothing is disconnected, and it catches up once Health is back.')
-    expect(connectionNotes(['health', 'watch'], {})).toEqual([])
+    expect(connectionNotes(['health'], {})).toEqual([])
     for (const n of notes) expect(n).not.toMatch(/—/)
   })
 })
@@ -110,7 +110,7 @@ describe('Settings follows the modules', () => {
 
   it('a module that is off takes its pages away', () => {
     const phone = { ...web, user: { id: 'u' }, mobile: true, ios: true }
-    for (const [page, mod] of [['watch', 'watch'], ['apple-health', 'health']]) {
+    for (const [page, mod] of [['apple-health', 'health']]) {
       expect(pageVisible(page, phone), page).toBe(true)
       expect(pageVisible(page, { ...phone, mod: id => id !== mod }), page).toBe(false)
     }

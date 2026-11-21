@@ -10,6 +10,11 @@ import { pairRedeem, setRemoteAuth } from './api.js'
 import { loadRemoteFile, saveRemoteFile } from './mobile.js'
 import { clearCfAccess } from './cf-access.js'
 
+// The server this build connects to unless told otherwise, filled into "Connect to my server"
+// (views/MobileOnboarding.jsx). Set at build time: `npm run build:mobile` points it at
+// https://gym.magjan.dev (VITE_SERVER_URL in package.json); empty in any other build.
+export const DEFAULT_SERVER = normalizeServerUrl(import.meta.env.VITE_SERVER_URL) || ''
+
 // Accepts what someone actually types: bare host, no scheme, trailing slash, stray whitespace.
 // Defaults to https:// (self-hosting docs already push for HTTPS; the one exception, localhost,
 // still parses fine without a scheme). Returns null for anything that isn't a usable URL at all.

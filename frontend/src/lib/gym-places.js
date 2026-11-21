@@ -1,10 +1,8 @@
 // Finding a gym (#614, the 1.4.4 search-first picker): the search as you type, the address of a
 // spot, the map tiles and the "Open in Apple Maps / Google Maps" links.
 //
-// Where a search goes: on the iPhone to Apple (MapKit's MKLocalSearchCompleter for the type-ahead
-// and MKLocalSearch for the one you pick, ios/App/App/GymMapPickerPlugin.swift); in the Android
-// app, and on an iPhone build without those calls, to OpenStreetMap data. Only the text typed and
-// a rough "near here" go out, never the gyms.
+// Where a search goes: to OpenStreetMap data (the original app's Apple Maps search on the iPhone is
+// not in this fork). Only the text typed and a rough "near here" go out, never the gyms.
 //
 // OpenStreetMap side. The type-ahead asks Photon (photon.komoot.io, komoot's public OSM geocoder,
 // built for search-as-you-type; its rule is "be fair, heavy use gets throttled"): the page waits
@@ -18,7 +16,6 @@
 // the app's own requests only). Dark mode darkens them on the phone (a CSS filter, index.css
 // .gym-map), so no second tile provider and no API key: CARTO's dark basemaps now need a key.
 import { offlineBuild } from './build-caps.js'
-import { MOBILE } from './mobile.js'
 import { getLang } from './i18n.js'
 import { nativeFetch } from './capacitor-fetch.js'
 
@@ -235,72 +232,13 @@ export function createReverse({ fetcher = placeFetch } = {}) {
 }
 const reverseOSM = createReverse()
 
-/* ---------------- the iPhone: Apple's own search ---------------- */
-
-// Registered once and handed out inside an object: a Capacitor plugin proxy answers `then` with a
-// native call that never settles, so a promise resolved with the bare proxy hangs (#42).
-let nativeP = null
-const nativePlaces = () => nativeP || (nativeP = (async () => {
-  if (!MOBILE) return null
-  const { registerPlugin, Capacitor } = await import('@capacitor/core')
-  if (Capacitor.getPlatform() !== 'ios') return null
-  if (typeof Capacitor.isPluginAvailable === 'function' && !Capacitor.isPluginAvailable('GymMapPicker')) return null
-  return { GymMapPicker: registerPlugin('GymMapPicker') }
-})().catch(() => null))
-
-const UNIMPLEMENTED = e => e?.code === 'UNIMPLEMENTED' || /not implemented/i.test(String(e?.message || e))
-// A build from before the search calls (1.4.4 build 45 had only the full-screen picker): answers
-// UNIMPLEMENTED, and the OpenStreetMap side takes over for the rest of the session.
-const retire = () => { nativeP = Promise.resolve(null) }
-
-/** 'apple' when this phone searches with Apple Maps, 'osm' otherwise. */
-export async function searchSource() { return (await nativePlaces()) ? 'apple' : 'osm' }
-
-/**
- * Type-ahead on Apple Maps. Resolves to result rows, or to undefined when this phone has no such
- * search (then the OpenStreetMap one is asked). A row from Apple has no place yet: placeOfPick
- * fetches it when it is picked, as Apple asks (one MKLocalSearch per pick, not per keystroke).
- */
-export async function nativeComplete(q, near) {
-  const p = await nativePlaces()
-  if (!p) return undefined
-  try {
-    const r = await p.GymMapPicker.complete({ query: q, ...(near ? { lat: near.lat, lng: near.lng } : {}) })
-    if (r?.stale) return null
-    return (Array.isArray(r?.results) ? r.results : []).map(x => ({
-      id: 'a:' + String(x.id), ref: String(x.id), name: String(x.title || ''), address: String(x.subtitle || ''),
-      lat: null, lng: null, fitness: !!x.fitness, kind: x.fitness ? 'gym' : null, apple: true,
-    })).filter(x => x.name)
-  } catch (e) {
-    if (UNIMPLEMENTED(e)) { retire(); return undefined }
-    throw e
-  }
-}
-
-async function nativeResolve(ref) {
-  const p = await nativePlaces()
-  if (!p) return null
-  try {
-    const r = await p.GymMapPicker.resolve({ id: ref })
-    const lat = Number(r?.lat), lng = Number(r?.lng)
-    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null
-    return { name: String(r.name || ''), address: String(r.address || ''), lat, lng, fitness: !!r.fitness }
-  } catch { return null }
-}
-
-async function nativeReverse(pos) {
-  const p = await nativePlaces()
-  if (!p) return undefined
-  try { return String((await p.GymMapPicker.reverse({ lat: pos.lat, lng: pos.lng }))?.address || '') } catch (e) {
-    if (UNIMPLEMENTED(e)) { retire(); return undefined }
-    return ''
-  }
-}
+/** Where the searches go: OpenStreetMap everywhere (this fork's iPhone app has no Apple Maps search). */
+export async function searchSource() { return 'osm' }
 
 /* ---------------- what the page calls ---------------- */
 
 /**
- * The search as you type: Apple's on the iPhone, OpenStreetMap's elsewhere. Resolves to rows with
+ * The search as you type, on OpenStreetMap. Resolves to rows with
  * the distance from `near` where both are known, or to null for an answer overtaken by a newer
  * question (the page drops it).
  */
@@ -309,25 +247,20 @@ export async function findPlaces(q, { near = null, suggest = suggestPlaces } = {
   if (offlineBuild()) return []
   const query = String(q || '').trim().replace(/\s+/g, ' ')
   if (query.length < SHORT) return []
-  const apple = await nativeComplete(query, near)
-  const rows = apple === undefined ? await suggest(query, { near }) : apple
+  const rows = await suggest(query, { near })
   if (rows === null) return null
   return rows.map(r => ({ ...r, distance: near && Number.isFinite(r.lat) && Number.isFinite(r.lng) ? km(near, r) * 1000 : null }))
 }
 
-/** A picked row with its place: Apple's rows ask Apple once for it. Null if it has none. */
+/** A picked row with its place. Null if it has none. */
 export async function placeOfPick(row) {
-  if (Number.isFinite(row?.lat) && Number.isFinite(row?.lng)) return row
-  if (!row?.apple) return null
-  const r = await nativeResolve(row.ref)
-  return r && { ...row, ...r, name: row.name || r.name, address: r.address || row.address }
+  return Number.isFinite(row?.lat) && Number.isFinite(row?.lng) ? row : null
 }
 
-/** The address at a spot, from Apple on the iPhone, else OpenStreetMap; '' when unknown. */
+/** The address at a spot, from OpenStreetMap; '' when unknown. */
 export async function addressAt(pos) {
   if (offlineBuild()) return null
-  const a = await nativeReverse(pos)
-  return a === undefined ? reverseOSM(pos) : a
+  return reverseOSM(pos)
 }
 
 /** "350 m" up close, "2.4 km" further off, in the app's number format. */
@@ -340,4 +273,3 @@ export function fmtDistance(m, lang = getLang() || 'en') {
   return n + ' km'
 }
 
-export function _resetGymPlaces() { nativeP = null }

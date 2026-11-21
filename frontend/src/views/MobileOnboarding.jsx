@@ -9,7 +9,7 @@ import { t } from '../lib/i18n.js'
 import BrandLogo from '../components/BrandLogo.jsx'
 import { Button } from '../components/ui.jsx'
 import { askAddDeviceData } from '../sheets.jsx'
-import { normalizeServerUrl } from '../lib/remote.js'
+import { normalizeServerUrl, DEFAULT_SERVER } from '../lib/remote.js'
 import { loadCfAccess, saveCfAccess } from '../lib/cf-access.js'
 import { useSheetKeyboard } from '../lib/use-sheet-keyboard.js'
 import { useOfflineBuild } from '../lib/use-offline-build.js'
@@ -87,9 +87,11 @@ export function CfAccessSheet({ close, server = '' }) {
 // `again`: a phone whose server stopped accepting it (components/ServerSync.jsx pairAgain) — the
 // address it had is filled in when it still has one, so only the new code is left to type, and
 // the sheet says that what the phone kept is merged, not replaced.
+// The address starts as the build's own server (lib/remote.js DEFAULT_SERVER) when there is one.
 export function ConnectSheet({ close, initialUrl = '', again = false }) {
   const { connectToServer } = useStore()
-  const [url, setUrl] = useState(initialUrl)
+  const startUrl = initialUrl || DEFAULT_SERVER
+  const [url, setUrl] = useState(startUrl)
   const [code, setCode] = useState('')
   const [busy, setBusy] = useState(false)
   // Why the last try failed, under the fields: a toast is gone in two seconds, too soon to read
@@ -104,7 +106,7 @@ export function ConnectSheet({ close, initialUrl = '', again = false }) {
   // sheet still moving. The autofocus now waits for the sheet to land.
   const onFocus = useSheetKeyboard(ref, true, { reveal: true })
   useEffect(() => {
-    const tm = setTimeout(() => (initialUrl ? codeRef : ref).current?.focus(), SHEET_SETTLE_MS)
+    const tm = setTimeout(() => (startUrl ? codeRef : ref).current?.focus(), SHEET_SETTLE_MS)
     return () => clearTimeout(tm)
   }, [])
   const go = async () => {

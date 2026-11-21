@@ -22,9 +22,6 @@ export const PAGES = {
   units: { title: 'Units & language', icon: 'ruler', tint: 'var(--teal)' },
   equipment: { title: 'Equipment', icon: 'kettlebell', tint: 'var(--indigo)' },
   look: { title: 'Look & Home', icon: 'palette', tint: 'var(--purple)' },
-  // The phones' watch pages under one row (#1105).
-  watches: { title: 'Watches', icon: 'watch', tint: 'var(--grey)', mod: 'watch', kw: 'watch watches apple wear os wrist pair' },
-  watch: { title: 'Apple Watch', icon: 'watch', tint: 'var(--grey)', mod: 'watch', parent: 'watches' },
   // Settings → Integrations (v1.4.4): the directory of what openGym talks to (views/Integrations.jsx).
   integrations: { title: 'Integrations', icon: 'plug', tint: 'var(--indigo)', kw: 'integrations connect apps services fitbit sync api mcp import hevy' },
   data: { title: 'Data & backup', icon: 'folder', tint: 'var(--blue)' },
@@ -52,11 +49,9 @@ export const PAGE_IDS = Object.keys(PAGES)
 export const ROOT_GROUPS = [
   { title: 'Training', ids: ['workout', 'alerts', 'plan', 'reminders'] },
   { title: 'Set once', ids: ['units', 'equipment', 'look', 'modules'] },
-  { title: 'Connections', ids: ['watches', 'integrations'] },
+  { title: 'Connections', ids: ['integrations'] },
   { ids: ['data', 'about'] },
 ]
-
-export const WATCH_PAGES = ['watch']
 
 /** Whether a page has its own row on the root. */
 export const onRoot = (page, ctx) => pageVisible(page, ctx)
@@ -74,14 +69,10 @@ export function pageVisible(page, ctx) {
   if (ctx.offline && page === 'api-tokens') return false
   // Signed in to a server that offers scoped tokens (API_TOKENS, on unless switched off).
   if (page === 'api-tokens') return !!ctx.apiTokens && !!ctx.user && !ctx.demo
-  // The phone apps' watch pages, together: there whenever one of them is.
-  if (page === 'watches') return !!ctx.mobile && WATCH_PAGES.some(p => pageVisible(p, ctx))
-  // The iPhone app only: the watch app ships inside it.
-  if (page === 'watch') return !!ctx.ios
   // The Android app only. Every build has the page: the F-Droid one says why it has no watch link.
   // The phone app only: a browser cannot watch where you are with the page closed.
   if (page === 'gym' || page === 'gym-find' || page === 'gym-edit') return !!ctx.mobile && ctx.gymReminder !== false
-  // The health store of the phone this runs on (unknown counts as yes, as for the watch).
+  // The health store of the phone this runs on (unknown counts as yes).
   if (page === 'apple-health') return !!ctx.ios
   if (page === 'health-connect') return !!ctx.mobile && !!ctx.android
   return page in PAGES
@@ -104,7 +95,6 @@ const MODULE_KW = {
   plates: 'plates plate math calculator barbell load warm-up warmup ramp automatic',
   strength: 'strength level standards beginner intermediate advanced elite',
   videos: 'form video film record camera technique set',
-  watch: 'watch apple watch wear os wrist',
   body: 'body weight weigh-in weigh in scale measurements photos progress goal',
   health: 'health apple health healthkit health connect heart rate recovery sync',
   motivation: 'motivation streak challenges badges trophies recap wrapped year share gamification',
@@ -144,7 +134,6 @@ export const SEARCH = [
   { page: 'workout', title: 'Keep screen awake', icon: 'phoneScreen', tint: 'var(--yellow)', kw: 'wake lock screen sleep display on', when: c => c.wakeOK || !c.mobile },
   { page: 'workout', title: 'Screen orientation', icon: 'phoneScreen', tint: 'var(--indigo)', kw: 'orientation rotate rotation portrait landscape lock auto-rotate sideways upright turn', opts: ['Follow phone', 'Portrait', 'Landscape'], when: c => c.android },
   { page: 'workout', title: 'Exercise animations', icon: 'image', tint: 'var(--teal)', kw: 'gif animation video media pictures images', opts: ['Full', 'Small', 'Hidden'] },
-  { page: 'workout', title: 'Animation quality', icon: 'image', tint: 'var(--indigo)', kw: 'animation quality resolution sharp hd download pack still px', when: c => c.mobile },
   // Forgotten workouts (lib/forgotten-workout.js), the phone apps only.
   { page: 'workout', title: 'Ask “Still training?”', icon: 'clock', tint: 'var(--orange)', kw: 'forgotten forgot workout left running idle still training auto finish end automatically by itself stop timeout minutes', when: c => c.mobile, tkw: () => t('forgotten workout auto finish') },
   { page: 'workout', title: 'End by itself when I leave the gym', icon: 'mapPin', tint: 'var(--green)', kw: 'forgotten leave left gym geofence location auto finish end automatically', when: c => c.mobile },
@@ -221,7 +210,6 @@ export const SEARCH = [
   { page: 'look', title: 'Recovery counts for the streak', icon: 'sparkles', tint: 'var(--teal)', mod: 'motivation', kw: 'recovery sauna ice bath cold massage mobility streak count' },
   { page: 'look', title: 'Sport counts for the streak', icon: 'figureRun', tint: 'var(--blue)', mod: 'motivation', kw: 'sport activity run ride football tennis climbing match other streak count counts' },
   { page: 'look', title: 'Streak freeze', icon: 'snowflake', tint: 'var(--teal)', mod: 'motivation', kw: 'streak freeze snowflake icon emoji custom own symbol colour color' },
-  { page: 'look', title: 'App icon', icon: 'grid', tint: 'var(--indigo)', kw: 'app icon home screen launcher logo dark light', when: c => !!c.appIcons },
   { page: 'look', title: 'Body diagram', icon: 'figureStrength', tint: 'var(--teal)', kw: 'muscle map body male female', opts: ['Male', 'Female'] },
   { page: 'look', title: 'Exercise drawings', icon: 'figureStrength', tint: 'var(--teal)', kw: 'figure male female woman man picture', opts: ['Male', 'Female'] },
   { page: 'look', title: 'Body weight', icon: 'scale', tint: 'var(--green)', mod: 'body', kw: 'weight card home' },
@@ -248,8 +236,6 @@ export const SEARCH = [
   // Integrations: the cards (lib/integrations.js cardState says where each shows)
   { page: 'integrations', title: 'Apple Health', icon: 'heart', tint: 'var(--red)', mod: 'health', kw: 'apple health healthkit iphone heart rate watch', when: c => !c.mobile },
   { page: 'integrations', title: 'Health Connect', icon: 'heart', tint: 'var(--red)', mod: 'health', kw: 'health connect android google fit heart rate watch', when: c => !c.mobile },
-  // The Apple Watch's Zones page takes the max heart rate from the age (#1108): on the iPhone, with the Watch module on.
-  { page: 'apple-health', title: 'Birth date, for heart-rate zones', icon: 'heart', tint: 'var(--orange)', mod: 'watch', kw: 'birth date age zones heart rate max watch', when: c => c.ios },
   { page: 'integrations', title: 'Hevy', net: true, icon: 'key', tint: 'var(--teal)', kw: 'hevy api key import', when: c => !c.demo },
   { page: 'integrations', title: 'Import a file', icon: 'download', tint: 'var(--teal)', kw: 'import strong fitnotes hevy csv gymmane apple health export file' },
   { page: 'integrations', title: 'Spreadsheet (CSV)', icon: 'share', tint: 'var(--green)', kw: 'csv spreadsheet excel export' },
