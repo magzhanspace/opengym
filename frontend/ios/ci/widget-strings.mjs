@@ -11,7 +11,8 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const out = join(dirname(fileURLToPath(import.meta.url)), '..', 'App', 'OpenGymWidgets')
-const LPROJ = ['de', 'fr', 'es', 'it', 'pt-PT', 'pt-BR', 'pl', 'hu', 'tr', 'ru', 'uk', 'ar', 'hi', 'bn', 'th', 'ko', 'zh-Hans', 'zh-Hant']
+// This fork speaks English (the keys) and Russian only.
+const LPROJ = ['ru']
 
 // The Swift source's key → its words per .lproj.
 export const STRINGS = {

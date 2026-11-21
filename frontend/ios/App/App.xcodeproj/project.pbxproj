@@ -7,29 +7,26 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		AA2000000000000000000001 /* en in Resources */ = {isa = PBXBuildFile; fileRef = AA1000000000000000000001 /* en */; };
-		AA2000000000000000000010 /* it in Resources */ = {isa = PBXBuildFile; fileRef = AA1000000000000000000010 /* it */; };
 		2FAD9763203C412B000D30F8 /* config.xml in Resources */ = {isa = PBXBuildFile; fileRef = 2FAD9762203C412B000D30F8 /* config.xml */; };
 		50379B232058CBB4000EE86E /* capacitor.config.json in Resources */ = {isa = PBXBuildFile; fileRef = 50379B222058CBB4000EE86E /* capacitor.config.json */; };
 		504EC3081FED79650016851F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 504EC3071FED79650016851F /* AppDelegate.swift */; };
-		AA0000000000000000000002 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000001 /* SceneDelegate.swift */; };
 		504EC30D1FED79650016851F /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 504EC30B1FED79650016851F /* Main.storyboard */; };
 		504EC30F1FED79650016851F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 504EC30E1FED79650016851F /* Assets.xcassets */; };
 		504EC3121FED79650016851F /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 504EC3101FED79650016851F /* LaunchScreen.storyboard */; };
 		50B271D11FEDC1A000F3C39B /* public in Resources */ = {isa = PBXBuildFile; fileRef = 50B271D01FEDC1A000F3C39B /* public */; };
+		52EAD78FE08E7BBDEEB73695 /* WidgetViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0500000000000000000009 /* WidgetViews.swift */; };
+		57A291886391FCDFB556E30E /* LiveActivityWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEFBCBEFBF079385CA001D13 /* LiveActivityWidget.swift */; };
+		7B54A7B6845C9840C20262E2 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8A95B1E2C977050218655F36 /* Foundation.framework */; };
+		7CD651A7AE7C28CA99FCEDCA /* OpenGymWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = E84F22AB5B7B0276AFC0BC65 /* OpenGymWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		A084ECDBA7D38E1E42DFC39D /* Pods_App.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AF277DCFFFF123FFC6DF26C7 /* Pods_App.framework */; };
-		AA0100000000000000000002 /* PrintPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0100000000000000000001 /* PrintPlugin.swift */; };
+		A850F50D25A74974B2D21C4E /* ru.lproj in Resources */ = {isa = PBXBuildFile; fileRef = 81BA98F031E1D83C93D1EA16 /* ru.lproj */; };
+		AA0000000000000000000002 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000001 /* SceneDelegate.swift */; };
 		AA01000000000000000005A2 /* SaveImagePlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA01000000000000000005A1 /* SaveImagePlugin.swift */; };
-		AA0900000000000000000002 /* AppIconPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0900000000000000000001 /* AppIconPlugin.swift */; };
-		AA0A00000000000000000002 /* NfcTagsPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0A00000000000000000001 /* NfcTagsPlugin.swift */; };
-		AA0818000000000000000002 /* PhoneWorkoutPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0818000000000000000001 /* PhoneWorkoutPlugin.swift */; };
 		AA0200000000000000000002 /* MainViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0200000000000000000001 /* MainViewController.swift */; };
 		AA0200000000000000000004 /* RestAlertPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0200000000000000000003 /* RestAlertPlugin.swift */; };
 		AA0200000000000000000006 /* RestTone.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0200000000000000000005 /* RestTone.swift */; };
 		AA0200000000000000000008 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = AA0200000000000000000007 /* PrivacyInfo.xcprivacy */; };
 		AA0300000000000000000002 /* DeviceAuthPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0300000000000000000001 /* DeviceAuthPlugin.swift */; };
-		AA4600000000000000000002 /* OidcBrowserPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA4600000000000000000001 /* OidcBrowserPlugin.swift */; };
-		AA0400000000000000000002 /* AnimationPacksPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0400000000000000000001 /* AnimationPacksPlugin.swift */; };
 		AA0300000000000000000004 /* NudgeCheckPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0300000000000000000003 /* NudgeCheckPlugin.swift */; };
 		AA0500000000000000000002 /* AppleHealthPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0500000000000000000001 /* AppleHealthPlugin.swift */; };
 		AA0500000000000000000004 /* WidgetBridgePlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0500000000000000000003 /* WidgetBridgePlugin.swift */; };
@@ -37,104 +34,86 @@
 		AA0500000000000000000008 /* WorkoutActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0500000000000000000007 /* WorkoutActivity.swift */; };
 		AA0500000000000000000010 /* WidgetViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0500000000000000000009 /* WidgetViews.swift */; };
 		AA0500000000000000000012 /* WidgetPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0500000000000000000011 /* WidgetPreview.swift */; };
-		AA0700000000000000000002 /* WatchBridgePlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0700000000000000000001 /* WatchBridgePlugin.swift */; };
-		AA1460000000000000000002 /* GarminLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1460000000000000000001 /* GarminLink.swift */; };
-		AA0600000000000000000002 /* ClipCodec.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0600000000000000000001 /* ClipCodec.swift */; };
 		AA0600000000000000000004 /* HealthReadCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0600000000000000000003 /* HealthReadCore.swift */; };
 		AA0600000000000000000006 /* HealthWriteCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0600000000000000000005 /* HealthWriteCore.swift */; };
 		AA0800000000000000000002 /* GymReminderPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0800000000000000000001 /* GymReminderPlugin.swift */; };
 		AA0800000000000000000004 /* GymReminderRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0800000000000000000003 /* GymReminderRules.swift */; };
+		AA0818000000000000000002 /* PhoneWorkoutPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0818000000000000000001 /* PhoneWorkoutPlugin.swift */; };
 		AA1461000000000000000002 /* CueAudioLedger.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1461000000000000000001 /* CueAudioLedger.swift */; };
-		AA1440000000000000000002 /* GymMapPickerPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1440000000000000000001 /* GymMapPickerPlugin.swift */; };
-		AA1450000000000000000002 /* VoiceIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1450000000000000000001 /* VoiceIntents.swift */; };
-		AA1450000000000000000004 /* AppShortcuts.strings in Resources */ = {isa = PBXBuildFile; fileRef = AA1450000000000000000003 /* AppShortcuts.strings */; };
-		AA1450000000000000000006 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = AA1450000000000000000005 /* Localizable.strings */; };
+		AA2000000000000000000001 /* en in Resources */ = {isa = PBXBuildFile; fileRef = AA1000000000000000000001 /* en */; };
+		AA2000000000000000000010 /* ru in Resources */ = {isa = PBXBuildFile; fileRef = AA1000000000000000000010 /* ru */; };
+		B746E3B4FE68102E088D2FB5 /* WorkoutActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0500000000000000000007 /* WorkoutActivity.swift */; };
+		F996411BC91E5D5DFE942BE7 /* OpenGymWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2F71C0EBBD4D481DFE22819 /* OpenGymWidgets.swift */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		A80584D735013F0B28A3662B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 504EC2FC1FED79650016851F /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = EB8AB96B19A56C091648AE53;
+			remoteInfo = OpenGymWidgets;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		8483CCBE92CDE79764D916A2 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				7CD651A7AE7C28CA99FCEDCA /* OpenGymWidgets.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
-		AA1000000000000000000001 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "en"; path = "en.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
-		AA1000000000000000000010 /* it */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "it"; path = "it.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
 		2FAD9762203C412B000D30F8 /* config.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = config.xml; sourceTree = "<group>"; };
 		50379B222058CBB4000EE86E /* capacitor.config.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = capacitor.config.json; sourceTree = "<group>"; };
 		504EC3041FED79650016851F /* App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = App.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		504EC3071FED79650016851F /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		AA0000000000000000000001 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
-		AA0900000000000000000001 /* AppIconPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIconPlugin.swift; sourceTree = "<group>"; };
-		AA0A00000000000000000001 /* NfcTagsPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NfcTagsPlugin.swift; sourceTree = "<group>"; };
-		AA0818000000000000000001 /* PhoneWorkoutPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoneWorkoutPlugin.swift; sourceTree = "<group>"; };
-		AA0100000000000000000001 /* PrintPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrintPlugin.swift; sourceTree = "<group>"; };
-		AA01000000000000000005A1 /* SaveImagePlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SaveImagePlugin.swift; sourceTree = "<group>"; };
 		504EC30C1FED79650016851F /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		504EC30E1FED79650016851F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		504EC3111FED79650016851F /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		504EC3131FED79650016851F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		50B271D01FEDC1A000F3C39B /* public */ = {isa = PBXFileReference; lastKnownFileType = folder; path = public; sourceTree = "<group>"; };
-		AF277DCFFFF123FFC6DF26C7 /* Pods_App.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_App.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		AF51FD2D460BCFE21FA515B2 /* Pods-App.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-App.release.xcconfig"; path = "Pods/Target Support Files/Pods-App/Pods-App.release.xcconfig"; sourceTree = "<group>"; };
-		FC68EB0AF532CFC21C3344DD /* Pods-App.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-App.debug.xcconfig"; path = "Pods/Target Support Files/Pods-App/Pods-App.debug.xcconfig"; sourceTree = "<group>"; };
+		81BA98F031E1D83C93D1EA16 /* ru.lproj */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = folder; path = ru.lproj; sourceTree = "<group>"; };
+		83C894DC00D9021A77B7B4A9 /* Signing.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = Signing.xcconfig; sourceTree = "<group>"; };
+		8A95B1E2C977050218655F36 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
+		AA0000000000000000000001 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
+		AA01000000000000000005A1 /* SaveImagePlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SaveImagePlugin.swift; sourceTree = "<group>"; };
 		AA0200000000000000000001 /* MainViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainViewController.swift; sourceTree = "<group>"; };
 		AA0200000000000000000003 /* RestAlertPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestAlertPlugin.swift; sourceTree = "<group>"; };
 		AA0200000000000000000005 /* RestTone.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestTone.swift; sourceTree = "<group>"; };
 		AA0200000000000000000007 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		AA0300000000000000000001 /* DeviceAuthPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceAuthPlugin.swift; sourceTree = "<group>"; };
-		AA4600000000000000000001 /* OidcBrowserPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OidcBrowserPlugin.swift; sourceTree = "<group>"; };
-		AA0400000000000000000001 /* AnimationPacksPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnimationPacksPlugin.swift; sourceTree = "<group>"; };
-		AA0400000000000000000003 /* App.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = App.entitlements; sourceTree = "<group>"; };
 		AA0300000000000000000003 /* NudgeCheckPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NudgeCheckPlugin.swift; sourceTree = "<group>"; };
+		AA0400000000000000000003 /* App.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = App.entitlements; sourceTree = "<group>"; };
 		AA0500000000000000000001 /* AppleHealthPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleHealthPlugin.swift; sourceTree = "<group>"; };
 		AA0500000000000000000003 /* WidgetBridgePlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetBridgePlugin.swift; sourceTree = "<group>"; };
 		AA0500000000000000000005 /* LiveActivityPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveActivityPlugin.swift; sourceTree = "<group>"; };
 		AA0500000000000000000007 /* WorkoutActivity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutActivity.swift; sourceTree = "<group>"; };
 		AA0500000000000000000009 /* WidgetViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetViews.swift; sourceTree = "<group>"; };
 		AA0500000000000000000011 /* WidgetPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetPreview.swift; sourceTree = "<group>"; };
-		AA0700000000000000000001 /* WatchBridgePlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchBridgePlugin.swift; sourceTree = "<group>"; };
-		AA1460000000000000000001 /* GarminLink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GarminLink.swift; sourceTree = "<group>"; };
-		AA0600000000000000000001 /* ClipCodec.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ClipCodec.swift; path = ../WatchCore/Sources/WatchCore/ClipCodec.swift; sourceTree = "<group>"; };
-		AA0600000000000000000003 /* HealthReadCore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HealthReadCore.swift; path = ../WatchCore/Sources/WatchCore/HealthReadCore.swift; sourceTree = "<group>"; };
-		AA0600000000000000000005 /* HealthWriteCore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HealthWriteCore.swift; path = ../WatchCore/Sources/WatchCore/HealthWriteCore.swift; sourceTree = "<group>"; };
+		AA0600000000000000000003 /* HealthReadCore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HealthReadCore.swift; path = ../HealthCore/Sources/HealthCore/HealthReadCore.swift; sourceTree = "<group>"; };
+		AA0600000000000000000005 /* HealthWriteCore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HealthWriteCore.swift; path = ../HealthCore/Sources/HealthCore/HealthWriteCore.swift; sourceTree = "<group>"; };
 		AA0800000000000000000001 /* GymReminderPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GymReminderPlugin.swift; sourceTree = "<group>"; };
-		AA1440000000000000000001 /* GymMapPickerPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GymMapPickerPlugin.swift; sourceTree = "<group>"; };
 		AA0800000000000000000003 /* GymReminderRules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = GymReminderRules.swift; path = ../GymReminderCore/Sources/GymReminderCore/GymReminderRules.swift; sourceTree = "<group>"; };
+		AA0818000000000000000001 /* PhoneWorkoutPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoneWorkoutPlugin.swift; sourceTree = "<group>"; };
+		AA1000000000000000000001 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		AA1000000000000000000010 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		AA1461000000000000000001 /* CueAudioLedger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CueAudioLedger.swift; path = ../CueAudioCore/Sources/CueAudioCore/CueAudioLedger.swift; sourceTree = "<group>"; };
-		AA1450000000000000000001 /* VoiceIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceIntents.swift; sourceTree = "<group>"; };
-		AA1451000000000000000001 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/AppShortcuts.strings; sourceTree = "<group>"; };
-		AA1451000000000000000002 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/AppShortcuts.strings; sourceTree = "<group>"; };
-		AA1451000000000000000003 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/AppShortcuts.strings; sourceTree = "<group>"; };
-		AA1451000000000000000004 /* it */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = it; path = it.lproj/AppShortcuts.strings; sourceTree = "<group>"; };
-		AA1451000000000000000005 /* pt-PT */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "pt-PT"; path = "pt-PT.lproj/AppShortcuts.strings"; sourceTree = "<group>"; };
-		AA1451000000000000000006 /* pt-BR */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "pt-BR"; path = "pt-BR.lproj/AppShortcuts.strings"; sourceTree = "<group>"; };
-		AA1451000000000000000007 /* pl */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = pl; path = pl.lproj/AppShortcuts.strings; sourceTree = "<group>"; };
-		AA1451000000000000000008 /* hu */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = hu; path = hu.lproj/AppShortcuts.strings; sourceTree = "<group>"; };
-		AA1451000000000000000009 /* tr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = tr; path = tr.lproj/AppShortcuts.strings; sourceTree = "<group>"; };
-		AA1451000000000000000010 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/AppShortcuts.strings; sourceTree = "<group>"; };
-		AA1451000000000000000011 /* uk */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = uk; path = uk.lproj/AppShortcuts.strings; sourceTree = "<group>"; };
-		AA1451000000000000000012 /* ar */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ar; path = ar.lproj/AppShortcuts.strings; sourceTree = "<group>"; };
-		AA1451000000000000000013 /* hi */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = hi; path = hi.lproj/AppShortcuts.strings; sourceTree = "<group>"; };
-		AA1451000000000000000014 /* bn */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = bn; path = bn.lproj/AppShortcuts.strings; sourceTree = "<group>"; };
-		AA1451000000000000000015 /* th */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = th; path = th.lproj/AppShortcuts.strings; sourceTree = "<group>"; };
-		AA1451000000000000000016 /* ko */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ko; path = ko.lproj/AppShortcuts.strings; sourceTree = "<group>"; };
-		AA1451000000000000000017 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/AppShortcuts.strings"; sourceTree = "<group>"; };
-		AA1451000000000000000018 /* zh-Hant */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hant"; path = "zh-Hant.lproj/AppShortcuts.strings"; sourceTree = "<group>"; };
-		AA1451000000000000000019 /* sv */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sv; path = sv.lproj/AppShortcuts.strings; sourceTree = "<group>"; };
-		AA1451010000000000000001 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
-		AA1451010000000000000002 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/Localizable.strings; sourceTree = "<group>"; };
-		AA1451010000000000000003 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Localizable.strings; sourceTree = "<group>"; };
-		AA1451010000000000000004 /* it */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = it; path = it.lproj/Localizable.strings; sourceTree = "<group>"; };
-		AA1451010000000000000005 /* pt-PT */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "pt-PT"; path = "pt-PT.lproj/Localizable.strings"; sourceTree = "<group>"; };
-		AA1451010000000000000006 /* pt-BR */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "pt-BR"; path = "pt-BR.lproj/Localizable.strings"; sourceTree = "<group>"; };
-		AA1451010000000000000007 /* pl */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = pl; path = pl.lproj/Localizable.strings; sourceTree = "<group>"; };
-		AA1451010000000000000008 /* hu */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = hu; path = hu.lproj/Localizable.strings; sourceTree = "<group>"; };
-		AA1451010000000000000009 /* tr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = tr; path = tr.lproj/Localizable.strings; sourceTree = "<group>"; };
-		AA1451010000000000000010 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/Localizable.strings; sourceTree = "<group>"; };
-		AA1451010000000000000011 /* uk */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = uk; path = uk.lproj/Localizable.strings; sourceTree = "<group>"; };
-		AA1451010000000000000012 /* ar */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ar; path = ar.lproj/Localizable.strings; sourceTree = "<group>"; };
-		AA1451010000000000000013 /* hi */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = hi; path = hi.lproj/Localizable.strings; sourceTree = "<group>"; };
-		AA1451010000000000000014 /* bn */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = bn; path = bn.lproj/Localizable.strings; sourceTree = "<group>"; };
-		AA1451010000000000000015 /* th */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = th; path = th.lproj/Localizable.strings; sourceTree = "<group>"; };
-		AA1451010000000000000016 /* ko */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ko; path = ko.lproj/Localizable.strings; sourceTree = "<group>"; };
-		AA1451010000000000000017 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.strings"; sourceTree = "<group>"; };
-		AA1451010000000000000018 /* zh-Hant */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hant"; path = "zh-Hant.lproj/Localizable.strings"; sourceTree = "<group>"; };
-		AA1451010000000000000019 /* sv */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sv; path = sv.lproj/Localizable.strings; sourceTree = "<group>"; };
+		AF277DCFFFF123FFC6DF26C7 /* Pods_App.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_App.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		AF51FD2D460BCFE21FA515B2 /* Pods-App.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-App.release.xcconfig"; path = "Pods/Target Support Files/Pods-App/Pods-App.release.xcconfig"; sourceTree = "<group>"; };
+		B26C73B8E50DCAAA1F974AE8 /* OpenGymWidgets.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = OpenGymWidgets.entitlements; sourceTree = "<group>"; };
+		CEFBCBEFBF079385CA001D13 /* LiveActivityWidget.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LiveActivityWidget.swift; sourceTree = "<group>"; };
+		D2F71C0EBBD4D481DFE22819 /* OpenGymWidgets.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OpenGymWidgets.swift; sourceTree = "<group>"; };
+		E84F22AB5B7B0276AFC0BC65 /* OpenGymWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = OpenGymWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		F9770B008EF8E385F54A44A1 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		FC68EB0AF532CFC21C3344DD /* Pods-App.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-App.debug.xcconfig"; path = "Pods/Target Support Files/Pods-App/Pods-App.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -146,22 +125,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		BD21C6170B368926881A2020 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7B54A7B6845C9840C20262E2 /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		AA3000000000000000000001 /* InfoPlist.strings */ = {
-			isa = PBXVariantGroup;
-			children = (
-				AA1000000000000000000001 /* en */,
-				AA1000000000000000000010 /* it */,
-			);
-			name = InfoPlist.strings;
-			sourceTree = "<group>";
-		};
 		27E2DDA53C4D2A4D1A88CE4A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
 				AF277DCFFFF123FFC6DF26C7 /* Pods_App.framework */,
+				54206626CCB4A2ACC37D9D77 /* iOS */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -173,6 +152,8 @@
 				504EC3051FED79650016851F /* Products */,
 				7F8756D8B27F46E3366F6CEA /* Pods */,
 				27E2DDA53C4D2A4D1A88CE4A /* Frameworks */,
+				D1275B0C6100A7878521705B /* OpenGymWidgets */,
+				83C894DC00D9021A77B7B4A9 /* Signing.xcconfig */,
 			);
 			sourceTree = "<group>";
 		};
@@ -180,6 +161,7 @@
 			isa = PBXGroup;
 			children = (
 				504EC3041FED79650016851F /* App.app */,
+				E84F22AB5B7B0276AFC0BC65 /* OpenGymWidgets.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -190,17 +172,12 @@
 				50379B222058CBB4000EE86E /* capacitor.config.json */,
 				504EC3071FED79650016851F /* AppDelegate.swift */,
 				AA0000000000000000000001 /* SceneDelegate.swift */,
-				AA0100000000000000000001 /* PrintPlugin.swift */,
 				AA01000000000000000005A1 /* SaveImagePlugin.swift */,
-				AA0900000000000000000001 /* AppIconPlugin.swift */,
-				AA0A00000000000000000001 /* NfcTagsPlugin.swift */,
 				AA0818000000000000000001 /* PhoneWorkoutPlugin.swift */,
 				AA0200000000000000000001 /* MainViewController.swift */,
 				AA0200000000000000000003 /* RestAlertPlugin.swift */,
 				AA0200000000000000000005 /* RestTone.swift */,
 				AA0300000000000000000001 /* DeviceAuthPlugin.swift */,
-				AA4600000000000000000001 /* OidcBrowserPlugin.swift */,
-				AA0400000000000000000001 /* AnimationPacksPlugin.swift */,
 				AA0400000000000000000003 /* App.entitlements */,
 				AA0300000000000000000003 /* NudgeCheckPlugin.swift */,
 				AA0500000000000000000001 /* AppleHealthPlugin.swift */,
@@ -209,18 +186,11 @@
 				AA0500000000000000000007 /* WorkoutActivity.swift */,
 				AA0500000000000000000009 /* WidgetViews.swift */,
 				AA0500000000000000000011 /* WidgetPreview.swift */,
-				AA0700000000000000000001 /* WatchBridgePlugin.swift */,
-				AA1460000000000000000001 /* GarminLink.swift */,
-				AA0600000000000000000001 /* ClipCodec.swift */,
 				AA0600000000000000000003 /* HealthReadCore.swift */,
 				AA0600000000000000000005 /* HealthWriteCore.swift */,
 				AA0800000000000000000001 /* GymReminderPlugin.swift */,
 				AA0800000000000000000003 /* GymReminderRules.swift */,
 				AA1461000000000000000001 /* CueAudioLedger.swift */,
-				AA1440000000000000000001 /* GymMapPickerPlugin.swift */,
-				AA1450000000000000000001 /* VoiceIntents.swift */,
-				AA1450000000000000000003 /* AppShortcuts.strings */,
-				AA1450000000000000000005 /* Localizable.strings */,
 				AA0200000000000000000007 /* PrivacyInfo.xcprivacy */,
 				504EC30B1FED79650016851F /* Main.storyboard */,
 				504EC30E1FED79650016851F /* Assets.xcassets */,
@@ -233,6 +203,14 @@
 			path = App;
 			sourceTree = "<group>";
 		};
+		54206626CCB4A2ACC37D9D77 /* iOS */ = {
+			isa = PBXGroup;
+			children = (
+				8A95B1E2C977050218655F36 /* Foundation.framework */,
+			);
+			name = iOS;
+			sourceTree = "<group>";
+		};
 		7F8756D8B27F46E3366F6CEA /* Pods */ = {
 			isa = PBXGroup;
 			children = (
@@ -240,6 +218,19 @@
 				AF51FD2D460BCFE21FA515B2 /* Pods-App.release.xcconfig */,
 			);
 			name = Pods;
+			sourceTree = "<group>";
+		};
+		D1275B0C6100A7878521705B /* OpenGymWidgets */ = {
+			isa = PBXGroup;
+			children = (
+				CEFBCBEFBF079385CA001D13 /* LiveActivityWidget.swift */,
+				D2F71C0EBBD4D481DFE22819 /* OpenGymWidgets.swift */,
+				F9770B008EF8E385F54A44A1 /* Info.plist */,
+				B26C73B8E50DCAAA1F974AE8 /* OpenGymWidgets.entitlements */,
+				81BA98F031E1D83C93D1EA16 /* ru.lproj */,
+			);
+			name = OpenGymWidgets;
+			path = OpenGymWidgets;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -254,15 +245,34 @@
 				504EC3011FED79650016851F /* Frameworks */,
 				504EC3021FED79650016851F /* Resources */,
 				9592DBEFFC6D2A0C8D5DEB22 /* [CP] Embed Pods Frameworks */,
+				8483CCBE92CDE79764D916A2 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				0B393954C32C87C9172F2966 /* PBXTargetDependency */,
 			);
 			name = App;
 			productName = App;
 			productReference = 504EC3041FED79650016851F /* App.app */;
 			productType = "com.apple.product-type.application";
+		};
+		EB8AB96B19A56C091648AE53 /* OpenGymWidgets */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 704D3A03BFC280AE6C5DD3C2 /* Build configuration list for PBXNativeTarget "OpenGymWidgets" */;
+			buildPhases = (
+				E0DD575F62CC994CEABF5F63 /* Sources */,
+				BD21C6170B368926881A2020 /* Frameworks */,
+				522EC5F5A21E27C30CCCB5BA /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = OpenGymWidgets;
+			productName = OpenGymWidgets;
+			productReference = E84F22AB5B7B0276AFC0BC65 /* OpenGymWidgets.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -276,7 +286,7 @@
 					504EC3031FED79650016851F = {
 						CreatedOnToolsVersion = 9.2;
 						LastSwiftMigration = 1100;
-						ProvisioningStyle = Automatic;
+						ProvisioningStyle = Manual;
 					};
 				};
 			};
@@ -286,36 +296,17 @@
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
-				it,
 				Base,
-				de,
-				fr,
-				es,
 				it,
-				"pt-PT",
-				"pt-BR",
-				pl,
-				hu,
-				tr,
 				ru,
-				uk,
-				ar,
-				hi,
-				bn,
-				th,
-				ko,
-				"zh-Hans",
-				"zh-Hant",
-				sv,
 			);
 			mainGroup = 504EC2FB1FED79650016851F;
-			packageReferences = (
-			);
 			productRefGroup = 504EC3051FED79650016851F /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
 				504EC3031FED79650016851F /* App */,
+				EB8AB96B19A56C091648AE53 /* OpenGymWidgets */,
 			);
 		};
 /* End PBXProject section */
@@ -326,7 +317,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				AA2000000000000000000001 /* en in Resources */,
-				AA2000000000000000000010 /* it in Resources */,
+				AA2000000000000000000010 /* ru in Resources */,
 				504EC3121FED79650016851F /* LaunchScreen.storyboard in Resources */,
 				50B271D11FEDC1A000F3C39B /* public in Resources */,
 				504EC30F1FED79650016851F /* Assets.xcassets in Resources */,
@@ -334,8 +325,14 @@
 				504EC30D1FED79650016851F /* Main.storyboard in Resources */,
 				2FAD9763203C412B000D30F8 /* config.xml in Resources */,
 				AA0200000000000000000008 /* PrivacyInfo.xcprivacy in Resources */,
-				AA1450000000000000000004 /* AppShortcuts.strings in Resources */,
-				AA1450000000000000000006 /* Localizable.strings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		522EC5F5A21E27C30CCCB5BA /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A850F50D25A74974B2D21C4E /* ru.lproj in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -384,17 +381,12 @@
 			files = (
 				504EC3081FED79650016851F /* AppDelegate.swift in Sources */,
 				AA0000000000000000000002 /* SceneDelegate.swift in Sources */,
-				AA0100000000000000000002 /* PrintPlugin.swift in Sources */,
 				AA01000000000000000005A2 /* SaveImagePlugin.swift in Sources */,
-				AA0900000000000000000002 /* AppIconPlugin.swift in Sources */,
-				AA0A00000000000000000002 /* NfcTagsPlugin.swift in Sources */,
 				AA0818000000000000000002 /* PhoneWorkoutPlugin.swift in Sources */,
 				AA0200000000000000000002 /* MainViewController.swift in Sources */,
 				AA0200000000000000000004 /* RestAlertPlugin.swift in Sources */,
 				AA0200000000000000000006 /* RestTone.swift in Sources */,
 				AA0300000000000000000002 /* DeviceAuthPlugin.swift in Sources */,
-				AA4600000000000000000002 /* OidcBrowserPlugin.swift in Sources */,
-				AA0400000000000000000002 /* AnimationPacksPlugin.swift in Sources */,
 				AA0300000000000000000004 /* NudgeCheckPlugin.swift in Sources */,
 				AA0500000000000000000002 /* AppleHealthPlugin.swift in Sources */,
 				AA0500000000000000000004 /* WidgetBridgePlugin.swift in Sources */,
@@ -402,20 +394,35 @@
 				AA0500000000000000000008 /* WorkoutActivity.swift in Sources */,
 				AA0500000000000000000010 /* WidgetViews.swift in Sources */,
 				AA0500000000000000000012 /* WidgetPreview.swift in Sources */,
-				AA0700000000000000000002 /* WatchBridgePlugin.swift in Sources */,
-				AA1460000000000000000002 /* GarminLink.swift in Sources */,
-				AA0600000000000000000002 /* ClipCodec.swift in Sources */,
 				AA0600000000000000000004 /* HealthReadCore.swift in Sources */,
 				AA0600000000000000000006 /* HealthWriteCore.swift in Sources */,
 				AA0800000000000000000002 /* GymReminderPlugin.swift in Sources */,
 				AA0800000000000000000004 /* GymReminderRules.swift in Sources */,
 				AA1461000000000000000002 /* CueAudioLedger.swift in Sources */,
-				AA1440000000000000000002 /* GymMapPickerPlugin.swift in Sources */,
-				AA1450000000000000000002 /* VoiceIntents.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E0DD575F62CC994CEABF5F63 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				57A291886391FCDFB556E30E /* LiveActivityWidget.swift in Sources */,
+				F996411BC91E5D5DFE942BE7 /* OpenGymWidgets.swift in Sources */,
+				B746E3B4FE68102E088D2FB5 /* WorkoutActivity.swift in Sources */,
+				52EAD78FE08E7BBDEEB73695 /* WidgetViews.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		0B393954C32C87C9172F2966 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = OpenGymWidgets;
+			target = EB8AB96B19A56C091648AE53 /* OpenGymWidgets */;
+			targetProxy = A80584D735013F0B28A3662B /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
 		504EC30B1FED79650016851F /* Main.storyboard */ = {
@@ -434,56 +441,13 @@
 			name = LaunchScreen.storyboard;
 			sourceTree = "<group>";
 		};
-		AA1450000000000000000003 /* AppShortcuts.strings */ = {
+		AA3000000000000000000001 /* InfoPlist.strings */ = {
 			isa = PBXVariantGroup;
 			children = (
-				AA1451000000000000000001 /* de */,
-				AA1451000000000000000002 /* fr */,
-				AA1451000000000000000003 /* es */,
-				AA1451000000000000000004 /* it */,
-				AA1451000000000000000005 /* pt-PT */,
-				AA1451000000000000000006 /* pt-BR */,
-				AA1451000000000000000007 /* pl */,
-				AA1451000000000000000008 /* hu */,
-				AA1451000000000000000009 /* tr */,
-				AA1451000000000000000010 /* ru */,
-				AA1451000000000000000011 /* uk */,
-				AA1451000000000000000012 /* ar */,
-				AA1451000000000000000013 /* hi */,
-				AA1451000000000000000014 /* bn */,
-				AA1451000000000000000015 /* th */,
-				AA1451000000000000000016 /* ko */,
-				AA1451000000000000000017 /* zh-Hans */,
-				AA1451000000000000000018 /* zh-Hant */,
-				AA1451000000000000000019 /* sv */,
+				AA1000000000000000000001 /* en */,
+				AA1000000000000000000010 /* ru */,
 			);
-			name = AppShortcuts.strings;
-			sourceTree = "<group>";
-		};
-		AA1450000000000000000005 /* Localizable.strings */ = {
-			isa = PBXVariantGroup;
-			children = (
-				AA1451010000000000000001 /* de */,
-				AA1451010000000000000002 /* fr */,
-				AA1451010000000000000003 /* es */,
-				AA1451010000000000000004 /* it */,
-				AA1451010000000000000005 /* pt-PT */,
-				AA1451010000000000000006 /* pt-BR */,
-				AA1451010000000000000007 /* pl */,
-				AA1451010000000000000008 /* hu */,
-				AA1451010000000000000009 /* tr */,
-				AA1451010000000000000010 /* ru */,
-				AA1451010000000000000011 /* uk */,
-				AA1451010000000000000012 /* ar */,
-				AA1451010000000000000013 /* hi */,
-				AA1451010000000000000014 /* bn */,
-				AA1451010000000000000015 /* th */,
-				AA1451010000000000000016 /* ko */,
-				AA1451010000000000000017 /* zh-Hans */,
-				AA1451010000000000000018 /* zh-Hant */,
-				AA1451010000000000000019 /* sv */,
-			);
-			name = Localizable.strings;
+			name = InfoPlist.strings;
 			sourceTree = "<group>";
 		};
 /* End PBXVariantGroup section */
@@ -491,6 +455,7 @@
 /* Begin XCBuildConfiguration section */
 		504EC3141FED79650016851F /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 83C894DC00D9021A77B7B4A9 /* Signing.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -548,6 +513,7 @@
 		};
 		504EC3151FED79650016851F /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 83C894DC00D9021A77B7B4A9 /* Signing.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -600,11 +566,12 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = FC68EB0AF532CFC21C3344DD /* Pods-App.debug.xcconfig */;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = "AppIcon-Light AppIcon-Mono AppIcon-Neon AppIcon-Sky AppIcon-Orange AppIcon-Pink AppIcon-Violet AppIcon-Halloween AppIcon-Christmas";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = App/App.entitlements;
-				CODE_SIGN_STYLE = Automatic;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Distribution";
+				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 72;
+				DEVELOPMENT_TEAM = "$(OPENGYM_TEAM_ID)";
 				INFOPLIST_FILE = App/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.5;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
@@ -617,8 +584,9 @@
 					AppIntents,
 				);
 				OTHER_SWIFT_FLAGS = "$(inherited) \"-D\" \"COCOAPODS\" \"-DDEBUG\"";
-				PRODUCT_BUNDLE_IDENTIFIER = ch.opengym.app;
+				PRODUCT_BUNDLE_IDENTIFIER = dev.magjan.gym;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "$(OPENGYM_APP_PROFILE)";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -629,11 +597,12 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = AF51FD2D460BCFE21FA515B2 /* Pods-App.release.xcconfig */;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = "AppIcon-Light AppIcon-Mono AppIcon-Neon AppIcon-Sky AppIcon-Orange AppIcon-Pink AppIcon-Violet AppIcon-Halloween AppIcon-Christmas";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = App/App.entitlements;
-				CODE_SIGN_STYLE = Automatic;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Distribution";
+				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 72;
+				DEVELOPMENT_TEAM = "$(OPENGYM_TEAM_ID)";
 				INFOPLIST_FILE = App/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.5;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
@@ -645,13 +614,67 @@
 					"-weak_framework",
 					AppIntents,
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = ch.opengym.app;
+				PRODUCT_BUNDLE_IDENTIFIER = dev.magjan.gym;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "$(OPENGYM_APP_PROFILE)";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
+		};
+		5CCBEBF8B864F80F3F9C34BD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_ENTITLEMENTS = OpenGymWidgets/OpenGymWidgets.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Distribution";
+				CODE_SIGN_STYLE = Manual;
+				CURRENT_PROJECT_VERSION = 72;
+				DEVELOPMENT_TEAM = "$(OPENGYM_TEAM_ID)";
+				ENABLE_PREVIEWS = NO;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = OpenGymWidgets/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
+				MARKETING_VERSION = 1.4.5;
+				PRODUCT_BUNDLE_IDENTIFIER = dev.magjan.gym.widgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "$(OPENGYM_WIDGETS_PROFILE)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		C5CBFBDD13CFD6A5A90AA509 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_ENTITLEMENTS = OpenGymWidgets/OpenGymWidgets.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Distribution";
+				CODE_SIGN_STYLE = Manual;
+				CURRENT_PROJECT_VERSION = 72;
+				DEVELOPMENT_TEAM = "$(OPENGYM_TEAM_ID)";
+				ENABLE_PREVIEWS = NO;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = OpenGymWidgets/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
+				MARKETING_VERSION = 1.4.5;
+				PRODUCT_BUNDLE_IDENTIFIER = dev.magjan.gym.widgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "$(OPENGYM_WIDGETS_PROFILE)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
 		};
 /* End XCBuildConfiguration section */
 
@@ -670,6 +693,15 @@
 			buildConfigurations = (
 				504EC3171FED79650016851F /* Debug */,
 				504EC3181FED79650016851F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		704D3A03BFC280AE6C5DD3C2 /* Build configuration list for PBXNativeTarget "OpenGymWidgets" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5CCBEBF8B864F80F3F9C34BD /* Release */,
+				C5CBFBDD13CFD6A5A90AA509 /* Debug */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

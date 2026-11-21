@@ -1,0 +1,15 @@
+// Manual signing for TestFlight. The project's own settings (both targets read these):
+//
+//   OPENGYM_TEAM_ID          the Team ID of the Apple Developer account that signs the app
+//                            (developer.apple.com → Membership details). The one place to fill it
+//                            in; frontend/scripts/ios-testflight.sh reads it from here too, and an
+//                            OPENGYM_TEAM_ID in the environment wins over it.
+//   OPENGYM_APP_PROFILE      the name of the App Store Connect provisioning profile for
+//                            dev.magjan.gym (HealthKit, App Groups, Associated Domains)
+//   OPENGYM_WIDGETS_PROFILE  the same for dev.magjan.gym.widgets (App Groups)
+//
+// The certificate is an "Apple Distribution" one in the login keychain. A Simulator build needs
+// none of this (CODE_SIGNING_ALLOWED=NO).
+OPENGYM_TEAM_ID =
+OPENGYM_APP_PROFILE =
+OPENGYM_WIDGETS_PROFILE =

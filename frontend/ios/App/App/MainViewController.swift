@@ -9,12 +9,8 @@ import WebKit
  * that live in the app itself are registered here, or the page finds none of them.
  */
 class MainViewController: CAPBridgeViewController {
-    /// The downloaded animation packs, read through Background Assets (AnimationPacksPlugin.swift).
-    private let packFiles = AnimationPackSchemeHandler()
-
     override open func webViewConfiguration(for instanceConfiguration: InstanceConfiguration) -> WKWebViewConfiguration {
         let config = super.webViewConfiguration(for: instanceConfiguration)
-        config.setURLSchemeHandler(packFiles, forURLScheme: AnimationPackSchemeHandler.scheme)
         // Text size "Like the phone" (lib/display-prefs.js): Dynamic Type's size, there before the
         // page's first line runs, so nothing jumps. A WKWebView never scales our own font with it.
         config.userContentController.addUserScript(WKUserScript(source: MainViewController.textScaleScript(event: false),
@@ -41,23 +37,15 @@ class MainViewController: CAPBridgeViewController {
     }
 
     override open func capacitorDidLoad() {
-        bridge?.registerPluginInstance(PrintPlugin())
         bridge?.registerPluginInstance(SaveImagePlugin())
         bridge?.registerPluginInstance(RestAlertPlugin())
         bridge?.registerPluginInstance(DeviceAuthPlugin())
-        bridge?.registerPluginInstance(OidcBrowserPlugin())
-        bridge?.registerPluginInstance(AnimationPacksPlugin())
         bridge?.registerPluginInstance(NudgeCheckPlugin())
         bridge?.registerPluginInstance(GymReminderPlugin())
-        bridge?.registerPluginInstance(GymMapPickerPlugin())
-        bridge?.registerPluginInstance(WatchBridgePlugin())
         bridge?.registerPluginInstance(AppleHealthPlugin())
         bridge?.registerPluginInstance(PhoneWorkoutPlugin())
         bridge?.registerPluginInstance(WidgetBridgePlugin())
         bridge?.registerPluginInstance(LiveActivityPlugin())
-        bridge?.registerPluginInstance(AppIconPlugin())
-        bridge?.registerPluginInstance(NfcTagsPlugin())
-        bridge?.registerPluginInstance(VoiceBridgePlugin())
         WidgetPreview.runIfAsked()
         NotificationCenter.default.addObserver(self, selector: #selector(textSizeChanged),
                                                name: UIContentSizeCategory.didChangeNotification, object: nil)

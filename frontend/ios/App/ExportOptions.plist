@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- How frontend/scripts/ios-testflight.sh exports the archive for App Store Connect: signed by
+     hand with the Apple Distribution certificate and one App Store Connect profile per bundle id.
+     TEAMID, APP_PROFILE and WIDGETS_PROFILE are filled in by the script (from the environment or
+     ios/App/Signing.xcconfig) into a copy; this file keeps the placeholders. -->
+<plist version="1.0">
+<dict>
+	<key>method</key>
+	<string>app-store-connect</string>
+	<key>destination</key>
+	<string>export</string>
+	<key>signingStyle</key>
+	<string>manual</string>
+	<key>signingCertificate</key>
+	<string>Apple Distribution</string>
+	<key>teamID</key>
+	<string>TEAMID</string>
+	<key>provisioningProfiles</key>
+	<dict>
+		<key>dev.magjan.gym</key>
+		<string>APP_PROFILE</string>
+		<key>dev.magjan.gym.widgets</key>
+		<string>WIDGETS_PROFILE</string>
+	</dict>
+	<key>uploadSymbols</key>
+	<true/>
+	<key>manageAppVersionAndBuildNumber</key>
+	<false/>
+</dict>
+</plist>

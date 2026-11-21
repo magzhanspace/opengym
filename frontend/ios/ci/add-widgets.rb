@@ -1,20 +1,19 @@
 # Adds the widget extension (ios/App/OpenGymWidgets: the Home Screen and Lock Screen widgets and
-# the workout's Live Activity) to App.xcodeproj and embeds it in the app (App.app/PlugIns), in the
-# style of add-asset-downloader.rb. Two files of the app are compiled into it too: what the Live
-# Activity carries and its Done button (App/WorkoutActivity.swift) and the views
-# (App/WidgetViews.swift), which the app also draws for CI's pictures (App/WidgetPreview.swift).
-# Running it again changes nothing. Until the project with it is committed, CI runs it before
-# every build (.github/workflows/ios.yml).
+# the workout's Live Activity) to App.xcodeproj and embeds it in the app (App.app/PlugIns). Two
+# files of the app are compiled into it too: what the Live Activity carries and its Done button
+# (App/WorkoutActivity.swift) and the views (App/WidgetViews.swift), which the app also draws for
+# pictures (App/WidgetPreview.swift). Running it again changes nothing. The project with the
+# extension in it is committed; this script is how it got there.
 #
-#   ruby frontend/ios/ci/add-widgets.rb
+#   ruby frontend/ios/ci/add-widgets.rb   (needs the xcodeproj gem, which CocoaPods brings)
 #
-# App Store Connect needs, before a signed build: the bundle id ch.opengym.app.widgets with the
-# App Group group.ch.opengym.app, and an App Store provisioning profile for it, which the release
-# script signs the extension with (scripts/ios/finish-ipa.sh, WIDGETS_PROFILE).
+# Signed by hand, like the app: the bundle id dev.magjan.gym.widgets with the App Group
+# group.dev.magjan.gym, and its own App Store provisioning profile, named by
+# OPENGYM_WIDGETS_PROFILE (ios/App/Signing.xcconfig, frontend/scripts/ios-testflight.sh).
 require 'xcodeproj'
 
 NAME = 'OpenGymWidgets'
-BUNDLE_ID = 'ch.opengym.app.widgets'
+BUNDLE_ID = 'dev.magjan.gym.widgets'
 SHARED = %w[WorkoutActivity.swift WidgetViews.swift].freeze
 
 dir = File.expand_path('../App', __dir__)
@@ -58,7 +57,10 @@ ext.build_configurations.each do |c|
   s['INFOPLIST_FILE'] = "#{NAME}/Info.plist"
   s['GENERATE_INFOPLIST_FILE'] = 'NO'
   s['CODE_SIGN_ENTITLEMENTS'] = "#{NAME}/#{NAME}.entitlements"
-  s['CODE_SIGN_STYLE'] = 'Automatic'
+  s['CODE_SIGN_STYLE'] = 'Manual'
+  s['DEVELOPMENT_TEAM'] = '$(OPENGYM_TEAM_ID)'
+  s['PROVISIONING_PROFILE_SPECIFIER'] = '$(OPENGYM_WIDGETS_PROFILE)'
+  s['CODE_SIGN_IDENTITY[sdk=iphoneos*]'] = 'Apple Distribution'
   s['SWIFT_VERSION'] = '5.0'
   s['IPHONEOS_DEPLOYMENT_TARGET'] = '17.0'
   s['TARGETED_DEVICE_FAMILY'] = '1,2'

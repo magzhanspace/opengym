@@ -17,13 +17,10 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // For the Live Activity's timing log (WorkoutActivity.swift LiveLog): a scene connecting on
         // a launch iOS made for a button means the whole page boots beside that tap.
         LiveLog.sceneConnected()
-        // Garmin Connect Mobile coming back with the watches picked for openGym (GarminLink).
-        if let url = connectionOptions.urlContexts.first?.url, GarminLink.shared.handle(url) {
-            // handled: not a link for the page
-        } else if let url = connectionOptions.urlContexts.first?.url {
+        if let url = connectionOptions.urlContexts.first?.url {
             _ = ApplicationDelegateProxy.shared.application(UIApplication.shared, open: url, options: [:])
         }
-        // A Universal Link (opengym.ch/nfc from a sticker, opengym.ch/r from a friend) that
+        // A Universal Link (gym.magjan.dev/r..., web/well-known/apple-app-site-association) that
         // started the app comes as a user activity, not a URL context.
         if let activity = connectionOptions.userActivities.first(where: { $0.activityType == NSUserActivityTypeBrowsingWeb }) {
             _ = ApplicationDelegateProxy.shared.application(UIApplication.shared, continue: activity) { _ in }
@@ -32,7 +29,6 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
         guard let url = URLContexts.first?.url else { return }
-        if GarminLink.shared.handle(url) { return }
         _ = ApplicationDelegateProxy.shared.application(UIApplication.shared, open: url, options: [:])
     }
 
