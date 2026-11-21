@@ -76,6 +76,7 @@ describe('activities: from the health store', () => {
     expect(activityFromHealth(rec, {}, 'hc', now)).toMatchObject({ d: '2026-11-02', sport: 'run', min: 42, src: 'hc' })
   })
   it('skips openGym\'s own, strength, gym cardio, walks, short ones and the future', () => {
+    expect(isOwnRecord({ origin: 'dev.magjan.gym' })).toBe(true)
     expect(isOwnRecord({ origin: 'ch.duartesantos.opengym' })).toBe(true)
     expect(isOwnRecord({ origin: 'ch.opengym.app.watchkitapp' })).toBe(true)
     expect(isOwnRecord({ clientId: 'opengym-w-1' })).toBe(true)

@@ -16,6 +16,9 @@ final class HealthReadCoreTests: XCTestCase {
 
     func testOwnRecordsAreRecognised() {
         XCTAssertTrue(HealthReadCore.isOwn(source: "com.withings.wiscale2", syncId: "opengym-bw-2026-10-15"))
+        XCTAssertTrue(HealthReadCore.isOwn(source: "dev.magjan.gym", syncId: nil))
+        XCTAssertTrue(HealthReadCore.isOwn(source: "dev.magjan.gym.widgets", syncId: nil))
+        XCTAssertFalse(HealthReadCore.isOwn(source: "dev.magjan.gymx", syncId: nil))
         XCTAssertTrue(HealthReadCore.isOwn(source: "ch.duartesantos.opengym", syncId: nil))
         XCTAssertTrue(HealthReadCore.isOwn(source: "ch.duartesantos.opengym.watchkitapp", syncId: nil))
         XCTAssertFalse(HealthReadCore.isOwn(source: "ch.duartesantos.opengymx", syncId: nil))

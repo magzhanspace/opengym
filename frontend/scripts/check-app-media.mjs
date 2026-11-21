@@ -13,7 +13,7 @@
  * decodes a picture.
  *
  * Usage: node scripts/check-app-media.mjs <public dir> [...]   exit code 1 on any problem.
- * Run by check-mobile-bundle.mjs (npm run build:mobile) and scripts/ios/finish-ipa.sh. */
+ * Run by check-mobile-bundle.mjs (npm run build:mobile). */
 import { existsSync, readdirSync, readFileSync, openSync, readSync, closeSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'

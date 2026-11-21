@@ -49,9 +49,7 @@ jobs:
           node scripts/catalogue/build.mjs --check
       - run: npx vite build
         working-directory: frontend
-      # The app-icon redraw check needs the icon toolchain of the release machine; it fails on a
-      # plain runner as it did before the fork, so it is left out here.
-      - run: npx vitest run --reporter=dot --exclude scripts/app-icons.test.mjs
+      - run: npx vitest run --reporter=dot
         working-directory: frontend
 
   mcp:

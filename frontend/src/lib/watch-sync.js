@@ -901,7 +901,9 @@ let pluginP = null
 export const WATCH_PLATFORMS = ['ios', 'android']
 const watchPlugin = () => pluginP || (pluginP = (async () => {
   if (!MOBILE || !WATCH_PLATFORMS.includes(await nativePlatform())) return null
-  const { registerPlugin } = await import('@capacitor/core')
+  const { registerPlugin, Capacitor } = await import('@capacitor/core')
+  // This fork's iPhone app has no watch app and no WatchBridge (FORK.md): nothing to ask.
+  if (typeof Capacitor?.isPluginAvailable === 'function' && !Capacitor.isPluginAvailable('WatchBridge')) return null
   return { WatchBridge: registerPlugin('WatchBridge') }
 })().catch(() => null))
 

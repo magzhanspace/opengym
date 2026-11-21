@@ -174,7 +174,7 @@ export function activityStimuli(S, now = Date.now(), windowMs = 30 * 86400e3) {
 export const NOT_ACTIVITY = new Set(['strength', 'gym', 'walk'])
 
 // openGym's own records in the hub, and the watch app's: never read back as activities.
-const OWN_ORIGIN = /^(ch\.duartesantos\.opengym|ch\.opengym\.app)(\.|$)/
+const OWN_ORIGIN = /^(dev\.magjan\.gym|ch\.duartesantos\.opengym|ch\.opengym\.app)(\.|$)/
 
 /** Whether a health-store workout record is one openGym (or its watch) wrote itself. */
 export const isOwnRecord = rec => /^opengym-/.test(String(rec?.clientId || '')) || OWN_ORIGIN.test(String(rec?.origin || ''))

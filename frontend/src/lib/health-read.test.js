@@ -18,6 +18,8 @@ const rec = (d, h, kg, extra = {}) => ({ t: at(d, h), kg, id: `r${d}${h}`, origi
 describe('isOwnRecord', () => {
   it('knows openGym by client id and by origin', () => {
     expect(isOwnRecord({ clientId: 'opengym-bw-2026-10-15', origin: 'x' })).toBe(true)
+    expect(isOwnRecord({ origin: 'dev.magjan.gym' })).toBe(true)
+    expect(isOwnRecord({ origin: 'dev.magjan.gymx' })).toBe(false)
     expect(isOwnRecord({ origin: 'ch.duartesantos.opengym' })).toBe(true)
     expect(isOwnRecord({ origin: 'ch.duartesantos.opengym.test' })).toBe(true)
     expect(isOwnRecord({ origin: 'ch.duartesantos.opengymx' })).toBe(false)
