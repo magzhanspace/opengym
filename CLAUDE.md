@@ -7,18 +7,20 @@ For people, the same map with diagrams is [docs/ARCHITECTURE.md](docs/ARCHITECTU
 
 openGym is a self-hosted gym and body-weight tracker. Two containers (`api` + `web`) plus a
 `./data` folder the user owns: no third-party account, no telemetry. Passkey (WebAuthn) login,
-installable as a PWA, and Capacitor apps for Android and iPhone (with an Apple Watch app and
-widgets) that work on their own or synced to a server. License: AGPL-3.0-or-later; the exercise
+installable as a PWA, and a Capacitor iPhone app (widgets, Live Activity, Apple Health) that works
+on its own or synced to a server. License: AGPL-3.0-or-later; the exercise
 media are licensed separately (NOTICE.md).
 
 ## Project layout
 
 ```
 frontend/   React 19 + Vite app (src/views, src/components, src/store, src/lib, src/sheets.jsx).
-            ios/ is the Capacitor shell (docs/MOBILE.md), kept but not built; it also holds the
-            Apple Watch app (Watch, WatchCore, WatchWidgets) on lib/watch-sync.js, the widgets and
-            the animation-pack downloader. Android, Wear OS, Garmin and Zepp are removed in this
-            fork; `platform === 'android'` branches left in shared JS are dead code.
+            ios/ is the Capacitor iPhone shell (docs/MOBILE.md "This fork"): the App target
+            (dev.magjan.gym) and the OpenGymWidgets extension, signed by hand for TestFlight
+            (ios/App/Signing.xcconfig, ExportOptions.plist, scripts/ios-testflight.sh). The Apple
+            Watch app, animation packs, Garmin, NFC, Siri, alternate icons and the native map and
+            print pieces are removed, as are Android, Wear OS and Zepp; `platform === 'android'`
+            branches left in shared JS are dead code.
 api/        Backend: server.js (plain node:http) plus small testable modules beside it.
             shared/ holds the code the frontend imports too (streaks, starter plans, plan validation).
             openapi.yaml documents every route.
@@ -57,6 +59,11 @@ node scripts/build-shared-assets.mjs --check
 # Builds
 cd frontend && npm run build
 cd frontend && npm run build:mobile   # VITE_MOBILE build + 180 px media from catalogue/media + cap sync
+                                      # (CocoaPods, LANG=en_US.UTF-8); server defaults to gym.magjan.dev
+cd frontend/ios/App && xcodebuild -workspace App.xcworkspace -scheme App -sdk iphonesimulator \
+  -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build
+cd frontend/ios/App/HealthCore && swift test   # also GymReminderCore, CueAudioCore
+frontend/scripts/ios-testflight.sh    # archive, export, upload (env vars in the script's header)
 ```
 
 There is no linter/formatter config and no TypeScript; match the existing style by hand.
@@ -65,7 +72,8 @@ This is a personal fork (github.com/magzhanspace/opengym, branch `main`) of
 github.com/DuarteSantos8/openGym v1.4.5, remote `upstream`. FORK.md lists what was cut and what
 is kept; upstream is not merged back. Own feature: voice notes (FORK.md "Своё"; `api/transcribe.js`,
 `lib/voice-notes.js`, `lib/voice-live.js`). `.github/workflows/test.yml` runs the suites and checks on
-push. The app is deployed as a PWA on gym.magjan.dev (hermes); the iOS shell is kept but not built.
+push. The app is deployed as a PWA on gym.magjan.dev (hermes); the iPhone app goes out through
+TestFlight on a friend's developer account (docs/MOBILE.md "This fork").
 
 ## Architecture
 
@@ -93,8 +101,9 @@ push. The app is deployed as a PWA on gym.magjan.dev (hermes); the iOS shell is 
     generated from `catalogue/` by `scripts/catalogue/build.mjs`; never edit them by hand.
   - `api.js`: the only place that talks to the backend (`fetch` wrapper, session flows).
   - Native bridges: `mobile.js` (the `MOBILE` flag, file persistence, notifications),
-    `channel.js` (APK or store build), `watch-sync.js`, `widgets.js`, `health-sync.js`,
-    `anim-quality.js` / `anim-packs.js` (animation sizes in the store apps).
+    `channel.js` (APK or store build), `widgets.js`, `live-activity.js`, `health-sync.js`,
+    `rest-alert.js`, `device-auth.js`. `watch-sync.js` only keeps helpers the workout screen
+    uses (no watch app any more); `anim-packs.js` finds no packs (the plugin is gone).
   - CONTRIBUTING.md is explicit: **anything that decides what you lift next, or reads a logged
     session back, is a pure helper here with a unit test beside it.**
 - **Body measurements (`lib/measurements.js`, `views/Measurements.jsx`)**: one check-in per day.
@@ -175,7 +184,8 @@ which passkeys require). `web/nginx.conf.template` is rendered from env vars at 
 The stills and animations are licensed from Gym visual, not AGPL. Only 180 px files may be in the
 repository, CI, the web image, the demo or a self-hosted server (`scripts/catalogue/check-media.mjs`
 enforces it). Larger sizes exist only inside the APK and store packages, built on the release
-machine, or as Apple-hosted / Play asset packs. Never commit, upload or serve anything larger, and
+machine, or as Apple-hosted / Play asset packs; this fork's iPhone app ships the 180 px files only
+(scripts/ios-testflight.sh unsets APP_MEDIA_DIR). Never commit, upload or serve anything larger, and
 never feed the media to an AI tool.
 
 ## Guidelines from CONTRIBUTING.md worth knowing before changing code

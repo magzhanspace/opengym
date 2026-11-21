@@ -32,7 +32,7 @@ DuarteSantos8/openGym; вливать оттуда больше не плани�
 
 ### 1. Бесплатно — ядро это не импортирует
 
-**Сделано 2026-11-20.** iOS заморожен (лежит, не собирается); Android с Wear OS удалён тем же днём. Вместе с этим ушли
+**Сделано 2026-11-20.** Android с Wear OS удалён. iOS сначала заморозили, 2026-11-21 вернули как своё приложение для TestFlight (ниже, «iPhone-приложение»). Вместе с этим ушли
 `ROADMAP.md`, `SECURITY.md`, `CLA.md`, `renovate.json`, `.coderabbit.yaml`, скрипты сайта, бренда,
 сторов и CI апстрима, `scripts/build-api-docs.mjs` (генерировал `website/api.html`) и корневой
 `package.json`. CI теперь один: `.github/workflows/test.yml`.
@@ -110,6 +110,20 @@ DuarteSantos8/openGym; вливать оттуда больше не плани�
   (`POST /api/transcribe`, `api/transcribe.js`) и забывает, текст дописывается в заметку упражнения
   (`lib/voice-notes.js`), даже если тренировка уже закончена. Включается ключом `OPENAI_API_KEY` в
   `.env`; с ним заметки в тренировке только голосом, руками правятся лишь в редакторе сохранённой.
+
+- **iPhone-приложение** (2026-11-21). Ради Apple Health (вес с весов Zepp через Здоровье, тренировки
+  туда же) и виджетов. Capacitor-оболочка `frontend/ios/App`, bundle id `dev.magjan.gym`, виджеты
+  `dev.magjan.gym.widgets`, App Group `group.dev.magjan.gym`. Оставили: Apple Health
+  (`AppleHealthPlugin.swift`, `HealthCore/`), сигналы таймера отдыха, ключ сессии в связке ключей,
+  виджеты и Live Activity, напоминание о зале (поиск зала только через OpenStreetMap), запись
+  голосовых заметок из WebView. Убрали: Apple Watch (и модуль «Часы»), пакеты анимаций Apple,
+  Garmin, NFC, поиск зала через Apple Maps, OIDC, нативную печать, смену иконки, Siri. Сервер по
+  умолчанию — `https://gym.magjan.dev` (вход парой: код из «Pair the mobile app» в браузере;
+  passkey внутри приложения не работает — страница живёт на `capacitor://localhost`).
+  Подпись ручная, через Individual-аккаунт Наримана (мы App Manager): Team ID вписать в
+  `ios/App/Signing.xcconfig` (или `OPENGYM_TEAM_ID`), профили и выгрузка —
+  `frontend/scripts/ios-testflight.sh`, файл `apple-app-site-association` для сайта —
+  `frontend/scripts/ios-aasa.sh`. Подробно: docs/MOBILE.md, «This fork».
 
 ## Подводные камни
 

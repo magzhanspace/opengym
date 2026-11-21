@@ -1,5 +1,75 @@
 # The phone app (Android and iOS)
 
+## This fork: the iPhone app on TestFlight
+
+Everything below this section is upstream's guide and is kept for reference. In this fork there
+is no Android app, no App Store or public TestFlight listing of upstream's, and several iOS pieces
+are gone (listed here). What applies is this section.
+
+**What the iPhone app is.** The Capacitor shell in `frontend/ios/App`, bundle id `dev.magjan.gym`,
+display name openGym, built from the mobile flavour (`npm run build:mobile`, `VITE_MOBILE=1`). On
+first launch it asks whether to keep everything on the phone or to connect to a server;
+"Connect to my server" starts filled in with `https://gym.magjan.dev` (`VITE_SERVER_URL`,
+`lib/remote.js` `DEFAULT_SERVER`), and the phone pairs with a code from Settings → Account → "Pair
+the mobile app" in a signed-in browser (see [connecting](#connecting-the-app-to-your-own-server)).
+The exercise media inside it are the 180 px files from `catalogue/media`, nothing larger.
+
+**What it keeps**
+
+| Piece | Native | JS |
+|---|---|---|
+| Apple Health: workouts written, weigh-ins, heart rate, body metrics, sleep and vitals read | `AppleHealthPlugin.swift`, `HealthCore/` (pure rules, `swift test`) | `lib/health-sync.js`, `lib/health-read.js` |
+| Rest-timer alerts (tones, spoken lines, own clips) | `RestAlertPlugin.swift`, `RestTone.swift`, `CueAudioCore/` | `lib/rest-alert.js` |
+| Home Screen and Lock Screen widgets, the workout's Live Activity | the `OpenGymWidgets` extension (`dev.magjan.gym.widgets`), `WorkoutActivity.swift`, `WidgetViews.swift`, `LiveActivityPlugin.swift`, `WidgetBridgePlugin.swift` | `lib/widgets.js`, `lib/widget-logger.js`, `lib/widget-links.js`, `lib/live-activity.js` |
+| The server session in the keychain | `DeviceAuthPlugin.swift` | `lib/device-auth.js` |
+| Gym reminder (arrive at a gym, get a nudge) | `GymReminderPlugin.swift`, `GymReminderCore/` | `lib/gym-reminder.js`; the gym search is OpenStreetMap only |
+| Reminder check before a nudge, the iPhone's own workout session (AirPods heart rate), saving a picture to Photos | `NudgeCheckPlugin.swift`, `PhoneWorkoutPlugin.swift`, `SaveImagePlugin.swift` | `lib/nudge-check.js`, `lib/phone-workout.js`, `lib/mobile.js` |
+| Voice notes | the WKWebView records (`NSMicrophoneUsageDescription`) | `lib/voice-live.js` |
+
+**What is gone** (with its Settings rows and JS bridges): the Apple Watch app (`Watch`, `WatchCore`,
+`WatchWidgets`, `WatchBridgePlugin`; `lib/watch-sync.js` keeps only the helpers the workout screen
+uses, nothing starts the watch link), the Watch module, Apple-hosted animation packs
+(`AnimationPacksDownloader`, `AnimationPacksPlugin`), Garmin, NFC stickers, the Apple Maps gym search
+(`GymMapPickerPlugin`), OIDC sign-in, the native print sheet (`PrintPlugin`; printing falls back to the
+page's own print), alternate app icons (`AppIconPlugin`), Siri and Shortcuts (`VoiceIntents`).
+Languages: English and Russian only.
+
+**Entitlements.** App: HealthKit, App Groups `group.dev.magjan.gym`, Associated Domains
+`applinks:gym.magjan.dev` and `webcredentials:gym.magjan.dev`. Widgets: App Groups only. No push.
+The associated domains only work once `https://gym.magjan.dev/.well-known/apple-app-site-association`
+is served: `frontend/scripts/ios-aasa.sh` writes it from `web/well-known/apple-app-site-association.template`
+with the Team ID, nginx serves it as JSON (`web/nginx.conf.template`), then commit and deploy the web
+image. Only `/r` links open the app; every other page stays in the browser. Passkeys inside the app
+are not wired up: the app's page runs at `capacitor://localhost`, which is not `gym.magjan.dev`, so
+the app pairs with a code instead.
+
+**Build for the Simulator** (no signing):
+
+```bash
+cd frontend && npm run build:mobile     # needs CocoaPods and a UTF-8 locale (LANG=en_US.UTF-8)
+cd ios/App && xcodebuild -workspace App.xcworkspace -scheme App -sdk iphonesimulator \
+  -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build
+```
+
+**Signing and TestFlight.** Signing is manual. The team, a friend's Individual Apple Developer
+account, signs with an Apple Distribution certificate made from a CSR on this Mac (private key in
+the login keychain) and two App Store Connect provisioning profiles, one for `dev.magjan.gym` and
+one for `dev.magjan.gym.widgets`. The project reads `OPENGYM_TEAM_ID`, `OPENGYM_APP_PROFILE` and
+`OPENGYM_WIDGETS_PROFILE` from `frontend/ios/App/Signing.xcconfig` (the one place for the Team ID);
+the environment wins over it. `frontend/ios/App/ExportOptions.plist` is the export (method
+app-store-connect, manual). Then:
+
+```bash
+OPENGYM_TEAM_ID=… OPENGYM_APP_PROFILE='…' OPENGYM_WIDGETS_PROFILE='…' \
+ASC_APPLE_ID=… ASC_APP_PASSWORD=… frontend/scripts/ios-testflight.sh
+```
+
+It builds the mobile flavour, archives, exports `frontend/build/ios/export/App.ipa` and uploads it
+with `xcrun altool` (an App Store Connect API key, `ASC_KEY_ID` + `ASC_ISSUER_ID`, works instead of
+the Apple ID and app-specific password). `--no-upload` stops after the .ipa. The widget extension is
+in the committed project (`frontend/ios/ci/add-widgets.rb` put it there).
+
+
 **Just want the app?** See [getting the app](#getting-the-app): the App Store (and the public
 TestFlight beta) on an iPhone, the APK on Android. Then read
 [how the phone app works](#how-the-phone-app-works) and
