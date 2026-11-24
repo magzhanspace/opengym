@@ -2197,7 +2197,7 @@ export function swapActiveWorkoutExercise(index) {
       ? backupSlotConfig({ ...plannedConfigOf(cur), id: cur.id }, ex.id, S(), cur.rid, id => !!EXIDX[id])
       : null
   }
-  const picker = exercisePicker((ex, quick) => quick ? swapTo(ex, asBackup(ex) || pickedExerciseConfig(ex.id, undefined, S())) : exConfigSheet(ex, null, cfg => swapTo(ex, cfg), null, null, asBackup(ex), null, t('Use in this workout'), { freestyle: (S().routines || []).some(r => r.id === active.entries[index].rid) ? false : 'add' }), { title: t('Swap exercise'), like: active.entries[index].id, backups: active.entries[index].target?.subs })
+  const picker = exercisePicker((ex, quick) => quick ? swapTo(ex, asBackup(ex) || pickedExerciseConfig(ex.id, undefined, S())) : exConfigSheet(ex, null, cfg => swapTo(ex, cfg), null, null, asBackup(ex), null, t('Use in this workout'), { saveTop: true, freestyle: (S().routines || []).some(r => r.id === active.entries[index].rid) ? false : 'add' }), { title: t('Swap exercise'), like: active.entries[index].id, backups: active.entries[index].target?.subs })
   function swapTo(ex, cfg) {
     // The picker is a chooser here, not a stack you keep adding from: one swap, then back to
     // the workout. (The add flow deliberately leaves it open.)
@@ -2575,7 +2575,7 @@ function BackupsSheet({ ex, slot, routine, subs: initial, configs: initialConfig
 // anyway (lib/log-workout.js LOG_LIMITS). Typing more settles on the limit when the field is left.
 const PLAN_MAX_SETS = 50
 const PLAN_MAX_REPS = 1000
-function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, initial, saveLabel, backupsEditable, freestyle }) {
+function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, initial, saveLabel, saveTop, backupsEditable, freestyle }) {
   // Shown and typed in the exercise's own weight unit when it has one (#657, lib/ex-unit.js); the
   // config it opened with and the one it saves are in the profile's.
   const live = useStore(s => s.S)
@@ -2763,12 +2763,16 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
       saveAs(out)
     }
   }
+  const saveBtn = <Button variant="primary" disabled={progressionStepInvalid} onClick={save}>{saveLabel || (existing ? t('Save') : t('Add to routine'))}</Button>
   return <>
     {ex.missing ? <h3 className={exerciseNameClass(ex)}>{exerciseNameFor(ex)}</h3>
       : <div className="row between" style={{ gap: 8, alignItems: 'flex-start' }}>
           <h3 className={exerciseNameClass(ex)}>{exerciseNameFor(ex)}</h3>
           <FavButton id={ex.id} />
         </div>}
+    {/* Swapping mid-workout (this fork): the plan below is usually fine as it is, so the
+        confirm button sits on top instead of under a long scroll of settings. */}
+    {saveTop && <div style={{ marginBottom: 12 }}>{saveBtn}</div>}
     <Media ex={ex} notes={c.notes} />
     {/* The same tags the exercise detail sheet shows, secondaries included: choosing what goes
         into a plan is exactly when "what else does this hit" matters, and until now that was
@@ -3168,7 +3172,7 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
     {/* What saving does, when it is neither of the two usual things: the routine editor's
         Replace (#110) seeds this sheet with the slot it replaces, and saving puts the exercise
         into that slot. */}
-    <Button variant="primary" disabled={progressionStepInvalid} onClick={save}>{saveLabel || (existing ? t('Save') : t('Add to routine'))}</Button>
+    {!saveTop && saveBtn}
     {isCustomEx(ex) && <><div style={{ height: 8 }} /><Button icon="pencil" onClick={() => { close(); customExSheet(ex) }}>{t('Edit or delete this exercise')}</Button></>}
     {/* The routine editor's counterpart to a workout's Swap (#110): another exercise in this
         slot, with the slot's sets, reps, weight, rule and note kept (lib/routines.js). What was
@@ -3178,7 +3182,7 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
   </>
 }
 // `opts.backups`: the routine editor's sheet, where the slot's planned substitutes are picked.
-export const exConfigSheet = (ex, existing, onSave, onDelete, routine, initial, onReplace, saveLabel, opts = {}) => ui().openSheet(close => <ExConfig ex={ex} existing={existing} initial={initial} onSave={onSave} onDelete={onDelete} onReplace={onReplace} routine={routine} saveLabel={saveLabel} backupsEditable={!!opts.backups} freestyle={opts.freestyle === 'add' || opts.freestyle === 'edit' ? opts.freestyle : false} close={close} />)
+export const exConfigSheet = (ex, existing, onSave, onDelete, routine, initial, onReplace, saveLabel, opts = {}) => ui().openSheet(close => <ExConfig ex={ex} existing={existing} initial={initial} onSave={onSave} onDelete={onDelete} onReplace={onReplace} routine={routine} saveLabel={saveLabel} saveTop={!!opts.saveTop} backupsEditable={!!opts.backups} freestyle={opts.freestyle === 'add' || opts.freestyle === 'edit' ? opts.freestyle : false} close={close} />)
 
 /* ============================ glyph picker ============================ */
 // Grouped by what the glyph means for a training day, so picking one is a scan
