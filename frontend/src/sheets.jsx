@@ -2646,7 +2646,20 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
       : next
   })
   // Back in the profile's unit, a number shown and left alone kept exactly as it was stored.
-  const saveAs = out => onSave(storedTarget(useStore.getState().S, ex.id, out, seedStored))
+  // The routine editor stamps when the slot's weight was set (`wAt`, progression.js
+  // nextPrescription): a weight typed here is the next session's. Saving anything else keeps the
+  // old stamp, and a weight left as the sheet opened it gets none.
+  const saveAs = out => {
+    const stored = storedTarget(useStore.getState().S, ex.id, out, seedStored)
+    if (routine && stored && typeof stored === 'object') {
+      const was = Number(seedStored?.weight) || 0
+      const now = Number(stored.weight) || 0
+      if (now > 0 && Math.abs(now - was) >= 0.05) stored.wAt = Date.now()
+      else if (existing?.wAt && now > 0) stored.wAt = existing.wAt
+      else delete stored.wAt
+    }
+    onSave(stored)
+  }
   const save = () => {
     if (progressionStepInvalid) return
     close()

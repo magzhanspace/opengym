@@ -379,12 +379,19 @@ function ExerciseBlock({ entryIdx, compact, listed, dense, editing, onToggle, on
     const inPlan = timed
       ? today.sec == null || today.sec === planned.sec
       : today.reps == null || (planned.repsMin > 0 ? today.reps >= planned.repsMin && today.reps <= planned.reps : today.reps === planned.reps)
-    const note = todaySets !== (planned.sets || 1) || !inPlan
-      ? t('today {0}', setsRepsOf({ mode, sets: todaySets, reps: today.reps, sec: today.sec, m: today.m }))
-      : entry.carried ? t('reps from your last session') : null
+    // The plan's weight on the same line (this fork), and today's when the rows open at another
+    // one: "Plan: 3 × 6 · 70 kg · today 80 kg". Today's is the first open work row as it stands.
+    const loaded = mode === 'reps' && !isBw({ ...today, id: entry.id })
+    const planW = loaded && planned.weight > 0 ? planned.weight : 0
+    const row = entry.sets.find(s => !isWarmupRow(s) && !s.done) || entry.sets.find(s => !isWarmupRow(s))
+    const todayW = planW && row ? Number(row.w) || 0 : 0
+    const wOff = planW > 0 && todayW > 0 && Math.abs(todayW - planW) >= 0.05
+    const shape = todaySets !== (planned.sets || 1) || !inPlan
+    const todayBits = [shape && setsRepsOf({ mode, sets: todaySets, reps: today.reps, sec: today.sec, m: today.m }), wOff && fmtWeight(todayW, S.unit)].filter(Boolean)
+    const note = [todayBits.length && t('today {0}', todayBits.join(' · ')), !shape && entry.carried && t('reps from your last session')].filter(Boolean).join(' · ')
     return <div className="small dim planline" style={{ marginBottom: 4 }}>
       {/* A session stamped before `planned` kept a carry's metres: today's, not the 20 m default. */}
-      {t('Plan: {0}', setsRepsOf({ ...(mode === 'distance' && today.m > 0 ? { m: today.m } : {}), ...planned, mode }))}{note ? ' · ' + note : ''}
+      {t('Plan: {0}', setsRepsOf({ ...(mode === 'distance' && today.m > 0 ? { m: today.m } : {}), ...planned, mode }) + (planW ? ' · ' + fmtWeight(planW, S.unit) : ''))}{note ? ' · ' + note : ''}
     </div>
   })()
   // What the rows are held against (#173): the last time in this routine (#216), or the best set

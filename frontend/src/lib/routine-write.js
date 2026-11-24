@@ -71,6 +71,10 @@ function slotOf(S, ex, base, unit, at, problems) {
     else {
       const profileUnit = S.unit === 'lb' ? 'lb' : 'kg'
       slot.weight = unit === profileUnit ? w : Math.round((unit === 'lb' ? w * LB_TO_KG : w / LB_TO_KG) * 10) / 10
+      // When the plan's weight was set (this fork): newer than the last session, it is the weight
+      // the next one opens at (progression.js nextPrescription). Re-sending the same weight keeps
+      // the old stamp, so an edit of something else does not pull history back to the plan.
+      if (slot.weight > 0 && !(base && Math.abs((Number(base.weight) || 0) - slot.weight) < 0.05)) slot.wAt = Date.now()
     }
   }
   if (ex?.note != null) { const n = clean(ex.note, ROUTINE_LIMITS.maxNote); if (n) slot.note = n; else delete slot.note }

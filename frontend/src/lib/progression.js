@@ -290,6 +290,21 @@ function loadOf(entry, sets) {
   return loaded.length ? Math.min(...loaded) : 0
 }
 
+// The working weight of a session that carried its own plan (this fork, 2026-11-24): the heaviest
+// set that reached the plan's reps (the bottom of a range, the lowest per-set aim), so a heavy
+// opener of 2 reps in front of the real sets (80 × 2, 70 × 6, 70 × 5) reads as 70, not 80. With
+// no set reaching the reps, or no plan of its own (an import), it is the heaviest set as before.
+// An assistance machine keeps its own reading (loadOf).
+function workingLoadOf(entry, sets, rowGoals, target) {
+  const all = loadOf(entry, sets)
+  // Back-off sets are judged from the top set as logged (lib/backoff.js), so it stays the load.
+  if (!entry?.target || Number(entry.target.backoffStep) > 0 || isAssisted(entry.id ? { id: entry.id } : entry)) return all
+  const need = rowGoals ? Math.min(...rowGoals) : target.repsMin > 0 ? target.repsMin : (target.reps || 0)
+  if (!(need > 0)) return all
+  const full = sets.filter(s => s.done && (s.r || 0) >= need).map(s => s.w || 0)
+  return full.length ? Math.max(0, ...full) : all
+}
+
 export function readSession(entry, fallback) {
   const target = (entry && entry.target) || fallback || {}
   const mode = modeOf({ ...target, id: entry && entry.id })
@@ -342,7 +357,7 @@ export function readSession(entry, fallback) {
   const reps = sets.map((s, k) => (s.done && heavyEnough(s, k) ? (s.r || 0) : 0))
   return {
     mode, target, goal, reps,
-    weight: loadOf(entry, sets),
+    weight: workingLoadOf(entry, sets, rowGoals, target),
     count: reps.length,                                   // the dimension bodyweight work grows (#33)
     low: reps.length ? Math.min(...reps) : 0,
     amrap: reps.length ? reps[reps.length - 1] : 0,       // Greyskull's final set
@@ -382,7 +397,8 @@ function sessionsIn(S, exId, fallback, rid) {
     if (entryExcluded(w, entry)) return
     if (!entry.sets.some(s => s.done && !isWarmupRow(s))) return
     const slot = entryRoutineId(w, entry)
-    out.push({ d: w.d, ...(slot ? { rid: slot } : {}), ...(entry.planned ? { planned: entry.planned } : {}), ...readSession(entry, fallback) })
+    const at = Number(w.end) || Number(w.start) || 0
+    out.push({ d: w.d, ...(at > 0 ? { at } : {}), ...(slot ? { rid: slot } : {}), ...(entry.planned ? { planned: entry.planned } : {}), ...readSession(entry, fallback) })
   })
   return out
 }
@@ -524,6 +540,10 @@ export function densityRestOf(S, cfg) {
  * planned sessions from the last session, in which case the rows keep last time's (see
  * startsFromLast in session-start.js).
  */
+// When a past session happened, in ms: its end (or start), else the end of its day for an import
+// that kept only the date.
+const sessionTime = s => (Number(s?.at) > 0 ? Number(s.at) : (s?.d ? new Date(s.d + 'T23:59:59').getTime() || 0 : 0))
+
 export function nextPrescription(S, cfg, routine) {
   // An exercise kept per gym (#988, lib/gym-split.js) progresses from this gym's (or brand's)
   // sessions only: 15 kg on one cable stack says nothing about the next weight on another.
@@ -576,7 +596,12 @@ export function nextPrescription(S, cfg, routine) {
     const out = undulatingPrescription(S, cfg, { policy, inc, unit, owned, assisted })
     if (out) return out
   }
+  // The plan's weight was set after the last session (this fork): `wAt` is when the routine's
+  // weight for this slot was last changed by hand or by a plan written for you. Newer than the
+  // session it would progress from, it is a decision about today, so it is the weight.
+  const planW = mode === 'reps' && cfg.weight > 0 && Number(cfg.wAt) > 0 && (!last || Number(cfg.wAt) > sessionTime(last))
   if (!last) {
+    if (planW && !steady && !triple) return { policy, kind: 'first', weight: cfg.weight, why: ['Nothing logged yet, so this session sets the baseline.'] }
     if (steady) return { policy, kind: 'first', reps: rangeS.repsMin, rowReps: Array(Math.max(1, cfg.sets || 1)).fill(rangeS.repsMin), why: ['Nothing logged yet, so this session sets the baseline.'] }
     if (triple) return { policy, kind: 'first', reps: range3.repsMin, sets: sets3.setsMin, rowReps: startRows(range3.repsMin), why: ['Nothing logged yet, so this session sets the baseline.'] }
     return { policy, kind: 'first', why: ['Nothing logged yet, so this session sets the baseline.'] }
@@ -597,13 +622,14 @@ export function nextPrescription(S, cfg, routine) {
   const across = lastAcrossRoutines(S)
   const borrowed = !!routine?.id && !across && last.rid !== routine.id
   const ownPlan = !across || !routine?.id || last.rid === routine.id
-  if (last.planned && ownPlan ? planChanged(last.planned, cfg) : borrowed) {
-    const why = borrowed ? ['First time in this routine, so starting from its own target.'] : ['Plan changed, so starting from your new target.']
+  if (planW || (last.planned && ownPlan ? planChanged(last.planned, cfg) : borrowed)) {
+    const why = planW ? ['Weight set in the plan after your last session: {0} {1}.', cfg.weight, unit]
+      : borrowed ? ['First time in this routine, so starting from its own target.'] : ['Plan changed, so starting from your new target.']
     // The weight holds at what was last lifted, unless the plan's own weight is not the one the
     // session was built from: the same edit that turned 3 × 5 @ 100 into 3 × 10 @ 70 set 70,
     // and 102.5 × 10 is a load never lifted for those reps. A routine whose weight nobody
     // touched still carries the one it was created with, so there the history decides.
-    const set = cfg.weight > 0 && last.planned && (last.planned.weight ?? null) !== cfg.weight ? { weight: cfg.weight } : null
+    const set = planW || (cfg.weight > 0 && last.planned && (last.planned.weight ?? null) !== cfg.weight) ? { weight: cfg.weight } : null
     if (mode === 'time') return { policy, kind: 'hold', ...set, sec: cfg.sec || last.goal || undefined, why }
     if (!set && last.weight <= 0 && climbsReps(cfg)) return { policy, kind: 'hold', weight: 0, reps: cfg.reps || undefined, why }
     // A loaded lift logged at 0 had no weight typed in (see below): the plan's, if it has one.

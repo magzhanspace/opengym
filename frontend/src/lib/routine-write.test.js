@@ -17,7 +17,7 @@ describe('createRoutine', () => {
     const r = createRoutine(S, { name: 'Legs', exercises: [{ exercise: 'squat', sets: 5, reps: 5, weight: 100, rest_sec: 150 }, { exercise: 'plank', seconds: 60 }], weekdays: ['tuesday', 5] }, { id: 'n1' })
     expect(r.problems).toBeUndefined()
     expect(r.routine).toEqual({ id: 'n1', name: 'Legs', emoji: 'figureStrength', ex: [
-      { id: '0043', sets: 5, reps: 5, weight: 100, mode: 'reps', restSec: 150 },
+      { id: '0043', sets: 5, reps: 5, weight: 100, mode: 'reps', restSec: 150, wAt: expect.any(Number) },
       { id: '0463', sets: 3, sec: 60, weight: 0, mode: 'time', bodyweight: true },
     ] })
     expect(S.routines).toHaveLength(2)

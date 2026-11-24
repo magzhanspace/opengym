@@ -1350,7 +1350,7 @@ describe('saving progression settings unchanged', () => {
     expect(after.plan.kind).toBe('up')
     expect(after.planned).toEqual(before.planned)
     expect(after.target).toMatchObject({ weight: 42.5, reps: 8, repsMin: 8 })
-    expect(container.querySelector('.planline')?.textContent).toBe('Plan: 3 × 8–12')
+    expect(container.querySelector('.planline')?.textContent).toBe('Plan: 3 × 8–12 · 40 kg · today 42.5 kg')
     const following = next(st)
     expect(following.plan.why[0]).not.toBe('Plan changed, so starting from your new target.')
     expect(rows(following)).toEqual([[42.5, 9], [42.5, 9], [42.5, 9]])
@@ -2434,7 +2434,7 @@ describe('the plan line', () => {
 
   it('shows the plan quietly when the rows are the plan', async () => {
     await mount([planned()])
-    expect(line()).toBe('Plan: 2 × 10')
+    expect(line()).toBe('Plan: 2 × 10 · 60 kg')
   })
 
   it('says when progression moved the sets or reps', async () => {
@@ -2444,17 +2444,17 @@ describe('the plan line', () => {
 
   it('says when the reps were carried over from the last session', async () => {
     await mount([planned({ carried: true, sets: [{ w: 62.5, r: 15, done: false }, { w: 62.5, r: 15, done: false }] })])
-    expect(line()).toBe('Plan: 2 × 10 · reps from your last session')
+    expect(line()).toBe('Plan: 2 × 10 · 60 kg · today 62.5 kg · reps from your last session')
   })
 
   it('reads a double-progression aim inside the range as the plan', async () => {
     await mount([planned({ planned: { sets: 3, reps: 12, repsMin: 8, weight: 40 }, target: { mode: 'reps', sets: 3, reps: 11, repsMin: 8, weight: 40 } })])
-    expect(line()).toBe('Plan: 3 × 8–12')
+    expect(line()).toBe('Plan: 3 × 8–12 · 40 kg · today 60 kg')
   })
 
   it('stays in compact view, where the last-time recap and progression line go', async () => {
     await mount([planned()], 0, { workoutView: 'compact' })
-    expect(line()).toBe('Plan: 2 × 10')
+    expect(line()).toBe('Plan: 2 × 10 · 60 kg')
     expect(container.textContent).not.toContain('Last time')
   })
 
