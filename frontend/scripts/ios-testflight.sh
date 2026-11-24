@@ -18,7 +18,10 @@
 #                                ~/.appstoreconnect/private_keys/AuthKey_<ASC_KEY_ID>.p8
 #                                (or in the folder ASC_KEY_DIR names)
 #   ASC_APPLE_ID + ASC_APP_PASSWORD   an Apple ID with access to the app and an app-specific
-#                                password for it (appleid.apple.com → Sign-In and Security)
+#                                password for it (appleid.apple.com → Sign-In and Security).
+#                                A new password can take a few minutes before Apple accepts it.
+#   ASC_PROVIDER_ID              optional: the team's provider public id (altool --list-providers),
+#                                for an Apple ID in more than one team
 #
 # Secrets are never printed: the password goes to altool as @env:ASC_APP_PASSWORD, and nothing
 # here runs with `set -x`.
@@ -99,6 +102,7 @@ if [[ $AUTH == key ]]; then
   [[ -n "${ASC_KEY_DIR:-}" ]] && export API_PRIVATE_KEYS_DIR="$ASC_KEY_DIR"
   xcrun altool --upload-app -f "$IPA" -t ios --apiKey "$ASC_KEY_ID" --apiIssuer "$ASC_ISSUER_ID"
 else
-  xcrun altool --upload-app -f "$IPA" -t ios -u "$ASC_APPLE_ID" -p @env:ASC_APP_PASSWORD
+  xcrun altool --upload-app -f "$IPA" -t ios -u "$ASC_APPLE_ID" -p @env:ASC_APP_PASSWORD \
+    ${ASC_PROVIDER_ID:+--provider-public-id "$ASC_PROVIDER_ID"}
 fi
 echo "Uploaded build $BUILD_NUMBER. TestFlight shows it once App Store Connect has processed it."
