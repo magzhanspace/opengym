@@ -11,5 +11,5 @@
 // The certificate is an "Apple Distribution" one in the login keychain. A Simulator build needs
 // none of this (CODE_SIGNING_ALLOWED=NO).
 OPENGYM_TEAM_ID = V7YCX65M9R
-OPENGYM_APP_PROFILE =
-OPENGYM_WIDGETS_PROFILE =
+OPENGYM_APP_PROFILE = Magjan Gym App Store
+OPENGYM_WIDGETS_PROFILE = Magjan Gym Widgets App Store
