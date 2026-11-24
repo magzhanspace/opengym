@@ -601,7 +601,7 @@ export function nextPrescription(S, cfg, routine) {
   // session it would progress from, it is a decision about today, so it is the weight.
   const planW = mode === 'reps' && cfg.weight > 0 && Number(cfg.wAt) > 0 && (!last || Number(cfg.wAt) > sessionTime(last))
   if (!last) {
-    if (planW && !steady && !triple) return { policy, kind: 'first', weight: cfg.weight, why: ['Nothing logged yet, so this session sets the baseline.'] }
+    if (planW && !steady && !triple) return { policy, kind: 'hold', weight: cfg.weight, why: ['Weight set in the plan after your last session: {0} {1}.', cfg.weight, unit] }
     if (steady) return { policy, kind: 'first', reps: rangeS.repsMin, rowReps: Array(Math.max(1, cfg.sets || 1)).fill(rangeS.repsMin), why: ['Nothing logged yet, so this session sets the baseline.'] }
     if (triple) return { policy, kind: 'first', reps: range3.repsMin, sets: sets3.setsMin, rowReps: startRows(range3.repsMin), why: ['Nothing logged yet, so this session sets the baseline.'] }
     return { policy, kind: 'first', why: ['Nothing logged yet, so this session sets the baseline.'] }

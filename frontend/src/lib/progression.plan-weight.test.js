@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { readSession, nextPrescription } from './progression.js'
 import { createRoutine, updateRoutine } from './routine-write.js'
+import { buildPlannedEntry } from './session-start.js'
 import { EXDB, isAssisted } from './exercises.js'
 
 // This fork: a weight set in the plan after the last session wins (slot `wAt`), and a heavy
@@ -54,8 +55,17 @@ describe('plan weight newer than the last session', () => {
     expect(nextPrescription(old, { ...cfg, wAt: Date.parse('2026-11-22T10:00:00') }, null).weight).toBeGreaterThan(80)
     expect(nextPrescription(old, { ...cfg, wAt: Date.parse('2026-11-23T10:00:00') }, null).weight).toBe(70)
   })
-  it('gives the plan weight on a first session too', () => {
-    expect(nextPrescription({ unit: 'kg', workouts: [] }, { ...cfg, wAt: T22 }, null).weight).toBe(70)
+  it('gives the plan weight on a first session too, in the rows', () => {
+    const st = { unit: 'kg', workouts: [], exWeights: { [LIFT]: { w: 90, d: '2026-07-01' } }, active: { d: '2026-11-26' } }
+    expect(nextPrescription(st, { ...cfg, wAt: T22 }, null).weight).toBe(70)
+    const built = buildPlannedEntry(st, { ...cfg, wAt: T22 }, { id: 'r', ex: [] })
+    expect(built.sets.map(s => s.w)).toEqual([70, 70, 70])
+    expect(built.target.wAt).toBeUndefined()
+  })
+  it('opens the rows at the plan weight after a session', () => {
+    const st = { ...S, active: { d: '2026-11-26' } }
+    const built = buildPlannedEntry(st, { ...cfg, wAt: T22 + 5 * 3600e3 }, null)
+    expect(built.sets.filter(s => !s.warmup).map(s => s.w)).toEqual([70, 70, 70])
   })
 })
 
