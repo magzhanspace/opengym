@@ -194,6 +194,17 @@ describe('weigh-ins', () => {
     expect((await hs.enableRead('weight', getState, { apply })).ok).toBe(true)
     expect(S.bodyweight[0].src).toBe('ah')
   })
+
+  // Apple Health has no history permission and no 30-day limit: a scale that last weighed you
+  // six weeks ago still shows up, and the first read goes a year back.
+  it('on the iPhone, the first read goes a year back', async () => {
+    vi.resetModules(); h.platform = 'ios'; hs = await import('./health-sync.js')
+    h.weights = [rec(45 * 24, 96.4), rec(200 * 24, 98)]
+    await hs.enableRead('weight', getState, { apply })
+    expect(reads('readWeights')[0][1].since).toBe(NOW - 365 * 24 * 3600e3)
+    expect(S.bodyweight.map(b => b.w)).toEqual([98, 96.4])
+    expect(file().wHistory).toBe(false)
+  })
 })
 
 // Idea from #801 (antoni-heredia): Health Connect's history permission lets the first read of

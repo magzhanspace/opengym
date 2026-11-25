@@ -313,6 +313,8 @@ export async function enableRead(kind, getState, { apply = null } = {}) {
   // `read` is then missing, and a refusal just reads nothing. Body composition: any one of them.
   const ok = res && (res.read ? res.read[perm] !== false : true)
   if (!ok) return { ok: false, reason: 'denied' }
+  // A read already running saves the file as it found it: waited for, it cannot undo this switch.
+  if (readRunning) await readRunning.catch(() => {})
   const h = await loadHealth()
   const out = { ...h, [readKey(kind)]: true, readError: null }
   if (kind === 'weight') out.wHistory = history && res.read?.history === true
@@ -362,6 +364,10 @@ async function readOnce(getState, force, now, applyFn) {
     return true
   }
   const fail = e => { error = e?.code === 'permission' ? 'permission' : e?.code === 'unavailable' ? 'unavailable' : 'failed' }
+  // How far back a first read of the scale goes: a year on the iPhone, where Apple Health has no
+  // history permission and no 30-day limit (the scale's older weigh-ins arrive too), and on Android
+  // with Health Connect's history permission; 30 days otherwise.
+  const longBack = p.platform === 'ios' || !!h.wHistory
 
   if (h.readHr) {
     const S = getState()
@@ -387,7 +393,7 @@ async function readOnce(getState, force, now, applyFn) {
     try {
       let res
       try {
-        res = await p.HC.readWeights({ since: sinceFor(h.wHistory ? WEIGHT_HISTORY_MS : WEIGHT_FIRST_MS) })
+        res = await p.HC.readWeights({ since: sinceFor(longBack ? WEIGHT_HISTORY_MS : WEIGHT_FIRST_MS) })
       } catch (e) {
         // The history permission taken back in Health Connect's settings: the 30 days still read.
         if (!(h.wHistory && e?.code === 'permission')) throw e
@@ -412,7 +418,7 @@ async function readOnce(getState, force, now, applyFn) {
   // newest reading seen, with the same margin as weigh-ins; the first read as far back as they go.
   if (h.readBody && (force ? now - lastBodyRead >= RESUME_EVERY_MS : now - lastBodyRead >= READ_EVERY_MS)) {
     try {
-      const since = h.bCursor > 0 ? Math.max(h.bCursor - WEIGHT_MARGIN_MS, now - WEIGHT_HISTORY_MS) : now - (h.wHistory ? WEIGHT_HISTORY_MS : WEIGHT_FIRST_MS)
+      const since = h.bCursor > 0 ? Math.max(h.bCursor - WEIGHT_MARGIN_MS, now - WEIGHT_HISTORY_MS) : now - (longBack ? WEIGHT_HISTORY_MS : WEIGHT_FIRST_MS)
       const res = await p.HC.readBody({ since })
       lastBodyRead = now
       const records = Array.isArray(res?.records) ? res.records : []

@@ -371,7 +371,8 @@ default, each independent of writing and of the other:
   every 10 minutes (2 after coming back to the foreground) until the 24 hours are over.
 - **Weigh-ins from other apps.** `HC.readWeights({ since })` → `{ records: [{ t, kg, id, origin,
   clientId }] }`: 30 days back the first time (what Health Connect gives without the history
-  permission), afterwards from the newest seen minus two days. `lib/health-read.js` `mergeWeighIns`
+  permission; a year with it, and always a year on the iPhone, where Apple Health has no such
+  limit), afterwards from the newest seen minus two days. `lib/health-read.js` `mergeWeighIns`
   keeps every sample with its time as a weigh-in of its day (#859, `lib/weigh-ins.js`), under an id
   made from the hub's own record id, so two phones reading the same sample add it once. It skips
   openGym's own records (`clientRecordId` `opengym-*`, origin `ch.duartesantos.opengym*`), a sample
