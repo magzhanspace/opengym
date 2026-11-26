@@ -8,6 +8,7 @@ import { t } from './i18n-core.js'
 import { useUI } from '../store/useUI.js'
 import { applyVoiceNote, flushClips, pickMime, VOICE_BITS, VOICE_MAX_MS } from './voice-notes.js'
 import { voiceQueue } from './voice-queue.js'
+import { holdMicSession, releaseMicSession } from './sound.js'
 
 // rec: the clip being recorded ({ start, exId, entryIdx, at }), pending: clips waiting for text.
 export const useVoice = create(() => ({ rec: null, pending: 0 }))
@@ -34,11 +35,14 @@ export async function startVoice({ start, exId, entryIdx, hint }) {
   if (current) return
   const me = uid()
   if (!me) return
-  const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } })
+  holdMicSession()
+  let stream
+  try { stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } }) }
+  catch (e) { releaseMicSession(); throw e }
   const mime = pickMime()
   let mr
   try { mr = new MediaRecorder(stream, { ...(mime ? { mimeType: mime } : {}), audioBitsPerSecond: VOICE_BITS }) }
-  catch (e) { stream.getTracks().forEach(tr => tr.stop()); throw e }
+  catch (e) { stream.getTracks().forEach(tr => tr.stop()); releaseMicSession(); throw e }
   const chunks = []
   mr.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data) }
   const at = Date.now()
@@ -61,6 +65,7 @@ export function stopVoice() {
       if (ended) return
       ended = true
       c.stream.getTracks().forEach(tr => tr.stop())
+      releaseMicSession()
       const ms = Date.now() - c.at
       const type = String(c.mime || c.chunks[0]?.type || 'audio/mp4').split(';')[0].trim()
       const blob = new Blob(c.chunks, { type })

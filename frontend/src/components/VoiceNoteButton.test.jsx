@@ -89,10 +89,46 @@ describe('VoiceNoteButton', () => {
   })
 
   it('a refused microphone says so and records nothing', async () => {
-    navigator.mediaDevices.getUserMedia = async () => { throw new Error('NotAllowedError') }
+    navigator.mediaDevices.getUserMedia = async () => { throw Object.assign(new Error('denied'), { name: 'NotAllowedError' }) }
     draw()
     await act(async () => { host.querySelector('button').click() })
     expect(useVoice.getState().rec).toBe(null)
-    expect(m.toast).toHaveBeenCalledWith(expect.stringMatching(/microphone/i))
+    expect(m.toast).toHaveBeenCalledWith(expect.stringMatching(/microphone is off/i))
+  })
+
+  it('any other failure names the error instead of blaming the permission', async () => {
+    navigator.mediaDevices.getUserMedia = async () => { throw Object.assign(new Error('AudioSession category is not compatible with audio capture.'), { name: 'InvalidStateError' }) }
+    draw()
+    await act(async () => { host.querySelector('button').click() })
+    expect(useVoice.getState().rec).toBe(null)
+    expect(m.toast).toHaveBeenCalledWith(expect.stringMatching(/InvalidStateError: AudioSession category/))
+    expect(m.toast).not.toHaveBeenCalledWith(expect.stringMatching(/microphone is off/i))
+  })
+
+  // WebKit (iOS 17+) refuses the mic while the page's audio session is 'ambient', which the app
+  // keeps it at (lib/sound.js setPlayOnSilent): a clip takes 'play-and-record' and gives it back.
+  it('takes the play-and-record audio session for the clip and gives the old one back', async () => {
+    const session = { type: 'ambient' }
+    Object.defineProperty(globalThis.navigator, 'audioSession', { configurable: true, value: session })
+    let typeAtCapture = null
+    const gum = navigator.mediaDevices.getUserMedia
+    navigator.mediaDevices.getUserMedia = async c => { typeAtCapture = session.type; return gum(c) }
+    try {
+      draw()
+      const btn = () => host.querySelector('button')
+      vi.useFakeTimers({ toFake: ['Date'], shouldAdvanceTime: true })
+      await act(async () => { btn().click() })
+      expect(typeAtCapture).toBe('play-and-record')
+      expect(session.type).toBe('play-and-record')
+      vi.setSystemTime(Date.now() + 5000)
+      await act(async () => { btn().click() })
+      await act(async () => {})
+      expect(session.type).toBe('ambient')
+
+      // A refused mic gives it back too.
+      navigator.mediaDevices.getUserMedia = async () => { throw Object.assign(new Error('no'), { name: 'NotAllowedError' }) }
+      await act(async () => { btn().click() })
+      expect(session.type).toBe('ambient')
+    } finally { delete globalThis.navigator.audioSession }
   })
 })

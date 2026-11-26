@@ -5411,6 +5411,8 @@ export default {
   "Voice note on {0}": "Голосовая заметка: {0}",
   "Stop the voice note": "Остановить запись",
   "The microphone is off for openGym. Allow it in the browser settings.": "Микрофон для openGym выключен. Разреши его в настройках браузера.",
+  "The microphone is off for openGym. Turn it on in iPhone Settings → openGym → Microphone.": "Микрофон для openGym выключен. Включи его в Настройках iPhone → openGym → Микрофон.",
+  "The recording did not start ({0}).": "Запись не началась ({0}).",
   "The voice note could not be saved on this device.": "Не получилось сохранить голосовую заметку на этом устройстве.",
   "Voice note saved, turning it into text…": "Заметка записана, перевожу в текст…",
   "Voice note saved. It turns into text once you are online.": "Заметка записана. Превратится в текст, когда появится сеть.",

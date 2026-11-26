@@ -219,12 +219,31 @@ export const appleTouchDevice = () => {
 const inApp = () => import.meta.env.VITE_MOBILE === '1'
 export function setPlayOnSilent(on) {
   // In the app any WebKit with the API stays 'ambient', whatever it says it is (an iPad, a Mac).
-  if (inApp() && typeof navigator !== 'undefined' && navigator.audioSession) {
-    try { navigator.audioSession.type = 'ambient' } catch (e) { /* */ }
-    return
-  }
+  if (inApp() && typeof navigator !== 'undefined' && navigator.audioSession) { sessionType('ambient'); return }
   if (!playOnSilentSupported()) return
-  try { navigator.audioSession.type = inApp() ? 'ambient' : on ? 'playback' : 'auto' } catch (e) { /* */ }
+  sessionType(inApp() ? 'ambient' : on ? 'playback' : 'auto')
+}
+
+// The page's audio-session type, or, while a voice note holds the mic, the type to go back to.
+let micBack = null
+function sessionType(type) {
+  if (micBack !== null) { micBack = type; return }
+  try { navigator.audioSession.type = type } catch (e) { /* */ }
+}
+// WebKit refuses the microphone while the page's session is 'ambient' or 'playback' (getUserMedia:
+// InvalidStateError "AudioSession category is not compatible with audio capture"), which is what
+// setPlayOnSilent leaves it at. A voice note takes 'play-and-record' for its clip and gives the
+// session back after (lib/voice-live.js).
+export function holdMicSession() {
+  const as = typeof navigator !== 'undefined' ? navigator.audioSession : null
+  if (!as || micBack !== null) return
+  try { const was = as.type || 'auto'; as.type = 'play-and-record'; micBack = was } catch (e) { /* */ }
+}
+export function releaseMicSession() {
+  if (micBack === null) return
+  const back = micBack
+  micBack = null
+  sessionType(back)
 }
 
 // Settings → "Vibrate" (Discord, asierlama): the buzz at the end of a rest or a hold and on a set

@@ -6,7 +6,19 @@ import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { t } from '../lib/i18n.js'
 import { startVoice, stopVoice, useVoice, voiceSupported } from '../lib/voice-live.js'
+import { MOBILE } from '../lib/mobile.js'
 import Icon from './Icon.jsx'
+
+// What a failed start says: a refused mic points to where it is allowed, anything else names the
+// error, so a screenshot of it tells what went wrong.
+export function micFailure(e) {
+  if (e?.name === 'NotAllowedError' || e?.name === 'SecurityError') {
+    return MOBILE
+      ? t('The microphone is off for openGym. Turn it on in iPhone Settings → openGym → Microphone.')
+      : t('The microphone is off for openGym. Allow it in the browser settings.')
+  }
+  return t('The recording did not start ({0}).', [e?.name, e?.message].filter(Boolean).join(': ') || 'Error')
+}
 
 function Seconds({ at }) {
   const [now, setNow] = useState(Date.now())
@@ -28,7 +40,7 @@ export default function VoiceNoteButton({ entryIdx, exId, start, hint, label }) 
     if (busyElsewhere || asking) return
     setAsking(true)
     try { await startVoice({ start, exId, entryIdx, hint }) }
-    catch { useUI.getState().toast(t('The microphone is off for openGym. Allow it in the browser settings.')) }
+    catch (e) { useUI.getState().toast(micFailure(e)) }
     finally { setAsking(false) }
   }
 
