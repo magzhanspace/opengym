@@ -51,6 +51,31 @@ export default function VoiceNoteButton({ entryIdx, exId, start, hint, label }) 
   </button>
 }
 
+// Today's own note on an exercise, set apart from the plan's instruction and the other notes above
+// it (they share the grey card): the mic or note icon in the accent colour and the text in full
+// strength. A tap opens it to read, pin, edit or delete (exerciseNoteSheet).
+export function MyNote({ note, onOpen, className = 'exnote' }) {
+  const voice = useVoiceOnly()
+  if (!note) return null
+  return <button type="button" className={className + ' my-note'} onClick={onOpen} aria-label={t('My note: {0}', note)}>
+    <Icon name={voice ? 'mic' : 'note'} className="my-note-ic" /><span>{note}</span>
+  </button>
+}
+
+// The clips said on this exercise that have no text yet: a line where the text will land.
+export function VoiceNoteStatus({ exId, entryIdx, className = 'exnote' }) {
+  const start = useStore(s => s.S?.active?.start)
+  const n = useVoice(s => s.waiting.filter(w => w.start === start && w.exId === exId && w.entryIdx === entryIdx).length)
+  if (!n) return null
+  const offline = globalThis.navigator?.onLine === false
+  return <div className={className + ' vn-wait'} role="status">
+    <Icon name="mic" className="my-note-ic" />
+    <span>{offline
+      ? (n === 1 ? t('Voice note waiting for the network.') : t('{0} voice notes waiting for the network.', n))
+      : (n === 1 ? t('Turning the voice note into text…') : t('Turning {0} voice notes into text…', n))}</span>
+  </div>
+}
+
 // With voice notes on (the server takes them and this browser records), notes in a workout are
 // said, not typed: the menus offer a note only once there is one, and its sheet shows it to read,
 // pin or delete. The editor of a saved workout still types, to correct what was heard.

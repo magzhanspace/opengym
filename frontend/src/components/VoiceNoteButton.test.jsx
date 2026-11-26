@@ -30,7 +30,7 @@ class FakeRecorder {
   }
 }
 
-const { default: VoiceNoteButton, voiceOnlyNow } = await import('./VoiceNoteButton.jsx')
+const { default: VoiceNoteButton, MyNote, VoiceNoteStatus, voiceOnlyNow } = await import('./VoiceNoteButton.jsx')
 const { useVoice, startVoiceNotes } = await import('../lib/voice-live.js')
 const { useStore } = await import('../store/useStore.js')
 startVoiceNotes(useStore)
@@ -46,7 +46,7 @@ beforeEach(() => {
     configurable: true,
     value: { getUserMedia: async () => ({ getTracks: () => [{ stop: () => { tracks.stopped++ } }] }) },
   })
-  useVoice.setState({ rec: null, pending: 0 })
+  useVoice.setState({ rec: null, pending: 0, waiting: [] })
   host = document.createElement('div'); document.body.appendChild(host); root = createRoot(host)
 })
 afterEach(() => {
@@ -86,6 +86,22 @@ describe('VoiceNoteButton', () => {
     expect(m.put).toHaveLength(1)
     expect(m.put[0]).toMatchObject({ uid: 'u1', start: 100, exId: '0085', entryIdx: 1, hint: 'RDL', mime: 'audio/mp4' })
     expect(m.toast).toHaveBeenCalled()
+  })
+
+  it("today's note is its own card, and a clip still waiting for text shows where it will land", () => {
+    m.state = { ...m.state, S: { active: { start: 100 } } }
+    const open = vi.fn()
+    act(() => root.render(<><MyNote note="Колено тянет" onOpen={open} /><VoiceNoteStatus exId="0085" entryIdx={1} /></>))
+    const note = host.querySelector('button.my-note')
+    expect(note.textContent).toBe('Колено тянет')
+    act(() => note.click())
+    expect(open).toHaveBeenCalled()
+    expect(host.querySelector('.vn-wait')).toBe(null)
+
+    act(() => useVoice.setState({ waiting: [{ start: 100, exId: '0085', entryIdx: 1 }, { start: 100, exId: '0085', entryIdx: 1 }, { start: 100, exId: '0001', entryIdx: 0 }] }))
+    expect(host.querySelector('.vn-wait').textContent).toMatch(/2/)
+    act(() => useVoice.setState({ waiting: [{ start: 99, exId: '0085', entryIdx: 1 }] }))
+    expect(host.querySelector('.vn-wait')).toBe(null)
   })
 
   it('a refused microphone says so and records nothing', async () => {

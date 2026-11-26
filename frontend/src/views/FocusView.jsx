@@ -2,7 +2,7 @@ import { TempoTag, tempoGuideSheet } from '../components/Tempo.jsx'
 import { tempoOf, guideReps } from '../lib/tempo.js'
 import { useEffect, useState } from 'react'
 import { useStore } from '../store/useStore.js'
-import { voiceOnlyNow } from '../components/VoiceNoteButton.jsx'
+import { MyNote, VoiceNoteStatus, voiceOnlyNow } from '../components/VoiceNoteButton.jsx'
 import { useUI } from '../store/useUI.js'
 import { exOr } from '../lib/exercises.js'
 import { clampIncline, INCLINE_MAX, INCLINE_STEP, clampLevel, LEVEL_MAX, cardioCol } from '../lib/incline.js'
@@ -334,7 +334,8 @@ export default function FocusView({
         </div>
         {entry.target?.note && <div className="focus-note">{entry.target.note}</div>}
         {pinnedNote && <div className="focus-note pinned"><Icon name="flag" />{t('From {0}:', fmtDate(pinnedNote.d, true))} {pinnedNote.note}</div>}
-        {entry.note && <div className="focus-note">{entry.note}</div>}
+        <MyNote note={entry.note} onOpen={() => exerciseNoteSheet(entryIdx)} className="focus-note" />
+        <VoiceNoteStatus exId={entry.id} entryIdx={entryIdx} className="focus-note" />
         {last && <div className="focus-last">{t('Last time')} · {fmtDate(last.d)}</div>}
         {guidance && <button className="focus-guidance" onClick={onProgressionSettings}><Icon name="lightbulb" />{t(guidance.policyLabel)}</button>}
       </div>

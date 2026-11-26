@@ -21,6 +21,7 @@
 .focus-note{padding-left:8px;border-left:var(--hair) solid var(--sep)}
 .focus-note.pinned{color:var(--yellow);display:flex;gap:5px;align-items:flex-start}
 .focus-note .icn{margin-top:1px;flex:none}
+.focus-note.my-note{background:none;padding:0 0 0 8px;font-size:var(--fs-caption);line-height:1.35}
 .focus-guidance{display:flex;align-items:center;gap:5px;width:max-content;max-width:100%;text-align:left;color:var(--acc-ink);font-weight:600}
 .focus-guidance .icn{font-size:var(--fs-footnote)}
 .focus-prescription{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:14px 0}

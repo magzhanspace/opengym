@@ -10,8 +10,9 @@ import { applyVoiceNote, flushClips, pickMime, VOICE_BITS, VOICE_MAX_MS } from '
 import { voiceQueue } from './voice-queue.js'
 import { holdMicSession, releaseMicSession } from './sound.js'
 
-// rec: the clip being recorded ({ start, exId, entryIdx, at }), pending: clips waiting for text.
-export const useVoice = create(() => ({ rec: null, pending: 0 }))
+// rec: the clip being recorded ({ start, exId, entryIdx, at }), pending: clips waiting for text,
+// waiting: where each of them is meant to go ({ start, exId, entryIdx }), for the line under its exercise.
+export const useVoice = create(() => ({ rec: null, pending: 0, waiting: [] }))
 
 let storeRef = null
 let current = null
@@ -27,7 +28,10 @@ export function voiceSupported() {
 
 async function countPending() {
   const me = uid()
-  try { useVoice.setState({ pending: me ? (await (await voiceQueue()).all()).filter(c => c.uid === me).length : 0 }) } catch { /* nothing to show */ }
+  try {
+    const mine = me ? (await (await voiceQueue()).all()).filter(c => c.uid === me) : []
+    useVoice.setState({ pending: mine.length, waiting: mine.map(c => ({ start: c.start, exId: c.exId, entryIdx: c.entryIdx })) })
+  } catch { /* nothing to show */ }
 }
 
 /** Starts a clip for this exercise of the workout in progress. Throws when the mic is refused. */

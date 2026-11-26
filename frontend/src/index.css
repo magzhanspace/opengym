@@ -439,6 +439,16 @@ button.conn:active{filter:brightness(1.12)}
 /* The voice-note mic (components/VoiceNoteButton.jsx): a red pill with the seconds while it records. */
 .iconbtn.vn-btn.rec{width:auto;padding:0 10px;gap:4px;border-radius:18px;background:var(--red);color:#fff;animation:vnpulse 1.4s ease-in-out infinite}
 .iconbtn.vn-btn:disabled{opacity:.35}
+/* Today's own note (MyNote) and the line for a clip still turning into text (VoiceNoteStatus):
+   the accent icon sets them apart from the plan's instruction in the same grey card. */
+.my-note,.vn-wait{display:flex;gap:8px;align-items:flex-start;width:100%;text-align:start}
+button.my-note{border:0;font:inherit;font-size:var(--fs-subhead);line-height:1.45;color:var(--label);cursor:pointer;-webkit-tap-highlight-color:transparent}
+.my-note-ic{flex:none;color:var(--acc-ink);font-size:1.05em;transform:translateY(.18em)}
+.my-note>span{flex:1;min-width:0;white-space:pre-wrap}
+.vn-wait{color:var(--label-3)}
+.vn-wait .my-note-ic{animation:vnwait 1.6s ease-in-out infinite}
+@keyframes vnwait{0%,100%{opacity:1}50%{opacity:.35}}
+@media (prefers-reduced-motion:reduce){.vn-wait .my-note-ic{animation:none}}
 .vn-sec{font-size:var(--fs-footnote, .8125rem);font-variant-numeric:tabular-nums;font-weight:600}
 @keyframes vnpulse{0%,100%{box-shadow:0 0 0 0 rgba(255,59,48,.45)}50%{box-shadow:0 0 0 6px rgba(255,59,48,0)}}
 @media (prefers-reduced-motion:reduce){.iconbtn.vn-btn.rec{animation:none}}

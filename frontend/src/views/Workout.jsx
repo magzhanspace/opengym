@@ -48,7 +48,7 @@ import Elapsed from '../components/Elapsed.jsx'
 import LiveHeartRate from '../components/LiveHeartRate.jsx'
 import LiveCard from '../components/LiveCard.jsx'
 import Icon from '../components/Icon.jsx'
-import VoiceNoteButton, { voiceOnlyNow, useVoiceOnly } from '../components/VoiceNoteButton.jsx'
+import VoiceNoteButton, { MyNote, VoiceNoteStatus, voiceOnlyNow, useVoiceOnly } from '../components/VoiceNoteButton.jsx'
 import { Button, Check, NumberField } from '../components/ui.jsx'
 import { defaultIncrement, weightIncrement, stepWeight } from '../lib/progression.js'
 import { progressionGuidance } from '../lib/progression-copy.js'
@@ -992,7 +992,8 @@ function ExerciseBlock({ entryIdx, compact, listed, dense, editing, onToggle, on
       <Icon name="pin" style={{ fontSize: 'var(--fs-footnote)', marginInlineEnd: 5, verticalAlign: '-2px' }} />
       {t('From {0}:', fmtDate(pinnedNote.d, true))} {pinnedNote.note}
     </div>}
-    {entry.note && <div className="exnote">{entry.note}</div>}
+    <MyNote note={entry.note} onOpen={() => exerciseNoteSheet(entryIdx)} />
+    {!editing && <VoiceNoteStatus exId={entry.id} entryIdx={entryIdx} />}
     {/* Rows set for this one workout by a coach or planner (#972, lib/session-targets.js). */}
     {entry.sessionTarget && <div className="exnote" style={{ display: 'flex', gap: 6, alignItems: 'baseline' }}><Icon name="calendar" style={{ fontSize: 'var(--fs-footnote)', flex: 'none', transform: 'translateY(1px)' }} />
       <span>{entry.sessionTarget.by ? t('Today’s rows come from {0}. Your routine stays as it is.', entry.sessionTarget.by) : t('Today’s rows were planned for this day. Your routine stays as it is.')}</span></div>}
