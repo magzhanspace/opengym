@@ -74,6 +74,16 @@ for (const origin of ['https://localhost', 'capacitor://localhost']) {
   });
 }
 
+// The iPhone app sends a voice note with the exercise's name in X-OpenGym-Hint; a preflight that
+// leaves it out makes the WebView drop the POST, and the clip never turns into text.
+test('the voice-note preflight from the app allows the hint header', async t => {
+  const port = await startServer(t);
+  const r = await send(port, 'OPTIONS', '/api/transcribe', preflight('capacitor://localhost', { 'Access-Control-Request-Headers': 'authorization,content-type,x-opengym-hint' }));
+  assert.equal(r.status, 204);
+  const allowed = r.headers['access-control-allow-headers'].toLowerCase().split(/\s*,\s*/);
+  for (const h of ['authorization', 'content-type', 'x-opengym-hint']) assert.ok(allowed.includes(h), allowed.join());
+});
+
 test('a preflight that asks for private-network access gets it', async t => {
   const port = await startServer(t);
   const r = await send(port, 'OPTIONS', '/api/pair/redeem', preflight('https://localhost', { 'Access-Control-Request-Private-Network': 'true' }));

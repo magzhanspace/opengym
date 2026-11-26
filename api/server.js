@@ -3257,7 +3257,8 @@ const server = http.createServer(async (req, res) => {
       // for an Access application that passes OPTIONS through to the origin.
       // X-OpenGym-Account: the account a media upload is meant for (GHSA-699c-6p5r-q574).
       // PATCH and If-Match: a new version of a shared item (library/routes.js).
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization, CF-Access-Client-Id, CF-Access-Client-Secret, X-OpenGym-Account, If-Match',
+      // X-OpenGym-Hint: the exercise a voice note was said on (POST /api/transcribe).
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization, CF-Access-Client-Id, CF-Access-Client-Secret, X-OpenGym-Account, If-Match, X-OpenGym-Hint',
       'Access-Control-Max-Age': '86400',
       ...(pna ? { 'Access-Control-Allow-Private-Network': 'true' } : {})
     });
