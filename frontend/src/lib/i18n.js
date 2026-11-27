@@ -7,7 +7,7 @@ import { useSyncExternalStore } from 'react'
 import {
   LANGS, INSTR_LANGS, EXERCISE_NAME_LANGS, DATE_LOCALES, DERIVED_LOCALES, RTL_LANGS,
   getLang, dateLocale, t, tn, instrFor, exerciseNameFor, exerciseNameSearchText, getVersion,
-  baseLang, derivePack, _setLangState, exerciseNameClass, exerciseOwnName, exerciseOwnNameClass, exerciseAsTypedClass, descFor, instrTranslated, _setDetailsLoader, _setDetails, _detailsFailed
+  baseLang, derivePack, _setLangState, _bumpVersion, exerciseNameClass, exerciseOwnName, exerciseOwnNameClass, exerciseAsTypedClass, descFor, instrTranslated, _setDetailsLoader, _setDetails, _detailsFailed
 } from './i18n-core.js'
 
 export {
@@ -79,6 +79,9 @@ export async function setLang(l, showEn, enOnly) {
   document.documentElement.dir = RTL_LANGS.has(l) ? 'rtl' : 'ltr'
   notify()
 }
+
+/** Exercises arrived from the server (lib/catalogue-extra.js): every screen showing names redraws. */
+export function refreshCatalogueText() { _bumpVersion(); notify() }
 
 /** Called after every language change (the Apple Watch link sends the watch its new words). */
 export function onLangChange(fn) { subs.add(fn); return () => subs.delete(fn) }

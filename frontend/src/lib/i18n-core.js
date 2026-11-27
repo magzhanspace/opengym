@@ -163,21 +163,26 @@ export function _detailsFailed(retryMs = 20000) {
 
 // Instructions for an exercise in the current language (English steps as fallback). `st` on the
 // exercise itself still wins over nothing: a custom exercise or an older plan file carries its own.
+// Text an exercise sent by the server carries for itself (lib/catalogue-extra.js: tr.<lang>.n, .d,
+// .st), for the language's packs, which this build made before that exercise existed.
+const ownText = (ex, k) => (lang !== 'en' && ex?.tr?.[baseLang(lang)]?.[k]) || null
+const packName = ex => (exerciseNames && ex && exerciseNames[ex.id]) || (EXERCISE_NAME_LANGS.includes(baseLang(lang)) ? ownText(ex, 'n') : null)
+
 export const instrFor = ex => {
-  const own = instr && instr[ex.id]
+  const own = (instr && instr[ex.id]) || ownText(ex, 'st')
   if (own) return own
   if (!enInstr) askDetails()
   return (enInstr && enInstr[ex.id]) || ex.st || []
 }
 
 // Whether the steps instrFor shows are in the current language rather than the English fallback.
-export const instrTranslated = ex => !!(instr && ex && instr[ex.id])
+export const instrTranslated = ex => !!(ex && ((instr && instr[ex.id]) || ownText(ex, 'st')))
 
 // A sentence or two on what the exercise is, in the current language when someone has written
 // it, otherwise in English. Empty for exercises nobody has described yet and for custom ones.
 export const descFor = ex => {
   if (!ex) return ''
-  const own = descs && descs[ex.id]
+  const own = (descs && descs[ex.id]) || ownText(ex, 'd')
   if (own) return own
   if (!enDescs) askDetails()
   return (enDescs && enDescs[ex.id]) || ex.desc || ''
@@ -214,7 +219,7 @@ export const exerciseOwnName = ex => {
   // A language that chose "English names only" sees the canonical catalogue title, not the
   // translation — and never the parenthetical either. Custom exercises keep their exact name.
   if (enOnly) return ex?.n || ''
-  const translated = exerciseNames && ex && exerciseNames[ex.id]
+  const translated = packName(ex)
   if (!translated) return ex?.n || ''
   // Some names (Burpee, Pilates, brand/model terms) are the established term in the target
   // language too. Repeating an identical loanword in parentheses adds noise rather than
@@ -257,7 +262,7 @@ export const exerciseNameClass = ex => (shownNameOf(ex) ? '' : exerciseOwnNameCl
 // not "Am Turm", and "DB press" stays that too (app test 2026-11-11, P10). Title-casing is the
 // catalogue's rule (#290), for names stored lower-case. A name with no exercise behind it (an id
 // this build does not know) keeps the catalogue's rule: it is most likely a catalogue name.
-export const exerciseOwnNameClass = ex => (isOwnExercise(ex) ? '' : !enOnly && exerciseNames && ex && exerciseNames[ex.id]
+export const exerciseOwnNameClass = ex => (isOwnExercise(ex) ? '' : !enOnly && packName(ex)
   && CASED_NAME_LANGS.includes(baseLang(lang)) ? '' : 'capitalize')
 // lib/exercises.js knows which exercises are your own (isCustomEx, by where they live) and says
 // so here once it has loaded; this module stays free of the catalogue. Until then the flag decides.
@@ -269,13 +274,17 @@ export const exerciseAsTypedClass = ex => (exerciseNameClass(ex) ? '' : 'nocap')
 
 // Search both the localized and canonical English title without changing persisted data.
 export const exerciseNameSearchText = ex => {
-  const translated = exerciseNames && ex && exerciseNames[ex.id]
+  const translated = packName(ex)
   return translated ? `${translated} ${ex.n}` : (ex?.n || '')
 }
 
 // Called by i18n.js's setLang once the locale pack has been loaded — kept here rather than
 // exported as setLang because loading packs requires import.meta.glob, which is Vite-only.
 // `dict`, `instr` and `exerciseNames` may be null to reset to their English fallbacks.
+// Exercises arrived from the server (lib/catalogue-extra.js): what reads names and the search cache
+// keyed on the version sees them. i18n.js refreshCatalogueText also tells the subscribers.
+export function _bumpVersion() { version++ }
+
 export function _setLangState(newLang, newDict, newInstr, newExerciseNames, showEn = true, enOnlyFlag = false) {
   const was = lang
   lang = LANGS[newLang] ? newLang : 'en'

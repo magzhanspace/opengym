@@ -54,8 +54,8 @@ for (const f of fs.existsSync(MEDIA) ? fs.readdirSync(MEDIA) : []) {
   if (!['still', 'clip', 'NOTICE.md'].includes(f)) problems.push(`catalogue/media/${f}: only still/, clip/ and NOTICE.md belong here`)
 }
 for (const f of fs.existsSync(OWN) ? fs.readdirSync(OWN) : []) {
-  if (!['still', 'clip', 'NOTICE.md'].includes(f)) problems.push(`catalogue/media-own/${f}: only still/, clip/ and NOTICE.md belong here`)
-  else if (f !== 'NOTICE.md') for (const g of fs.readdirSync(path.join(OWN, f))) if (fs.existsSync(path.join(MEDIA, f, g))) problems.push(`catalogue/media-own/${f}/${g}: the licensed set already has this file`)
+  if (!['still', 'clip', 'NOTICE.md', 'extra.json'].includes(f)) problems.push(`catalogue/media-own/${f}: only still/, clip/, NOTICE.md and extra.json (build.mjs) belong here`)
+  else if (f === 'still' || f === 'clip') for (const g of fs.readdirSync(path.join(OWN, f))) if (fs.existsSync(path.join(MEDIA, f, g))) problems.push(`catalogue/media-own/${f}/${g}: the licensed set already has this file`)
 }
 if (!fs.existsSync(path.join(MEDIA, 'NOTICE.md'))) problems.push('catalogue/media/NOTICE.md is missing (the licence requires it)')
 if (problems.length) { console.error(problems.slice(0, 40).join('\n') + (problems.length > 40 ? `\n...and ${problems.length - 40} more` : '')); process.exit(1) }

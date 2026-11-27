@@ -96,6 +96,32 @@ export function registerCustom(list) {
   xs.forEach(e => { EXIDX[e.id] = e })
 }
 
+// Exercises the server knows and this build does not (this fork: lib/catalogue-extra.js). They are
+// catalogue exercises like the bundled ones, in CATALOGUE, BUILTIN and EXIDX, so pickers, plans and
+// history treat them the same. Registering again replaces the previous set; an id the bundle
+// already has is never touched (the bundle's own entry wins), and a custom exercise with the same
+// id keeps the index the way it keeps it over a bundled one. → the ids added.
+const BUNDLED = new Set(CATALOGUE.map(e => e.id))
+let extras = new Map()
+export function registerCatalogueExtra(rows) {
+  for (const [id, ex] of extras) {
+    const i = CATALOGUE.indexOf(ex)
+    if (i >= 0) CATALOGUE.splice(i, 1)
+    BUILTIN.delete(ex)
+    if (EXIDX[id] === ex) delete EXIDX[id]
+  }
+  extras = new Map()
+  for (const row of Array.isArray(rows) ? rows : []) {
+    if (!row || typeof row.id !== 'string' || BUNDLED.has(row.id) || extras.has(row.id)) continue
+    const ex = catalogueExercise(row)
+    extras.set(row.id, ex)
+    CATALOGUE.push(ex)
+    BUILTIN.add(ex)
+    if (!customIds.has(row.id)) EXIDX[row.id] = ex
+  }
+  return [...extras.keys()]
+}
+
 // A built-in catalogue entry itself (never a copy, a snapshot or a custom one). Those objects never
 // change while the app runs, so what is derived from them alone can be remembered (muscles.js).
 export const isBuiltinEx = ex => BUILTIN.has(ex)
@@ -207,9 +233,10 @@ export const figureOf = S => (S?.exFigure === 'female' || S?.exFigure === 'male'
   ? S.exFigure
   : (S?.body === 'female' ? 'female' : 'male')
 const drawing = (ex, figure) => (figure === 'female' ? ex.fv : figure === 'male' ? ex.mv : null) || null
-export const imgSrc = (ex, figure) => IMG_BASE + (drawing(ex, figure) ? drawing(ex, figure) + '.webp' : ex.img)
+// An exercise the server sent (registerCatalogueExtra) carries its files' local URLs.
+export const imgSrc = (ex, figure) => ex.imgUrl || (IMG_BASE + (drawing(ex, figure) ? drawing(ex, figure) + '.webp' : ex.img))
 const clipFile = f => (CLIP_EXT !== '.mp4' && f.endsWith('.mp4') ? f.slice(0, -4) + CLIP_EXT : f)
-export const gifSrc = (ex, figure) => GIF_BASE + clipFile(drawing(ex, figure) ? drawing(ex, figure) + '.mp4' : ex.gif)
+export const gifSrc = (ex, figure) => ex.gifUrl || (GIF_BASE + clipFile(drawing(ex, figure) ? drawing(ex, figure) + '.mp4' : ex.gif))
 // The catalogue's animations are short MP4 loops; a fork's or an older build's may still be GIFs.
 export const isVideoSrc = src => /\.(mp4|webm)(\?|$)/i.test(src || '')
 

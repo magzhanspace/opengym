@@ -1,3 +1,5 @@
+// First: exercises the server added after this build, before the store reads the saved profile.
+import { startCatalogueExtra } from './lib/catalogue-extra-boot.js'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App.jsx'
@@ -36,7 +38,7 @@ const render = () => createRoot(document.getElementById('root')).render(
 // The phone app first asks which build it is (lib/build-caps.js): openGym Offline must never show
 // a sync button, not even for a frame. The answer is a few milliseconds; a shell that never
 // answers still gets its app after a moment.
-if (MOBILE) Promise.race([initBuildCaps().catch(() => {}), new Promise(r => setTimeout(r, 700))]).then(render)
+if (MOBILE) Promise.race([initBuildCaps().catch(() => {}), new Promise(r => setTimeout(r, 700))]).then(render).then(() => startCatalogueExtra())
 else render()
 
 // The photos and videos of custom exercises, in every build (the phone and the demo included):

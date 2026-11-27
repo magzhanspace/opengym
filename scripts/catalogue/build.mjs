@@ -118,6 +118,45 @@ for (const p of parts) {
     list.map(e => `| [${e.id}](../exercises/${e.id}.json) | ${cell(e.name)} | ${cell(e.equipment)} | ${cell(e.target)} | [picture](${stillLink(e.id)}) |`).join('\n') + '\n'
 }
 
+// catalogue/media-own/extra.json: this fork's own exercises for an iPhone app built before they
+// existed (lib/catalogue-extra.js). The rows the app's EXDB would carry, plus the English and Russian
+// text and the 180 px still and clip inline, so the phone keeps them offline and never needs the
+// licensed folder's cross-origin-protected URLs. Only exercises whose media sit in media-own/ go
+// in: nothing of Gym visual's can end up in this file.
+{
+  const own = path.join(CAT, 'media-own')
+  const licensed = path.join(CAT, 'media')
+  const ids = [...ownStill].filter(f => f.endsWith('.webp')).map(f => f.slice(0, -5)).sort((a, b) => Number(a) - Number(b))
+  const byId = new Map(rows.map(r => [r.id, r]))
+  const exById = new Map(visible.map(e => [e.id, e]))
+  const extra = []
+  for (const id of ids) {
+    const row = byId.get(id), e = exById.get(id)
+    const clip = path.join(own, 'clip', id + '.mp4')
+    if (!row || !e) { console.error(`catalogue/media-own/still/${id}.webp: no exercise ${id} in the catalogue`); process.exit(1) }
+    if (!fs.existsSync(clip)) { console.error(`catalogue/media-own/clip/${id}.mp4 is missing`); process.exit(1) }
+    if (fs.existsSync(path.join(licensed, 'still', id + '.webp')) || fs.existsSync(path.join(licensed, 'clip', id + '.mp4'))) {
+      console.error(`catalogue/media-own: ${id} also has licensed media, it cannot go into extra.json`); process.exit(1)
+    }
+    const tr = {}
+    for (const [lang, rowsOf] of Object.entries(i18n)) {
+      const r = rowsOf[id]
+      if (!r) continue
+      const t = {}
+      if (r.name) t.n = r.name
+      if (r.description) t.d = r.description
+      if (r.instructions?.length) t.st = r.instructions
+      if (Object.keys(t).length) tr[lang] = t
+    }
+    extra.push({
+      ...row, st: e.instructions, desc: e.description, ...(Object.keys(tr).length ? { tr } : {}),
+      still: fs.readFileSync(path.join(own, 'still', id + '.webp')).toString('base64'),
+      clip: fs.readFileSync(clip).toString('base64'),
+    })
+  }
+  files['catalogue/media-own/extra.json'] = JSON.stringify({ v: 1, rows: extra }) + '\n'
+}
+
 let stale = []
 for (const [rel, body] of Object.entries(files)) {
   const p = path.join(ROOT, rel)

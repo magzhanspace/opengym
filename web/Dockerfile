@@ -86,6 +86,8 @@ COPY catalogue/media/ /usr/share/nginx/html/exercise-media/
 # This fork's own exercises (catalogue/media-own/NOTICE.md), merged into the same folders.
 COPY catalogue/media-own/still/ /usr/share/nginx/html/exercise-media/still/
 COPY catalogue/media-own/clip/ /usr/share/nginx/html/exercise-media/clip/
+# The same exercises with their text, for an iPhone app built before them (lib/catalogue-extra.js).
+COPY catalogue/media-own/extra.json /usr/share/nginx/html/exercise-media/extra.json
 
 # Set Default ENVs for nginx
 ENV NGINX_PORT=80
