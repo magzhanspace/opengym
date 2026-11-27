@@ -12,7 +12,9 @@
 //   - the same rows and the media are also kept as files (Library/opengym-catalogue/), the copy
 //     that survives the WebView's storage being cleared; the files are what the app shows
 //     (Capacitor.convertFileSrc, the way lib/media-store-fs.js shows a custom exercise's video);
-//   - at each start the file is fetched again through native HTTP (no CORS for capacitor://).
+//   - at each start only extra-version.json (a hash, a few bytes) is asked for, through native HTTP
+//     (no CORS for capacitor://); the list itself only when that changed, or from Settings →
+//     Update exercises.
 // A row the bundle already has is ignored (lib/exercises.js registerCatalogueExtra), so a build
 // that ships an exercise itself never uses this copy of it. Web builds never run any of this: the
 // PWA is built from the same catalogue the server serves.
@@ -20,6 +22,7 @@ import { registerCatalogueExtra } from './exercises.js'
 import { refreshCatalogueText } from './i18n.js'
 
 export const EXTRA_PATH = '/exercise-media/extra.json'
+export const VERSION_PATH = '/exercise-media/extra-version.json'
 const LS_KEY = 'gym_catalogue_extra_v1'
 const DIR = 'opengym-catalogue'
 const ROWS_FILE = DIR + '/rows.json'
@@ -92,6 +95,9 @@ function apply(rows, urls = current.urls) {
   registerCatalogueExtra(rows.map(r => ({ ...r, ...(urls[r.id] || {}) })))
 }
 
+/** The ids registered now. */
+export const currentIds = () => current.rows.map(r => r.id)
+
 /** The rows kept in localStorage, registered synchronously. → how many. */
 export function bootFromLocal(storage = globalThis.localStorage) {
   try {
@@ -108,10 +114,13 @@ const fsDeps = async () => {
 }
 
 /**
- * The kept files first (when localStorage had nothing), then the server's current file. Every
- * failure leaves what is already registered as it is. → the ids registered at the end.
+ * The kept files first (when localStorage had nothing), then the server. At start only a few bytes
+ * travel (extra-version.json): the list itself is downloaded when it changed, or when `force`
+ * (Settings → Update exercises). Every failure leaves what is registered as it is.
+ * → { ids, downloaded, failed }: the ids registered at the end, whether a new list came, and
+ * whether the server could not be read.
  */
-export async function syncCatalogueExtra({ base, fetchImpl, deps = fsDeps, storage = globalThis.localStorage, notify = refreshCatalogueText } = {}) {
+export async function syncCatalogueExtra({ base, fetchImpl, force = false, deps = fsDeps, storage = globalThis.localStorage, notify = refreshCatalogueText } = {}) {
   let d = null
   try { d = await deps() } catch { /* not the phone app */ }
   const opts = path => ({ path, directory: d.Directory.Library })
@@ -132,13 +141,22 @@ export async function syncCatalogueExtra({ base, fetchImpl, deps = fsDeps, stora
     const rows = (current.rows.length ? current.rows : parseExtra(kept, false)) || []
     if (rows.length) { apply(rows, await urlsFor(rows)); notify() }
   }
-  if (!base || !fetchImpl) return Object.keys(current.urls)
+  const ids = () => current.rows.map(r => r.id)
+  if (!base || !fetchImpl) return { ids: ids(), downloaded: false, failed: !base }
+  const root = base.replace(/\/+$/, '')
+  const get = async path => {
+    const res = await fetchImpl(root + path + '?t=' + Date.now())
+    if (!res.ok) throw new Error('HTTP ' + res.status)
+    return res.json()
+  }
+  let hash = null
+  try { const v = await get(VERSION_PATH); hash = typeof v?.hash === 'string' ? v.hash : null } catch { hash = null }
+  const keptHash = kept?.hash || keptLocalHash(storage)
+  if (!force && hash && hash === keptHash && current.rows.length) return { ids: ids(), downloaded: false, failed: false }
+  if (!force && !hash) return { ids: ids(), downloaded: false, failed: true }
   let fresh = null
-  try {
-    const res = await fetchImpl(base.replace(/\/+$/, '') + EXTRA_PATH + '?t=' + Date.now())
-    if (res.ok) fresh = parseExtra(await res.json(), true)
-  } catch { fresh = null }
-  if (!fresh) return current.rows.map(r => r.id)
+  try { fresh = parseExtra(await get(EXTRA_PATH), true) } catch { fresh = null }
+  if (!fresh) return { ids: ids(), downloaded: false, failed: true }
   const sigs = {}
   if (d) {
     const old = kept?.sigs || {}
@@ -151,15 +169,19 @@ export async function syncCatalogueExtra({ base, fetchImpl, deps = fsDeps, stora
           await d.FS.writeFile({ ...opts(DIR + '/' + r.id + '.mp4'), data: r.clip })
         }
         sigs[r.id] = sig
-      } catch { /* that one shows without its picture until the next start */ }
+      } catch { /* that one shows without its picture until the next download */ }
     }
   }
   const rows = textRows(fresh)
-  try { storage?.setItem(LS_KEY, JSON.stringify({ v: 1, rows })) } catch { /* full or blocked: the file copy stands */ }
+  try { storage?.setItem(LS_KEY, JSON.stringify({ v: 1, rows, hash })) } catch { /* full or blocked: the file copy stands */ }
   if (d) {
-    try { await d.FS.writeFile({ ...opts(ROWS_FILE), data: JSON.stringify({ v: 1, rows, sigs }), encoding: d.Encoding.UTF8, recursive: true }) } catch { /* next start fetches again */ }
+    try { await d.FS.writeFile({ ...opts(ROWS_FILE), data: JSON.stringify({ v: 1, rows, sigs, hash }), encoding: d.Encoding.UTF8, recursive: true }) } catch { /* the next start downloads again */ }
   }
   apply(rows, d ? await urlsFor(rows) : {})
   notify()
-  return rows.map(r => r.id)
+  return { ids: ids(), downloaded: true, failed: false }
+}
+
+function keptLocalHash(storage) {
+  try { return JSON.parse(storage?.getItem(LS_KEY) || 'null')?.hash || null } catch { return null }
 }

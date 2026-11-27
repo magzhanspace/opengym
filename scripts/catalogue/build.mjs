@@ -18,6 +18,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { execFileSync } from 'node:child_process'
+import crypto from 'node:crypto'
 import { validateCatalogue } from './validate.mjs'
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
@@ -155,6 +156,9 @@ for (const p of parts) {
     })
   }
   files['catalogue/media-own/extra.json'] = JSON.stringify({ v: 1, rows: extra }) + '\n'
+  // A few bytes the phone asks for at every start; the big file only when this changed.
+  const hash = crypto.createHash('sha256').update(files['catalogue/media-own/extra.json']).digest('hex').slice(0, 16)
+  files['catalogue/media-own/extra-version.json'] = JSON.stringify({ v: 1, hash }) + '\n'
 }
 
 let stale = []

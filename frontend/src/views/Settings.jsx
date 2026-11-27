@@ -59,6 +59,7 @@ import { starterPlanSheet, confirmSheet, importFromApp, importFromHevy, equipmen
 import Icon from '../components/Icon.jsx'
 import { durationSheet } from '../components/DurationWheel.jsx'
 import { showsConnection, showsLocalLine } from '../components/SyncBanner.jsx'
+import CatalogueUpdateRow from '../components/CatalogueUpdateRow.jsx'
 import BackupFolderRow, { useBackupFolder, autoBackupSubtitle } from '../components/BackupFolderRow.jsx'
 import { ServerSyncSection, KeptChangesRows, leaveServer, connectServer, passkeySignIn } from '../components/ServerSync.jsx'
 import { passwordOn, PasswordRow, openPasswordSignIn, openPasswordRegister } from '../components/PasswordAuth.jsx'
@@ -627,6 +628,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
             value={S.gifSize === 'mini' || S.gifSize === 'off' ? S.gifSize : 'full'}
             onChange={v => update(s => { s.gifSize = v })} />
         </Row>
+        {MOBILE && <CatalogueUpdateRow />}
       </Section>
       {/* A workout left running (lib/forgotten-workout.js): the phone apps ask and end it, and tell the watches. */}
       {MOBILE && <ForgottenRows mobile />}

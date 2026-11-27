@@ -17,9 +17,11 @@ The exercise media inside it are the 180 px files from `catalogue/media`, nothin
 **Exercises added after a build.** The app bundles the exercise list, so the fork's own exercises
 (`catalogue/media-own`) also come from the server: `scripts/catalogue/build.mjs` writes
 `catalogue/media-own/extra.json` (rows, English and Russian text, the 180 px still and clip inline),
-the web image serves it as `/exercise-media/extra.json`, and `lib/catalogue-extra.js` fetches it at
-start through native HTTP (the paired server, else `DEFAULT_SERVER`), keeps the rows in localStorage
-and the rows and media as files in `Library/opengym-catalogue/`, and registers what the bundle lacks.
+the web image serves it as `/exercise-media/extra.json` beside `extra-version.json` (its hash), and
+`lib/catalogue-extra.js` asks for the hash at start through native HTTP (the paired server, else
+`DEFAULT_SERVER`) and downloads the list only when it changed, or from Settings → Workout → "Update
+exercises". It keeps the rows in localStorage and the rows and media as files in
+`Library/opengym-catalogue/`, and registers what the bundle lacks.
 A new own exercise therefore needs only a server deploy; the next TestFlight build bundles it anyway.
 
 **What it keeps**

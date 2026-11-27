@@ -134,6 +134,8 @@ export const SEARCH = [
   { page: 'workout', title: 'Keep screen awake', icon: 'phoneScreen', tint: 'var(--yellow)', kw: 'wake lock screen sleep display on', when: c => c.wakeOK || !c.mobile },
   { page: 'workout', title: 'Screen orientation', icon: 'phoneScreen', tint: 'var(--indigo)', kw: 'orientation rotate rotation portrait landscape lock auto-rotate sideways upright turn', opts: ['Follow phone', 'Portrait', 'Landscape'], when: c => c.android },
   { page: 'workout', title: 'Exercise animations', icon: 'image', tint: 'var(--teal)', kw: 'gif animation video media pictures images', opts: ['Full', 'Small', 'Hidden'] },
+  // Exercises added on the server after this app version (lib/catalogue-extra.js), the phone app only.
+  { page: 'workout', title: 'Update exercises', icon: 'download', tint: 'var(--blue)', kw: 'update refresh new exercises library catalogue download server sync', when: c => c.mobile },
   // Forgotten workouts (lib/forgotten-workout.js), the phone apps only.
   { page: 'workout', title: 'Ask “Still training?”', icon: 'clock', tint: 'var(--orange)', kw: 'forgotten forgot workout left running idle still training auto finish end automatically by itself stop timeout minutes', when: c => c.mobile, tkw: () => t('forgotten workout auto finish') },
   { page: 'workout', title: 'End by itself when I leave the gym', icon: 'mapPin', tint: 'var(--green)', kw: 'forgotten leave left gym geofence location auto finish end automatically', when: c => c.mobile },

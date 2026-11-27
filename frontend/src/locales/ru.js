@@ -1,5 +1,12 @@
 // Russian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  // --- exercises from the server (lib/catalogue-extra.js) ---
+  'Update exercises': 'Обновить упражнения',
+  'New exercises from the server arrive on their own. This checks right now.': 'Новые упражнения с сервера приходят сами. Эта кнопка проверяет прямо сейчас.',
+  'Updating…': 'Обновляю…',
+  'Exercises are up to date': 'Упражнения актуальны',
+  'New exercises added: {0}': 'Добавлено новых упражнений: {0}',
+  'Could not reach the server. Try again later.': 'Не удалось связаться с сервером. Попробуй позже.',
   // --- Settings first screen in groups (#1105) ---
   "Watches": "Часы",
   "Set once": "Настраивается один раз",

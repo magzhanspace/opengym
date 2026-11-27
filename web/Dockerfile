@@ -87,7 +87,7 @@ COPY catalogue/media/ /usr/share/nginx/html/exercise-media/
 COPY catalogue/media-own/still/ /usr/share/nginx/html/exercise-media/still/
 COPY catalogue/media-own/clip/ /usr/share/nginx/html/exercise-media/clip/
 # The same exercises with their text, for an iPhone app built before them (lib/catalogue-extra.js).
-COPY catalogue/media-own/extra.json /usr/share/nginx/html/exercise-media/extra.json
+COPY catalogue/media-own/extra.json catalogue/media-own/extra-version.json /usr/share/nginx/html/exercise-media/
 
 # Set Default ENVs for nginx
 ENV NGINX_PORT=80

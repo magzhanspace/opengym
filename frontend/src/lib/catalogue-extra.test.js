@@ -94,15 +94,21 @@ function fakeFs() {
   return { files, writes, deps: async () => ({ FS, Directory: { Library: 'LIBRARY' }, Encoding: { UTF8: 'utf8' }, convert: u => u.replace('file://', 'capacitor://localhost/_capacitor_file_') }) }
 }
 const memStorage = () => { const m = new Map(); return { getItem: k => m.get(k) ?? null, setItem: (k, v) => m.set(k, String(v)) } }
-const serve = (data, calls = []) => async url => { calls.push(url); return { ok: true, status: 200, json: async () => data } }
+// The server: extra-version.json answers `hash`, extra.json the list.
+const serve = (data, calls = [], hash = 'h1') => async url => {
+  calls.push(url)
+  const body = url.includes('extra-version.json') ? { v: 1, hash } : data
+  return { ok: true, status: 200, json: async () => body }
+}
 
 describe('syncing with the server', () => {
   it('keeps the files and the rows, and shows the files', async () => {
     const f = fakeFs(), storage = memStorage(), calls = []
     let told = 0
-    const ids = await syncCatalogueExtra({ base: 'https://gym.example/', fetchImpl: serve({ v: 1, rows: [row('99001')] }, calls), deps: f.deps, storage, notify: () => told++ })
-    expect(ids).toEqual(['99001'])
-    expect(calls[0]).toMatch(/^https:\/\/gym\.example\/exercise-media\/extra\.json\?t=\d+$/)
+    const out = await syncCatalogueExtra({ base: 'https://gym.example/', fetchImpl: serve({ v: 1, rows: [row('99001')] }, calls), deps: f.deps, storage, notify: () => told++ })
+    expect(out).toEqual({ ids: ['99001'], downloaded: true, failed: false })
+    expect(calls[0]).toMatch(/^https:\/\/gym\.example\/exercise-media\/extra-version\.json\?t=\d+$/)
+    expect(calls[1]).toMatch(/^https:\/\/gym\.example\/exercise-media\/extra\.json\?t=\d+$/)
     expect(f.files.get('opengym-catalogue/99001.webp')).toBe(WEBP)
     expect(f.files.get('opengym-catalogue/99001.mp4')).toBe(MP4)
     expect(gifSrc(EXIDX['99001'])).toBe('capacitor://localhost/_capacitor_file_/lib/opengym-catalogue/99001.mp4')
@@ -113,9 +119,23 @@ describe('syncing with the server', () => {
     registerCatalogueExtra([])
     expect(bootFromLocal(storage)).toBe(1)
     expect(EXIDX['99001']).toBeTruthy()
+    // Same hash: only the few bytes of the version travel, nothing is written.
     f.writes.length = 0
-    await syncCatalogueExtra({ base: 'https://gym.example', fetchImpl: serve({ v: 1, rows: [row('99001')] }), deps: f.deps, storage, notify: () => {} })
-    expect(f.writes).toEqual(['opengym-catalogue/rows.json'])
+    calls.length = 0
+    const same = await syncCatalogueExtra({ base: 'https://gym.example', fetchImpl: serve({ v: 1, rows: [row('99001')] }, calls), deps: f.deps, storage, notify: () => {} })
+    expect(same).toEqual({ ids: ['99001'], downloaded: false, failed: false })
+    expect(calls).toHaveLength(1)
+    expect(f.writes).toEqual([])
+    // A new hash, or the button (force): the list comes again; unchanged media are not rewritten.
+    calls.length = 0
+    const forced = await syncCatalogueExtra({ base: 'https://gym.example', force: true, fetchImpl: serve({ v: 1, rows: [row('99001'), row('99002')] }, calls), deps: f.deps, storage, notify: () => {} })
+    expect(forced.ids).toEqual(['99001', '99002'])
+    expect(calls).toHaveLength(2)
+    expect(f.writes).toEqual(['opengym-catalogue/99002.webp', 'opengym-catalogue/99002.mp4', 'opengym-catalogue/rows.json'])
+    f.writes.length = 0
+    const changed = await syncCatalogueExtra({ base: 'https://gym.example', fetchImpl: serve({ v: 1, rows: [row('99002')] }, [], 'h2'), deps: f.deps, storage, notify: () => {} })
+    expect(changed).toEqual({ ids: ['99002'], downloaded: true, failed: false })
+    expect(EXIDX['99001']).toBeUndefined()
   })
 
   it('offline, the kept copy stays; storage cleared, the file copy brings it back', async () => {
@@ -128,8 +148,8 @@ describe('syncing with the server', () => {
     expect(fresh.bootFromLocal(memStorage())).toBe(0)
     expect(lib.EXIDX['99001']).toBeUndefined()
     const offline = async () => { throw new Error('offline') }
-    const ids = await fresh.syncCatalogueExtra({ base: 'https://gym.example', fetchImpl: offline, deps: f.deps, storage: memStorage(), notify: () => {} })
-    expect(ids).toEqual(['99001'])
+    const out = await fresh.syncCatalogueExtra({ base: 'https://gym.example', fetchImpl: offline, deps: f.deps, storage: memStorage(), notify: () => {} })
+    expect(out).toEqual({ ids: ['99001'], downloaded: false, failed: true })
     expect(lib.EXIDX['99001'].n).toBe('test toe lift 99001')
     expect(lib.imgSrc(lib.EXIDX['99001'])).toMatch(/opengym-catalogue\/99001\.webp$/)
   })
@@ -137,7 +157,9 @@ describe('syncing with the server', () => {
   it('a broken answer changes nothing', async () => {
     const f = fakeFs(), storage = memStorage()
     registerCatalogueExtra([row('99001')])
-    await syncCatalogueExtra({ base: 'https://gym.example', fetchImpl: serve({ v: 1, rows: 'nope' }), deps: f.deps, storage, notify: () => {} })
+    const out = await syncCatalogueExtra({ base: 'https://gym.example', fetchImpl: serve({ v: 1, rows: 'nope' }), deps: f.deps, storage, notify: () => {} })
+    expect(out.failed).toBe(true)
     expect(storage.getItem('gym_catalogue_extra_v1')).toBe(null)
+    expect(EXIDX['99001']).toBeTruthy()
   })
 })
