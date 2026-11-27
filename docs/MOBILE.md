@@ -14,6 +14,14 @@ first launch it asks whether to keep everything on the phone or to connect to a 
 the mobile app" in a signed-in browser (see [connecting](#connecting-the-app-to-your-own-server)).
 The exercise media inside it are the 180 px files from `catalogue/media`, nothing larger.
 
+**Exercises added after a build.** The app bundles the exercise list, so the fork's own exercises
+(`catalogue/media-own`) also come from the server: `scripts/catalogue/build.mjs` writes
+`catalogue/media-own/extra.json` (rows, English and Russian text, the 180 px still and clip inline),
+the web image serves it as `/exercise-media/extra.json`, and `lib/catalogue-extra.js` fetches it at
+start through native HTTP (the paired server, else `DEFAULT_SERVER`), keeps the rows in localStorage
+and the rows and media as files in `Library/opengym-catalogue/`, and registers what the bundle lacks.
+A new own exercise therefore needs only a server deploy; the next TestFlight build bundles it anyway.
+
 **What it keeps**
 
 | Piece | Native | JS |
