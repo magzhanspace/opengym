@@ -43,7 +43,14 @@ const copyDir = (from, to, ext) => {
   return n
 }
 const dest = path.join(out, 'exercise-media')
-const stills = copyDir(path.join(media, 'still'), path.join(dest, 'still'), '.webp')
-const clips = copyDir(clipFrom, path.join(dest, 'clip'), clipExt)
+let stills = copyDir(path.join(media, 'still'), path.join(dest, 'still'), '.webp')
+let clips = copyDir(clipFrom, path.join(dest, 'clip'), clipExt)
+// This fork's own exercises (catalogue/media-own/NOTICE.md): 180 px MP4 only, so a WebP release
+// folder gets none of them.
+const own = path.join(ROOT, 'catalogue/media-own')
+if (fs.existsSync(own)) {
+  stills += copyDir(path.join(own, 'still'), path.join(dest, 'still'), '.webp')
+  clips += copyDir(path.join(own, 'clip'), path.join(dest, 'clip'), clipExt)
+}
 fs.copyFileSync(path.join(media, 'NOTICE.md'), path.join(dest, 'NOTICE.md'))
 console.log(`media: ${stills} stills, ${clips} animations${appDir ? ' (app size)' : ''} -> ${path.relative(ROOT, out) || out}`)

@@ -1,0 +1,20 @@
+{
+  "id": "12020",
+  "name": "toe yoga",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "feet"
+  ],
+  "category": "rehab",
+  "description": "Lifting the big toe while the other toes stay down, then the other way round. It teaches the big toe and the small toes to move separately.",
+  "instructions": [
+    "Sit or stand with your bare feet flat on the floor.",
+    "Lift the big toe while pressing the four smaller toes into the floor.",
+    "Lower it, then press the big toe down and lift the four smaller toes.",
+    "Return all five toes to the floor. The heel and the ball of the foot stay still, only the toes move.",
+    "If a toe will not move yet, hold the others down with your hand at first."
+  ],
+  "textSource": "opengym"
+}

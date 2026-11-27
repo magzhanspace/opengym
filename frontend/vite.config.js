@@ -23,12 +23,14 @@ const catalogueMedia = {
     if (media) return
     const dirs = { '/exercise-media/still/': ['still', '.webp'], '/exercise-media/clip/': ['clip', '.mp4'] }
     const root = resolve(fileURLToPath(new URL('.', import.meta.url)), '../catalogue/media')
+    const own = resolve(fileURLToPath(new URL('.', import.meta.url)), '../catalogue/media-own')
     server.middlewares.use((req, res, next) => {
       const prefix = Object.keys(dirs).find(p => req.url.startsWith(p))
       if (!prefix) return next()
       const [dir, ext] = dirs[prefix]
       const name = decodeURIComponent(req.url.slice(prefix.length).split('?')[0])
-      const file = join(root, dir, name)
+      let file = join(root, dir, name)
+      if (!existsSync(file)) file = join(own, dir, name)
       if (!/^\d{4,5}\.(webp|mp4)$/.test(name) || !name.endsWith(ext) || !existsSync(file)) { res.statusCode = 404; return res.end() }
       res.setHeader('Content-Type', ext === '.mp4' ? 'video/mp4' : 'image/webp')
       res.end(readFileSync(file))

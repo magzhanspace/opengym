@@ -1,0 +1,21 @@
+{
+  "id": "12019",
+  "name": "seated short foot",
+  "bodyPart": "lower legs",
+  "equipment": "body weight",
+  "target": "calves",
+  "secondaryMuscles": [
+    "feet",
+    "ankles"
+  ],
+  "category": "rehab",
+  "description": "Raising the arch by drawing the ball of the foot toward the heel, without curling the toes. It trains the small muscles that hold the arch up.",
+  "instructions": [
+    "Sit with one bare foot flat on the floor, the knee over the ankle.",
+    "Keep the heel and the balls of the foot under the big toe and under the little toe on the floor.",
+    "Draw the ball of the foot toward the heel so the inner arch rises, without curling or lifting the toes.",
+    "Hold for 5 seconds, then relax the foot.",
+    "Once it is easy seated, do it standing, then on one leg."
+  ],
+  "textSource": "opengym"
+}

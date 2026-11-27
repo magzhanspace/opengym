@@ -1,0 +1,20 @@
+{
+  "id": "12021",
+  "name": "resistance band big toe loop forefoot turn-out",
+  "bodyPart": "lower legs",
+  "equipment": "resistance band",
+  "target": "calves",
+  "secondaryMuscles": [
+    "feet"
+  ],
+  "category": "rehab",
+  "description": "With a small band around both big toes, the front of the feet turns out while the heels stay together, so the band holds the big toes straighter. It trains big toe control and supports the arch.",
+  "instructions": [
+    "Sit with bare feet flat on the floor, heels together and knees bent to about 90 degrees.",
+    "Put a small loop band around both big toes.",
+    "Keep the heels down and turn the front of both feet out, away from each other, until the band is taut.",
+    "Hold that position and lift both big toes slightly while the other toes stay on the floor.",
+    "Hold for 5 seconds, then relax. Build up to 10 seconds, then do it standing."
+  ],
+  "textSource": "opengym"
+}
